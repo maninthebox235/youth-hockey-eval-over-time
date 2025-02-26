@@ -137,8 +137,8 @@ def assign_players_to_team(team_id):
                                 )
                                 db.session.add(membership)
                                 print(f"Adding player {player_id} to team {team.id} as {positions[player_id]}")
-                            db.session.add(membership)
-                            print(f"Adding player {player_id} to team {team.id}")
+                            else:
+                                print(f"Player {player_id} already in team {team.id}")
 
                         db.session.commit()
                         st.success(f"Players added successfully to {team.name}!")
