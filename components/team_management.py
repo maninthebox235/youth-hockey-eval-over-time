@@ -117,10 +117,10 @@ def assign_players_to_team(team_id):
                 if submitted and selected_players:
                     try:
                         for player_id, _ in selected_players:
-                            # Create new team membership
+                            # Create new team membership with explicit int conversion
                             membership = TeamMembership(
-                                player_id=player_id,
-                                team_id=team.id,
+                                player_id=int(player_id),
+                                team_id=int(team.id),
                                 position_in_team=positions[player_id],
                                 is_active=True,
                                 join_date=datetime.utcnow()
