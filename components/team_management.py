@@ -122,6 +122,7 @@ def assign_players_to_team(team_id):
                     try:
                         for player_tuple in selected_players:
                             player_id = int(player_tuple[0])
+                            print(f"Processing player {player_id} for team {team.id}")  # Debug log
 
                             # Check if membership already exists
                             existing = TeamMembership.query.filter_by(
@@ -142,6 +143,7 @@ def assign_players_to_team(team_id):
 
                         db.session.commit()
                         st.success("Players added successfully!")
+                        st.session_state.team_refresh = True  # Add refresh flag
                         st.experimental_rerun()  # Force UI refresh
                     except Exception as e:
                         print(f"Error adding players: {str(e)}")  # Debug log
@@ -160,6 +162,10 @@ def display_team_list():
     if not teams:
         st.info("No teams created yet")
         return
+
+    # Initialize refresh flag if not exists
+    if 'team_refresh' not in st.session_state:
+        st.session_state.team_refresh = False
 
     for team in teams:
         with st.expander(f"{team.name} - {team.age_group}", expanded=True):
@@ -194,6 +200,9 @@ def display_team_list():
 
                 if player_data:
                     st.dataframe(pd.DataFrame(player_data))
+                    if st.session_state.team_refresh:
+                        st.success("Team roster updated successfully!")
+                        st.session_state.team_refresh = False
             else:
                 st.info("No players assigned to this team")
 
