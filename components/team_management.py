@@ -116,18 +116,15 @@ def assign_players_to_team(team_id):
 
                 if submitted and selected_players:
                     try:
-                        for player_selection in selected_players:
-                            # Extract player_id from selection tuple
-                            player_id = player_selection[0]
-                            
+                        for player_id, _ in selected_players:
                             # Check if membership already exists
-                            existing_membership = TeamMembership.query.filter_by(
+                            existing = TeamMembership.query.filter_by(
                                 player_id=player_id,
                                 team_id=team.id,
                                 is_active=True
                             ).first()
-                            
-                            if not existing_membership:
+
+                            if not existing:
                                 membership = TeamMembership(
                                     player_id=player_id,
                                     team_id=team.id,
@@ -136,15 +133,12 @@ def assign_players_to_team(team_id):
                                     join_date=datetime.utcnow()
                                 )
                                 db.session.add(membership)
-                                print(f"Adding player {player_id} to team {team.id} as {positions[player_id]}")
-                            else:
-                                print(f"Player {player_id} already in team {team.id}")
+                                print(f"Adding player {player_id} to team {team.id}")
 
                         db.session.commit()
                         st.success(f"Players added successfully to {team.name}!")
                         st.experimental_rerun()
                         return True
-
                     except Exception as e:
                         print(f"Error adding players: {str(e)}")
                         st.error(f"Error adding players: {str(e)}")
@@ -208,10 +202,10 @@ def display_team_list():
                     st.info("No players assigned to this team")
 
                 # Add players button
-                if st.button("Manage Players", key=f"manage_{team.id}"):
-                    success = assign_players_to_team(team.id)
-                    if success:
-                        st.experimental_rerun()
+                manage_players = st.button("Manage Players", key=f"manage_{team.id}")
+                if manage_players:
+                    st.markdown("---")
+                    assign_players_to_team(team.id)
 
     except Exception as e:
         print(f"Error displaying team list: {str(e)}")
