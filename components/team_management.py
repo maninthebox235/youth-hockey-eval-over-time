@@ -68,64 +68,87 @@ def create_team_form():
 
 def assign_players_to_team(team_id):
     """Form for assigning players to a team"""
-    team = Team.query.get(team_id)
-    if not team:
-        st.error("Team not found")
-        return
+    try:
+        team = Team.query.get(team_id)
+        if not team:
+            st.error("Team not found")
+            return
 
-    # Get available players in the same age group
-    available_players = Player.query.filter_by(age_group=team.age_group).all()
-    current_team_players = [p.id for p in team.players]
+        # Get available players in the same age group
+        available_players = Player.query.filter_by(age_group=team.age_group).all()
 
-    # Filter out players already in the team
-    available_players = [p for p in available_players if p.id not in current_team_players]
+        # Get current team players
+        current_memberships = TeamMembership.query.filter_by(
+            team_id=team_id,
+            is_active=True
+        ).all()
+        current_player_ids = [m.player_id for m in current_memberships]
 
-    if available_players:
-        st.subheader(f"Add Players to {team.name}")
+        # Filter out players already in the team
+        available_players = [p for p in available_players if p.id not in current_player_ids]
 
-        selected_players = st.multiselect(
-            "Select Players",
-            options=[(p.id, p.name) for p in available_players],
-            format_func=lambda x: x[1]
-        )
+        if available_players:
+            st.subheader(f"Add Players to {team.name}")
 
-        if selected_players:  # Only show position selection if players are selected
-            st.subheader("Assign Positions")
-            positions = {}
-            for player_id, _ in selected_players:
-                player_name = next(p[1] for p in [(p.id, p.name) for p in available_players] if p[0] == player_id)
-                positions[player_id] = st.selectbox(
-                    f"Position for {player_name}",
-                    options=['Forward', 'Defense', 'Goalie'],
-                    key=f"pos_{player_id}"
-                )
+            # Create options list for multiselect
+            player_options = [(str(p.id), p.name) for p in available_players]
 
-            if st.button("Add Selected Players"):
-                try:
-                    for player_id, _ in selected_players:
-                        # Check if membership already exists
-                        existing = TeamMembership.query.filter_by(
-                            player_id=player_id,
-                            team_id=team.id
-                        ).first()
+            # Display player selection
+            selected_players = st.multiselect(
+                "Select Players",
+                options=player_options,
+                format_func=lambda x: x[1]
+            )
 
-                        if not existing:
-                            membership = TeamMembership(
+            if selected_players:
+                st.subheader("Assign Positions")
+
+                # Store positions for selected players
+                positions = {}
+                for player_tuple in selected_players:
+                    player_id = int(player_tuple[0])  # Convert string ID back to integer
+                    player_name = player_tuple[1]
+
+                    positions[player_id] = st.selectbox(
+                        f"Position for {player_name}",
+                        options=['Forward', 'Defense', 'Goalie'],
+                        key=f"pos_{player_id}"
+                    )
+
+                if st.button("Add Selected Players"):
+                    try:
+                        for player_tuple in selected_players:
+                            player_id = int(player_tuple[0])
+
+                            # Check if membership already exists
+                            existing = TeamMembership.query.filter_by(
                                 player_id=player_id,
                                 team_id=team.id,
-                                position_in_team=positions[player_id]
-                            )
-                            db.session.add(membership)
+                                is_active=True
+                            ).first()
 
-                    db.session.commit()
-                    st.success("Players added successfully!")
-                    # Force a rerun to update the display
-                    st.experimental_rerun()
-                except Exception as e:
-                    st.error(f"Error adding players: {str(e)}")
-                    db.session.rollback()
-    else:
-        st.info("No available players in this age group")
+                            if not existing:
+                                membership = TeamMembership(
+                                    player_id=player_id,
+                                    team_id=team.id,
+                                    position_in_team=positions[player_id],
+                                    is_active=True
+                                )
+                                db.session.add(membership)
+                                print(f"Adding player {player_id} to team {team.id}")  # Debug log
+
+                        db.session.commit()
+                        st.success("Players added successfully!")
+                        st.experimental_rerun()  # Force UI refresh
+                    except Exception as e:
+                        print(f"Error adding players: {str(e)}")  # Debug log
+                        st.error(f"Error adding players: {str(e)}")
+                        db.session.rollback()
+        else:
+            st.info("No available players in this age group")
+    except Exception as e:
+        print(f"Error in assign_players_to_team: {str(e)}")  # Debug log
+        st.error(f"Error managing team players: {str(e)}")
 
 def display_team_list():
     """Display list of teams and their details"""
