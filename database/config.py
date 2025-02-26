@@ -5,13 +5,24 @@ from .models import db
 
 def init_app():
     app = Flask(__name__)
-    
+
     # Database configuration
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    
+    app.config['FLASK_APP'] = 'app.py'
+
     # Initialize extensions
     db.init_app(app)
-    migrate = Migrate(app, db)
-    
+
+    with app.app_context():
+        # Import migrations
+        migrate = Migrate(app, db)
+
+        try:
+            # Initialize migrations
+            db.create_all()
+            print("Database tables created successfully")
+        except Exception as e:
+            print(f"Error creating database tables: {e}")
+
     return app
