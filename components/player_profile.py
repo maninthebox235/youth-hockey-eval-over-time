@@ -1,5 +1,6 @@
 import streamlit as st
 import plotly.express as px
+from components.coach_feedback import display_feedback_form, display_feedback_history
 
 def display_player_profile(player_data, player_history):
     col1, col2 = st.columns([1, 2])
@@ -34,3 +35,13 @@ def display_player_profile(player_data, player_history):
             st.plotly_chart(fig, use_container_width=True)
         else:
             st.info("No performance history available for this player.")
+
+    # Add coach feedback section
+    st.markdown("---")
+    tab1, tab2 = st.tabs(["Submit Feedback", "Feedback History"])
+
+    with tab1:
+        display_feedback_form(player_data['player_id'], player_data['name'])
+
+    with tab2:
+        display_feedback_history(player_data['player_id'])
