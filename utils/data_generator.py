@@ -1,40 +1,98 @@
 import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
+from database.models import db, Player, PlayerHistory
 
-def generate_mock_players(n_players=20):
-    ages = np.random.randint(6, 19, n_players)
-    names = [f"Player {i+1}" for i in range(n_players)]
-    
-    data = {
-        'player_id': range(1, n_players + 1),
-        'name': names,
-        'age': ages,
-        'age_group': [f"U{(age // 2) * 2}" for age in ages],
-        'position': np.random.choice(['Forward', 'Defense', 'Goalie'], n_players),
-        'skating_speed': np.random.uniform(60, 100, n_players),
-        'shooting_accuracy': np.random.uniform(50, 95, n_players),
-        'games_played': np.random.randint(10, 50, n_players),
-        'goals': np.random.randint(0, 30, n_players),
-        'assists': np.random.randint(0, 40, n_players),
-        'join_date': [
-            (datetime.now() - timedelta(days=np.random.randint(30, 730))).strftime('%Y-%m-%d')
-            for _ in range(n_players)
-        ]
-    }
-    
-    return pd.DataFrame(data)
+def seed_database(n_players=20):
+    """Seed the database with initial player data"""
+    try:
+        # Generate player data
+        ages = np.random.randint(6, 19, n_players)
+        names = [f"Player {i+1}" for i in range(n_players)]
 
-def generate_player_history(player_id, months=12):
-    dates = pd.date_range(end=datetime.now(), periods=months, freq='M')
-    
-    data = {
-        'date': dates,
-        'skating_speed': np.linspace(70, 90, months) + np.random.normal(0, 2, months),
-        'shooting_accuracy': np.linspace(60, 85, months) + np.random.normal(0, 3, months),
-        'games_played': np.cumsum(np.random.randint(2, 6, months)),
-        'goals': np.cumsum(np.random.randint(0, 3, months)),
-        'assists': np.cumsum(np.random.randint(0, 4, months))
-    }
-    
-    return pd.DataFrame(data)
+        for i in range(n_players):
+            player = Player(
+                name=names[i],
+                age=int(ages[i]),  # Convert numpy int to Python int
+                age_group=f"U{(ages[i] // 2) * 2}",
+                position=np.random.choice(['Forward', 'Defense', 'Goalie']).item(),  # Convert numpy string
+                skating_speed=float(np.random.uniform(60, 100)),  # Convert numpy float
+                shooting_accuracy=float(np.random.uniform(50, 95)),
+                games_played=int(np.random.randint(10, 50)),
+                goals=int(np.random.randint(0, 30)),
+                assists=int(np.random.randint(0, 40)),
+                join_date=datetime.now() - timedelta(days=np.random.randint(30, 730))
+            )
+            db.session.add(player)
+            db.session.flush()  # Get the player ID
+
+            # Generate historical data
+            generate_player_history(player)
+
+        db.session.commit()
+        return True
+    except Exception as e:
+        print(f"Error seeding database: {e}")
+        db.session.rollback()
+        return False
+
+def generate_player_history(player, months=12):
+    """Generate historical data for a player"""
+    dates = pd.date_range(end=datetime.now(), periods=months, freq='ME')
+
+    for i, date in enumerate(dates):
+        history = PlayerHistory(
+            player_id=player.id,
+            date=date.date(),  # Convert to date object
+            skating_speed=float(70 + (20 * i/months) + np.random.normal(0, 2)),
+            shooting_accuracy=float(60 + (25 * i/months) + np.random.normal(0, 3)),
+            games_played=int(np.random.randint(2, 6)),
+            goals=int(np.random.randint(0, 3)),
+            assists=int(np.random.randint(0, 4))
+        )
+        db.session.add(history)
+
+def get_players_df():
+    """Get all players as a pandas DataFrame"""
+    try:
+        players = Player.query.all()
+        if not players:
+            return pd.DataFrame()  # Return empty DataFrame if no players
+
+        data = [{
+            'player_id': p.id,
+            'name': p.name,
+            'age': p.age,
+            'age_group': p.age_group,
+            'position': p.position,
+            'skating_speed': float(p.skating_speed),
+            'shooting_accuracy': float(p.shooting_accuracy),
+            'games_played': int(p.games_played),
+            'goals': int(p.goals),
+            'assists': int(p.assists),
+            'join_date': p.join_date
+        } for p in players]
+        return pd.DataFrame(data)
+    except Exception as e:
+        print(f"Error getting players data: {e}")
+        return pd.DataFrame()
+
+def get_player_history(player_id):
+    """Get historical data for a specific player"""
+    try:
+        history = PlayerHistory.query.filter_by(player_id=player_id).order_by(PlayerHistory.date).all()
+        if not history:
+            return pd.DataFrame()
+
+        data = [{
+            'date': h.date,
+            'skating_speed': float(h.skating_speed),
+            'shooting_accuracy': float(h.shooting_accuracy),
+            'games_played': int(h.games_played),
+            'goals': int(h.goals),
+            'assists': int(h.assists)
+        } for h in history]
+        return pd.DataFrame(data)
+    except Exception as e:
+        print(f"Error getting player history: {e}")
+        return pd.DataFrame()
