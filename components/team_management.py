@@ -93,29 +93,32 @@ def assign_players_to_team(team_id):
             # Create options list for multiselect
             player_options = [(str(p.id), p.name) for p in available_players]
 
-            # Display player selection
-            selected_players = st.multiselect(
-                "Select Players",
-                options=player_options,
-                format_func=lambda x: x[1]
-            )
+            with st.form(key=f"add_players_form_{team_id}"):
+                # Display player selection
+                selected_players = st.multiselect(
+                    "Select Players",
+                    options=player_options,
+                    format_func=lambda x: x[1]
+                )
 
-            if selected_players:
-                st.subheader("Assign Positions")
+                if selected_players:
+                    st.subheader("Assign Positions")
+                    # Store positions for selected players
+                    positions = {}
+                    for player_tuple in selected_players:
+                        player_id = int(player_tuple[0])  # Convert string ID back to integer
+                        player_name = player_tuple[1]
 
-                # Store positions for selected players
-                positions = {}
-                for player_tuple in selected_players:
-                    player_id = int(player_tuple[0])  # Convert string ID back to integer
-                    player_name = player_tuple[1]
+                        positions[player_id] = st.selectbox(
+                            f"Position for {player_name}",
+                            options=['Forward', 'Defense', 'Goalie'],
+                            key=f"pos_{player_id}"
+                        )
 
-                    positions[player_id] = st.selectbox(
-                        f"Position for {player_name}",
-                        options=['Forward', 'Defense', 'Goalie'],
-                        key=f"pos_{player_id}"
-                    )
+                # Always show the submit button
+                submitted = st.form_submit_button("Add Selected Players")
 
-                if st.button("Add Selected Players"):
+                if submitted and selected_players:
                     try:
                         for player_tuple in selected_players:
                             player_id = int(player_tuple[0])
