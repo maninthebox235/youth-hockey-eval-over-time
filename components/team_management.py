@@ -89,32 +89,43 @@ def assign_players_to_team(team_id):
             format_func=lambda x: x[1]
         )
 
-        positions = {
-            p_id: st.selectbox(
-                f"Position for {next(p[1] for p in [(p.id, p.name) for p in available_players] if p[0] == p_id)}",
-                options=['Forward', 'Defense', 'Goalie'],
-                key=f"pos_{p_id}"
-            ) for p_id, _ in selected_players
-        }
+        if selected_players:  # Only show position selection if players are selected
+            st.subheader("Assign Positions")
+            positions = {}
+            for player_id, _ in selected_players:
+                player_name = next(p[1] for p in [(p.id, p.name) for p in available_players] if p[0] == player_id)
+                positions[player_id] = st.selectbox(
+                    f"Position for {player_name}",
+                    options=['Forward', 'Defense', 'Goalie'],
+                    key=f"pos_{player_id}"
+                )
 
-        if st.button("Add Selected Players"):
-            try:
-                for player_id, _ in selected_players:
-                    membership = TeamMembership(
-                        player_id=player_id,
-                        team_id=team.id,
-                        position_in_team=positions[player_id]
-                    )
-                    db.session.add(membership)
-                db.session.commit()
-                st.success("Players added successfully!")
-                return True
-            except Exception as e:
-                st.error(f"Error adding players: {str(e)}")
-                return False
+            if st.button("Add Selected Players"):
+                try:
+                    for player_id, _ in selected_players:
+                        # Check if membership already exists
+                        existing = TeamMembership.query.filter_by(
+                            player_id=player_id,
+                            team_id=team.id
+                        ).first()
+
+                        if not existing:
+                            membership = TeamMembership(
+                                player_id=player_id,
+                                team_id=team.id,
+                                position_in_team=positions[player_id]
+                            )
+                            db.session.add(membership)
+
+                    db.session.commit()
+                    st.success("Players added successfully!")
+                    # Force a rerun to update the display
+                    st.experimental_rerun()
+                except Exception as e:
+                    st.error(f"Error adding players: {str(e)}")
+                    db.session.rollback()
     else:
         st.info("No available players in this age group")
-    return False
 
 def display_team_list():
     """Display list of teams and their details"""
@@ -125,7 +136,7 @@ def display_team_list():
         return
 
     for team in teams:
-        with st.expander(f"{team.name} - {team.age_group}"):
+        with st.expander(f"{team.name} - {team.age_group}", expanded=True):
             col1, col2, col3 = st.columns(3)
             with col1:
                 st.metric("Games Played", team.games_played)
@@ -136,28 +147,33 @@ def display_team_list():
 
             # Display team roster
             st.subheader("Team Roster")
-            if team.players:
+
+            # Get active team memberships
+            memberships = TeamMembership.query.filter_by(
+                team_id=team.id,
+                is_active=True
+            ).all()
+
+            if memberships:
                 player_data = []
-                for player in team.players:
-                    membership = TeamMembership.query.filter_by(
-                        team_id=team.id,
-                        player_id=player.id,
-                        is_active=True
-                    ).first()
+                for membership in memberships:
+                    player = Player.query.get(membership.player_id)
+                    if player:
+                        player_data.append({
+                            'Name': player.name,
+                            'Position': membership.position_in_team,
+                            'Goals': player.goals,
+                            'Assists': player.assists
+                        })
 
-                    player_data.append({
-                        'Name': player.name,
-                        'Position': membership.position_in_team if membership else 'Unknown',
-                        'Goals': player.goals,
-                        'Assists': player.assists
-                    })
-
-                st.dataframe(pd.DataFrame(player_data))
+                if player_data:
+                    st.dataframe(pd.DataFrame(player_data))
             else:
                 st.info("No players assigned to this team")
 
             # Add players button
             if st.button("Manage Players", key=f"manage_{team.id}"):
+                st.markdown("---")
                 assign_players_to_team(team.id)
 
 def display_team_management():
