@@ -117,23 +117,16 @@ def assign_players_to_team(team_id):
                 if submitted and selected_players:
                     try:
                         for player_id, _ in selected_players:
-                            # Debug print
-                            print(f"Processing player_id: {player_id}, type: {type(player_id)}")
-                            print(f"Team id: {team.id}, type: {type(team.id)}")
-                            
-                            # Ensure integers and convert tuples if needed
-                            player_id = int(player_id[0] if isinstance(player_id, tuple) else player_id)
-                            team_id = int(team.id)
-                            
+                            # Create new team membership with explicit int conversion
                             membership = TeamMembership(
-                                player_id=player_id,
-                                team_id=team_id,
+                                player_id=int(player_id),
+                                team_id=int(team.id),
                                 position_in_team=positions[player_id],
                                 is_active=True,
                                 join_date=datetime.utcnow()
                             )
                             db.session.add(membership)
-                            print(f"Adding player {player_id} to team {team_id}")
+                            print(f"Adding player {player_id} to team {team.id}")
 
                         db.session.commit()
                         st.success(f"Players added successfully to {team.name}!")
