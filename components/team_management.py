@@ -69,15 +69,16 @@ def create_team_form():
 def assign_players_to_team(team_id):
     """Form for assigning players to a team"""
     try:
+        # Get team information
         team = Team.query.get(team_id)
         if not team:
             st.error("Team not found")
             return
 
         # Get available players in the same age group
-        available_players = Player.query.filter_by(age_group=team.age_group).all()
+        players = Player.query.filter_by(age_group=team.age_group).all()
 
-        # Get current team players
+        # Get current team memberships
         memberships = TeamMembership.query.filter_by(
             team_id=team_id,
             is_active=True
@@ -85,15 +86,15 @@ def assign_players_to_team(team_id):
         current_player_ids = [m.player_id for m in memberships]
 
         # Filter out players already in the team
-        available_players = [p for p in available_players if p.id not in current_player_ids]
+        available_players = [p for p in players if p.id not in current_player_ids]
 
         if available_players:
             st.subheader(f"Add Players to {team.name}")
 
-            # Create options list for multiselect
-            player_options = [(str(p.id), p.name) for p in available_players]
-
             with st.form(key=f"add_players_form_{team_id}"):
+                # Create options list for multiselect
+                player_options = [(p.id, p.name) for p in available_players]
+
                 # Display player selection
                 selected_players = st.multiselect(
                     "Select Players",
@@ -103,113 +104,105 @@ def assign_players_to_team(team_id):
 
                 if selected_players:
                     st.subheader("Assign Positions")
-                    # Store positions for selected players
                     positions = {}
-                    for player_tuple in selected_players:
-                        player_id = int(player_tuple[0])  # Convert string ID back to integer
-                        player_name = player_tuple[1]
-
+                    for player_id, player_name in selected_players:
                         positions[player_id] = st.selectbox(
                             f"Position for {player_name}",
                             options=['Forward', 'Defense', 'Goalie'],
                             key=f"pos_{player_id}"
                         )
 
-                # Always show the submit button
                 submitted = st.form_submit_button("Add Selected Players")
 
                 if submitted and selected_players:
                     try:
-                        for player_tuple in selected_players:
-                            player_id = int(player_tuple[0])
-                            print(f"Processing player {player_id} for team {team.id}")  # Debug log
-
-                            # Check if membership already exists
-                            existing = TeamMembership.query.filter_by(
+                        for player_id, _ in selected_players:
+                            # Create new team membership
+                            membership = TeamMembership(
                                 player_id=player_id,
                                 team_id=team.id,
-                                is_active=True
-                            ).first()
-
-                            if not existing:
-                                membership = TeamMembership(
-                                    player_id=player_id,
-                                    team_id=team.id,
-                                    position_in_team=positions[player_id],
-                                    is_active=True
-                                )
-                                db.session.add(membership)
-                                print(f"Adding player {player_id} to team {team.id}")  # Debug log
+                                position_in_team=positions[player_id],
+                                is_active=True,
+                                join_date=datetime.utcnow()
+                            )
+                            db.session.add(membership)
+                            print(f"Adding player {player_id} to team {team.id}")
 
                         db.session.commit()
                         st.success(f"Players added successfully to {team.name}!")
-                        st.session_state.team_refresh = True  # Add refresh flag
-                        st.experimental_rerun()  # Force UI refresh
+                        return True
+
                     except Exception as e:
-                        print(f"Error adding players: {str(e)}")  # Debug log
+                        print(f"Error adding players: {str(e)}")
                         st.error(f"Error adding players: {str(e)}")
                         db.session.rollback()
+                        return False
         else:
             st.info("No available players in this age group")
+
     except Exception as e:
-        print(f"Error in assign_players_to_team: {str(e)}")  # Debug log
+        print(f"Error in assign_players_to_team: {str(e)}")
         st.error(f"Error managing team players: {str(e)}")
+        return False
 
 def display_team_list():
     """Display list of teams and their details"""
-    teams = Team.query.all()
+    try:
+        teams = Team.query.all()
 
-    if not teams:
-        st.info("No teams created yet")
-        return
+        if not teams:
+            st.info("No teams created yet")
+            return
 
-    # Initialize refresh flag if not exists
-    if 'team_refresh' not in st.session_state:
-        st.session_state.team_refresh = False
+        for team in teams:
+            with st.expander(f"{team.name} - {team.age_group}", expanded=True):
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric("Games Played", team.games_played)
+                with col2:
+                    st.metric("Wins", team.wins)
+                with col3:
+                    st.metric("Losses", team.losses)
 
-    for team in teams:
-        with st.expander(f"{team.name} - {team.age_group}", expanded=True):
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.metric("Games Played", team.games_played)
-            with col2:
-                st.metric("Wins", team.wins)
-            with col3:
-                st.metric("Losses", team.losses)
+                # Display team roster
+                st.subheader("Team Roster")
 
-            # Display team roster
-            st.subheader("Team Roster")
+                # Get active memberships for this team
+                memberships = TeamMembership.query.filter_by(
+                    team_id=team.id,
+                    is_active=True
+                ).all()
 
-            # Get active team memberships
-            memberships = TeamMembership.query.filter_by(
-                team_id=team.id,
-                is_active=True
-            ).all()
+                if memberships:
+                    # Create roster dataframe
+                    roster_data = []
+                    for membership in memberships:
+                        player = Player.query.get(membership.player_id)
+                        if player:
+                            roster_data.append({
+                                'Name': player.name,
+                                'Position': membership.position_in_team,
+                                'Age Group': player.age_group,
+                                'Goals': player.goals,
+                                'Assists': player.assists
+                            })
 
-            if memberships:
-                player_data = []
-                for membership in memberships:
-                    player = Player.query.get(membership.player_id)
-                    if player:
-                        player_data.append({
-                            'Name': player.name,
-                            'Position': membership.position_in_team,
-                            'Goals': player.goals,
-                            'Assists': player.assists
-                        })
+                    if roster_data:
+                        st.dataframe(pd.DataFrame(roster_data))
+                    else:
+                        st.info("No active players in roster")
+                else:
+                    st.info("No players assigned to this team")
 
-                if player_data:
-                    st.dataframe(pd.DataFrame(player_data))
-                    if st.session_state.team_refresh:
-                        st.success("Team roster updated successfully!")
-                        st.session_state.team_refresh = False
-            else:
-                st.info("No players assigned to this team")
+                # Add players button
+                if st.button("Manage Players", key=f"manage_{team.id}"):
+                    success = assign_players_to_team(team.id)
+                    if success:
+                        st.experimental_rerun()
 
-            # Add players button
-            if st.button("Manage Players", key=f"manage_{team.id}"):
-                st.markdown("---")
-                assign_players_to_team(team.id)
+    except Exception as e:
+        print(f"Error displaying team list: {str(e)}")
+        st.error(f"Error displaying teams: {str(e)}")
 
 def display_team_management():
     """Main team management interface"""
