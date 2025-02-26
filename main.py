@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px  # Add this import
 from utils.data_generator import generate_mock_players, generate_player_history
 from components.player_profile import display_player_profile
 from components.development_charts import display_development_charts
