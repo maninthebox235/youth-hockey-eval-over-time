@@ -121,9 +121,13 @@ def assign_players_to_team(team_id):
                             player_id = player_selection[0] if isinstance(player_selection, tuple) else player_selection
 
                             # Create new team membership
+                            print(f"Debug - player_id type: {type(player_id)}")
+                            print(f"Debug - team.id type: {type(team.id)}")
+                            print(f"Debug - position: {positions[player_id]}")
+                            
                             membership = TeamMembership(
-                                player_id=player_id,
-                                team_id=team.id,
+                                player_id=int(player_id),
+                                team_id=int(team.id),
                                 position_in_team=positions[player_id],
                                 is_active=True,
                                 join_date=datetime.utcnow()
@@ -133,6 +137,7 @@ def assign_players_to_team(team_id):
 
                         db.session.commit()
                         st.success(f"Players added successfully to {team.name}!")
+                        st.experimental_rerun()
                         return True
 
                     except Exception as e:
