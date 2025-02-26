@@ -42,13 +42,13 @@ def generate_player_history(player, months=12):
 
     for i, date in enumerate(dates):
         history = PlayerHistory(
-            player_id=player.id,
+            player_id=int(player.id),  # Ensure Python int
             date=date.date(),  # Convert to date object
-            skating_speed=float(70 + (20 * i/months) + np.random.normal(0, 2)),
-            shooting_accuracy=float(60 + (25 * i/months) + np.random.normal(0, 3)),
-            games_played=int(np.random.randint(2, 6)),
-            goals=int(np.random.randint(0, 3)),
-            assists=int(np.random.randint(0, 4))
+            skating_speed=float(70 + (20 * i/months) + float(np.random.normal(0, 2))),
+            shooting_accuracy=float(60 + (25 * i/months) + float(np.random.normal(0, 3))),
+            games_played=int(np.random.randint(2, 6).item()),
+            goals=int(np.random.randint(0, 3).item()),
+            assists=int(np.random.randint(0, 4).item())
         )
         db.session.add(history)
 
@@ -80,6 +80,8 @@ def get_players_df():
 def get_player_history(player_id):
     """Get historical data for a specific player"""
     try:
+        # Convert numpy.int64 to Python int
+        player_id = int(player_id)
         history = PlayerHistory.query.filter_by(player_id=player_id).order_by(PlayerHistory.date).all()
         if not history:
             return pd.DataFrame()
