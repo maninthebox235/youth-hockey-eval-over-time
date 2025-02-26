@@ -7,6 +7,7 @@ from utils.data_generator import get_players_df, get_player_history, seed_databa
 from components.player_profile import display_player_profile
 from components.development_charts import display_development_charts
 from components.stats_dashboard import display_age_group_stats, display_player_rankings
+from components.team_management import display_team_management
 
 # Initialize Flask app and database
 app = init_app()
@@ -43,7 +44,7 @@ if players_df.empty:
 else:
     menu = st.sidebar.selectbox(
         "Navigation",
-        ["Player Profiles", "Development Analytics", "Team Statistics"]
+        ["Player Profiles", "Development Analytics", "Team Statistics", "Team Management"]
     )
 
     if menu == "Player Profiles":
@@ -92,6 +93,9 @@ else:
                 fig = px.box(filtered_df, y=['skating_speed', 'shooting_accuracy'],
                          title=f"Skill Ranges - {age_group}")
                 st.plotly_chart(fig, use_container_width=True)
+
+    elif menu == "Team Management":
+        display_team_management()
 
     else:  # Team Statistics
         st.subheader("Team Statistics")
