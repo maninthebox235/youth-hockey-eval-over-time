@@ -118,20 +118,25 @@ def assign_players_to_team(team_id):
                     try:
                         for player_selection in selected_players:
                             # Extract player_id from selection tuple
-                            player_id = player_selection[0] if isinstance(player_selection, tuple) else player_selection
-
-                            # Create new team membership
-                            print(f"Debug - player_id type: {type(player_id)}")
-                            print(f"Debug - team.id type: {type(team.id)}")
-                            print(f"Debug - position: {positions[player_id]}")
+                            player_id = player_selection[0]
                             
-                            membership = TeamMembership(
-                                player_id=int(player_id),
-                                team_id=int(team.id),
-                                position_in_team=positions[player_id],
-                                is_active=True,
-                                join_date=datetime.utcnow()
-                            )
+                            # Check if membership already exists
+                            existing_membership = TeamMembership.query.filter_by(
+                                player_id=player_id,
+                                team_id=team.id,
+                                is_active=True
+                            ).first()
+                            
+                            if not existing_membership:
+                                membership = TeamMembership(
+                                    player_id=player_id,
+                                    team_id=team.id,
+                                    position_in_team=positions[player_id],
+                                    is_active=True,
+                                    join_date=datetime.utcnow()
+                                )
+                                db.session.add(membership)
+                                print(f"Adding player {player_id} to team {team.id} as {positions[player_id]}")
                             db.session.add(membership)
                             print(f"Adding player {player_id} to team {team.id}")
 
