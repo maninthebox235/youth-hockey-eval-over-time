@@ -92,7 +92,12 @@ def get_player_history(player_id):
             'goals': int(h.goals),
             'assists': int(h.assists)
         } for h in history]
-        return pd.DataFrame(data)
+
+        # Convert to DataFrame and ensure date column is datetime
+        df = pd.DataFrame(data)
+        if not df.empty:
+            df['date'] = pd.to_datetime(df['date'])
+        return df
     except Exception as e:
         print(f"Error getting player history: {e}")
         return pd.DataFrame()
