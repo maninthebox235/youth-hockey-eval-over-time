@@ -78,11 +78,11 @@ def assign_players_to_team(team_id):
         available_players = Player.query.filter_by(age_group=team.age_group).all()
 
         # Get current team players
-        current_memberships = TeamMembership.query.filter_by(
+        memberships = TeamMembership.query.filter_by(
             team_id=team_id,
             is_active=True
         ).all()
-        current_player_ids = [m.player_id for m in current_memberships]
+        current_player_ids = [m.player_id for m in memberships]
 
         # Filter out players already in the team
         available_players = [p for p in available_players if p.id not in current_player_ids]
@@ -142,7 +142,7 @@ def assign_players_to_team(team_id):
                                 print(f"Adding player {player_id} to team {team.id}")  # Debug log
 
                         db.session.commit()
-                        st.success("Players added successfully!")
+                        st.success(f"Players added successfully to {team.name}!")
                         st.session_state.team_refresh = True  # Add refresh flag
                         st.experimental_rerun()  # Force UI refresh
                     except Exception as e:
