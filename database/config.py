@@ -19,7 +19,7 @@ def init_app():
         migrate = Migrate(app, db)
 
         try:
-            # Initialize migrations
+            # Initialize database tables
             db.create_all()
             print("Database tables created successfully")
         except Exception as e:
