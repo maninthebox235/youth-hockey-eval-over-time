@@ -14,8 +14,4 @@ def init_app():
     # Initialize extensions
     db.init_app(app)
 
-    # Ensure tables exist
-    with app.app_context():
-        db.create_all()
-
     return app
