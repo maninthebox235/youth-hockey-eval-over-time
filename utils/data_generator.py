@@ -15,13 +15,13 @@ def seed_database(n_players=20):
                 name=names[i],
                 age=int(ages[i]),  # Convert numpy int to Python int
                 age_group=f"U{(ages[i] // 2) * 2}",
-                position=np.random.choice(['Forward', 'Defense', 'Goalie']).item(),  # Convert numpy string
+                position=np.random.choice(['Forward', 'Defense', 'Goalie']),  # String is already Python string
                 skating_speed=float(np.random.uniform(60, 100)),  # Convert numpy float
                 shooting_accuracy=float(np.random.uniform(50, 95)),
-                games_played=int(np.random.randint(10, 50)),
+                games_played=int(np.random.randint(10, 50)),  # Convert numpy int
                 goals=int(np.random.randint(0, 30)),
                 assists=int(np.random.randint(0, 40)),
-                join_date=datetime.now() - timedelta(days=np.random.randint(30, 730))
+                join_date=datetime.now() - timedelta(days=int(np.random.randint(30, 730)))
             )
             db.session.add(player)
             db.session.flush()  # Get the player ID
@@ -42,13 +42,13 @@ def generate_player_history(player, months=12):
 
     for i, date in enumerate(dates):
         history = PlayerHistory(
-            player_id=int(player.id),  # Ensure Python int
-            date=date.date(),  # Convert to date object
-            skating_speed=float(70 + (20 * i/months) + float(np.random.normal(0, 2))),
-            shooting_accuracy=float(60 + (25 * i/months) + float(np.random.normal(0, 3))),
-            games_played=int(np.random.randint(2, 6).item()),
-            goals=int(np.random.randint(0, 3).item()),
-            assists=int(np.random.randint(0, 4).item())
+            player_id=player.id,
+            date=date.date(),
+            skating_speed=float(70 + (20 * i/months) + np.random.normal(0, 2)),
+            shooting_accuracy=float(60 + (25 * i/months) + np.random.normal(0, 3)),
+            games_played=int(np.random.randint(2, 6)),
+            goals=int(np.random.randint(0, 3)),
+            assists=int(np.random.randint(0, 4))
         )
         db.session.add(history)
 

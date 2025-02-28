@@ -28,6 +28,9 @@ if 'db_initialized' not in st.session_state:
         if not Player.query.first():
             if seed_database():
                 st.session_state.db_initialized = True
+                st.success("Database initialized successfully!")
+            else:
+                st.error("Error initializing database. Please check the logs.")
 
 # App header
 st.title("🏒 Youth Hockey Development Tracker")
@@ -37,81 +40,72 @@ st.sidebar.image("https://images.unsplash.com/photo-1547223431-cc59f141f389",
                  caption="Player Development Platform")
 
 # Get current player data
-players_df = get_players_df()
+try:
+    players_df = get_players_df()
 
-if players_df.empty:
-    st.warning("No player data available. Please check the database connection.")
-else:
-    menu = st.sidebar.selectbox(
-        "Navigation",
-        ["Player Profiles", "Development Analytics", "Team Statistics", "Team Management"]
-    )
-
-    if menu == "Player Profiles":
-        st.subheader("Player Profiles")
-
-        # Player selection
-        selected_player = st.selectbox(
-            "Select Player",
-            players_df['name'].tolist()
+    if players_df.empty:
+        st.warning("No player data available. Please check the database connection.")
+    else:
+        menu = st.sidebar.selectbox(
+            "Navigation",
+            ["Player Profiles", "Development Analytics", "Team Statistics", "Team Management"]
         )
 
-        if selected_player:
-            player_data = players_df[
-                players_df['name'] == selected_player
-            ].iloc[0]
+        if menu == "Player Profiles":
+            st.subheader("Player Profiles")
 
-            player_history = get_player_history(player_data['player_id'])
-
-            display_player_profile(player_data, player_history)
-            display_development_charts(player_data, player_history)
-
-    elif menu == "Development Analytics":
-        st.subheader("Development Analytics")
-
-        # Age group filter
-        age_groups = sorted(players_df['age_group'].unique())
-        if age_groups:
-            age_group = st.selectbox(
-                "Select Age Group",
-                age_groups
+            # Player selection
+            selected_player = st.selectbox(
+                "Select Player",
+                players_df['name'].tolist()
             )
 
-            filtered_df = players_df[
-                players_df['age_group'] == age_group
-            ]
+            if selected_player:
+                player_data = players_df[
+                    players_df['name'] == selected_player
+                ].iloc[0]
 
-            col1, col2 = st.columns(2)
+                player_history = get_player_history(player_data['player_id'])
 
-            with col1:
-                fig = px.scatter(filtered_df, x='skating_speed', y='shooting_accuracy',
-                            color='position', hover_data=['name'],
-                            title=f"Skill Distribution - {age_group}")
-                st.plotly_chart(fig, use_container_width=True)
+                display_player_profile(player_data, player_history)
+                display_development_charts(player_data, player_history)
 
-            with col2:
-                fig = px.box(filtered_df, y=['skating_speed', 'shooting_accuracy'],
-                         title=f"Skill Ranges - {age_group}")
-                st.plotly_chart(fig, use_container_width=True)
+        elif menu == "Development Analytics":
+            st.subheader("Development Analytics")
 
-    elif menu == "Team Management":
-        display_team_management()
+            # Age group filter
+            age_groups = sorted(players_df['age_group'].unique())
+            if age_groups:
+                age_group = st.selectbox(
+                    "Select Age Group",
+                    age_groups
+                )
 
-    else:  # Team Statistics
-        st.subheader("Team Statistics")
+                filtered_df = players_df[
+                    players_df['age_group'] == age_group
+                ]
 
-        display_age_group_stats(players_df)
-        display_player_rankings(players_df)
+                col1, col2 = st.columns(2)
 
-        st.subheader("Equipment Resources")
-        col1, col2, col3 = st.columns(3)
+                with col1:
+                    fig = px.scatter(filtered_df, x='skating_speed', y='shooting_accuracy',
+                                color='position', hover_data=['name'],
+                                title=f"Skill Distribution - {age_group}")
+                    st.plotly_chart(fig, use_container_width=True)
 
-        with col1:
-            st.image("https://images.unsplash.com/photo-1547223431-cc59f141f389",
-                     caption="Essential Equipment")
-        with col2:
-            st.image("https://images.unsplash.com/photo-1684907110935-dcb64eba6add",
-                     caption="Training Gear")
-        with col3:
-            st.image("https://images.unsplash.com/photo-1725981408549-73467108cbf9",
-                     caption="Safety Equipment")
+                with col2:
+                    fig = px.box(filtered_df, y=['skating_speed', 'shooting_accuracy'],
+                             title=f"Skill Ranges - {age_group}")
+                    st.plotly_chart(fig, use_container_width=True)
+
+        elif menu == "Team Management":
+            display_team_management()
+
+        else:  # Team Statistics
+            st.subheader("Team Statistics")
+            display_age_group_stats(players_df)
+            display_player_rankings(players_df)
+
+except Exception as e:
+    st.error(f"Error loading data: {str(e)}")
+    st.info("Please ensure the database is properly initialized and connected.")
