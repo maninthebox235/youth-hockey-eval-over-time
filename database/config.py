@@ -14,15 +14,8 @@ def init_app():
     # Initialize extensions
     db.init_app(app)
 
+    # Ensure tables exist
     with app.app_context():
-        # Import migrations
-        migrate = Migrate(app, db)
-
-        try:
-            # Initialize database tables
-            db.create_all()
-            print("Database tables created successfully")
-        except Exception as e:
-            print(f"Error creating database tables: {e}")
+        db.create_all()
 
     return app
