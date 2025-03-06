@@ -1,17 +1,20 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 from database import db, init_app
 from database.models import Player
 from utils.data_generator import get_players_df, get_player_history, seed_database
 from components.player_profile import display_player_profile
 from components.development_charts import display_development_charts
-from components.stats_dashboard import display_age_group_stats, display_player_rankings
 from components.team_management import display_team_management
+from components.stats_dashboard import display_age_group_stats, display_player_rankings
+
 
 # Initialize Flask app and database
 app = init_app()
-app.app_context().push()
+
+# Push an application context
+ctx = app.app_context()
+ctx.push()
 
 st.set_page_config(page_title="Youth Hockey Development Tracker",
                    page_icon="🏒",
@@ -20,14 +23,20 @@ st.set_page_config(page_title="Youth Hockey Development Tracker",
 # Initialize database if empty
 if 'db_initialized' not in st.session_state:
     try:
-        with app.app_context():
-            # Check if players table exists and is empty
-            if not Player.query.first():
-                if seed_database():
-                    st.session_state.db_initialized = True
-                    st.success("Database initialized successfully!")
-                else:
-                    st.error("Error initializing database. Please check the logs.")
+        # Ensure database tables exist
+        db.create_all()
+
+        # Check if database needs seeding
+        if not Player.query.first():
+            st.info("Initializing database with sample data...")
+            if seed_database(n_players=20):
+                st.session_state.db_initialized = True
+                st.success("Database initialized successfully!")
+            else:
+                st.error("Error initializing database. Please check the logs.")
+        else:
+            st.session_state.db_initialized = True
+
     except Exception as e:
         st.error(f"Database initialization error: {str(e)}")
 
@@ -44,6 +53,7 @@ try:
 
     if players_df.empty:
         st.warning("No player data available. Please check the database connection.")
+        st.info("Try refreshing the page to initialize the database.")
     else:
         menu = st.sidebar.selectbox(
             "Navigation",
@@ -52,8 +62,6 @@ try:
 
         if menu == "Player Profiles":
             st.subheader("Player Profiles")
-
-            # Player selection
             selected_player = st.selectbox(
                 "Select Player",
                 players_df['name'].tolist()
@@ -65,14 +73,11 @@ try:
                 ].iloc[0]
 
                 player_history = get_player_history(player_data['player_id'])
-
                 display_player_profile(player_data, player_history)
                 display_development_charts(player_data, player_history)
 
         elif menu == "Development Analytics":
             st.subheader("Development Analytics")
-
-            # Age group filter
             age_groups = sorted(players_df['age_group'].unique())
             if age_groups:
                 age_group = st.selectbox(
@@ -85,7 +90,6 @@ try:
                 ]
 
                 col1, col2 = st.columns(2)
-
                 with col1:
                     fig = px.scatter(filtered_df, x='skating_speed', y='shooting_accuracy',
                                     color='position', hover_data=['name'],
