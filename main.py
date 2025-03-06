@@ -17,20 +17,19 @@ st.set_page_config(page_title="Youth Hockey Development Tracker",
                    page_icon="🏒",
                    layout="wide")
 
-# Load custom CSS
-with open('styles/custom.css') as f:
-    st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
-
 # Initialize database if empty
 if 'db_initialized' not in st.session_state:
-    with app.app_context():
-        # Check if players table exists and is empty
-        if not Player.query.first():
-            if seed_database():
-                st.session_state.db_initialized = True
-                st.success("Database initialized successfully!")
-            else:
-                st.error("Error initializing database. Please check the logs.")
+    try:
+        with app.app_context():
+            # Check if players table exists and is empty
+            if not Player.query.first():
+                if seed_database():
+                    st.session_state.db_initialized = True
+                    st.success("Database initialized successfully!")
+                else:
+                    st.error("Error initializing database. Please check the logs.")
+    except Exception as e:
+        st.error(f"Database initialization error: {str(e)}")
 
 # App header
 st.title("🏒 Youth Hockey Development Tracker")
@@ -89,13 +88,13 @@ try:
 
                 with col1:
                     fig = px.scatter(filtered_df, x='skating_speed', y='shooting_accuracy',
-                                color='position', hover_data=['name'],
-                                title=f"Skill Distribution - {age_group}")
+                                    color='position', hover_data=['name'],
+                                    title=f"Skill Distribution - {age_group}")
                     st.plotly_chart(fig, use_container_width=True)
 
                 with col2:
                     fig = px.box(filtered_df, y=['skating_speed', 'shooting_accuracy'],
-                             title=f"Skill Ranges - {age_group}")
+                                 title=f"Skill Ranges - {age_group}")
                     st.plotly_chart(fig, use_container_width=True)
 
         elif menu == "Team Management":
@@ -107,5 +106,5 @@ try:
             display_player_rankings(players_df)
 
 except Exception as e:
-    st.error(f"Error loading data: {str(e)}")
+    st.error(f"Application error: {str(e)}")
     st.info("Please ensure the database is properly initialized and connected.")
