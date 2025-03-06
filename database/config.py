@@ -13,9 +13,20 @@ def init_app():
 
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['FLASK_APP'] = 'app.py'
 
     # Initialize extensions
     db.init_app(app)
+
+    # Initialize migrations
+    migrate = Migrate(app, db)
+
+    # Initialize database tables
+    with app.app_context():
+        try:
+            db.create_all()
+            print("Database tables created successfully")
+        except Exception as e:
+            print(f"Error creating database tables: {e}")
+            raise
 
     return app

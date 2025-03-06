@@ -8,24 +8,23 @@ from components.development_charts import display_development_charts
 from components.team_management import display_team_management
 from components.stats_dashboard import display_age_group_stats, display_player_rankings
 
-
-# Initialize Flask app and database
+# Initialize Flask app
 app = init_app()
 
-# Push an application context
-ctx = app.app_context()
-ctx.push()
+# Ensure we have an application context
+app_ctx = app.app_context()
+app_ctx.push()
 
-st.set_page_config(page_title="Youth Hockey Development Tracker",
-                   page_icon="🏒",
-                   layout="wide")
+# Page configuration
+st.set_page_config(
+    page_title="Youth Hockey Development Tracker",
+    page_icon="🏒",
+    layout="wide"
+)
 
 # Initialize database if empty
 if 'db_initialized' not in st.session_state:
     try:
-        # Ensure database tables exist
-        db.create_all()
-
         # Check if database needs seeding
         if not Player.query.first():
             st.info("Initializing database with sample data...")
@@ -36,7 +35,6 @@ if 'db_initialized' not in st.session_state:
                 st.error("Error initializing database. Please check the logs.")
         else:
             st.session_state.db_initialized = True
-
     except Exception as e:
         st.error(f"Database initialization error: {str(e)}")
 
@@ -50,7 +48,6 @@ st.sidebar.image("https://images.unsplash.com/photo-1547223431-cc59f141f389",
 # Get current player data
 try:
     players_df = get_players_df()
-
     if players_df.empty:
         st.warning("No player data available. Please check the database connection.")
         st.info("Try refreshing the page to initialize the database.")
@@ -68,10 +65,7 @@ try:
             )
 
             if selected_player:
-                player_data = players_df[
-                    players_df['name'] == selected_player
-                ].iloc[0]
-
+                player_data = players_df[players_df['name'] == selected_player].iloc[0]
                 player_history = get_player_history(player_data['player_id'])
                 display_player_profile(player_data, player_history)
                 display_development_charts(player_data, player_history)
@@ -80,26 +74,17 @@ try:
             st.subheader("Development Analytics")
             age_groups = sorted(players_df['age_group'].unique())
             if age_groups:
-                age_group = st.selectbox(
-                    "Select Age Group",
-                    age_groups
-                )
-
-                filtered_df = players_df[
-                    players_df['age_group'] == age_group
-                ]
-
+                age_group = st.selectbox("Select Age Group", age_groups)
+                filtered_df = players_df[players_df['age_group'] == age_group]
                 col1, col2 = st.columns(2)
+
                 with col1:
-                    fig = px.scatter(filtered_df, x='skating_speed', y='shooting_accuracy',
-                                    color='position', hover_data=['name'],
-                                    title=f"Skill Distribution - {age_group}")
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.write("Player Distribution")
+                    st.dataframe(filtered_df[['name', 'position', 'skating_speed', 'shooting_accuracy']])
 
                 with col2:
-                    fig = px.box(filtered_df, y=['skating_speed', 'shooting_accuracy'],
-                                 title=f"Skill Ranges - {age_group}")
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.write("Performance Summary")
+                    st.dataframe(filtered_df.describe())
 
         elif menu == "Team Management":
             display_team_management()
@@ -112,3 +97,6 @@ try:
 except Exception as e:
     st.error(f"Application error: {str(e)}")
     st.info("Please ensure the database is properly initialized and connected.")
+
+# Clean up context when the app exits
+app_ctx.pop()
