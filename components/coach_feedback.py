@@ -11,7 +11,17 @@ def submit_coach_feedback(player_id, coach_name, feedback_text, ratings, templat
     """Submit new coach feedback for a player"""
     try:
         # Ensure player_id is a regular Python int
-        player_id = int(player_id)
+        if hasattr(player_id, 'item'):  # Handle numpy int types
+            player_id = player_id.item()
+        else:
+            player_id = int(player_id)
+            
+        # Ensure template_id is a regular Python int if provided
+        if template_id is not None:
+            if hasattr(template_id, 'item'):
+                template_id = template_id.item()
+            else:
+                template_id = int(template_id)
 
         # Ensure all rating values are integers and filter out None values
         validated_ratings = {}
@@ -53,7 +63,10 @@ def get_player_feedback(player_id):
     """Get all feedback for a specific player"""
     try:
         # Ensure player_id is a regular Python int
-        player_id = int(player_id)
+        if hasattr(player_id, 'item'):  # Handle numpy int types
+            player_id = player_id.item()
+        else:
+            player_id = int(player_id)
 
         feedback = CoachFeedback.query.filter_by(player_id=player_id).order_by(CoachFeedback.date.desc()).all()
         if not feedback:
@@ -94,12 +107,14 @@ def display_feedback_form(player_id, player_name, player_position):
 
     # Template selection
     selected_template = None
+    template_id = None
     if templates:
         template_names = ["Custom Feedback"] + [t.name for t in templates]
         template_choice = st.selectbox("Select Template", template_names)
 
         if template_choice != "Custom Feedback":
             selected_template = next(t for t in templates if t.name == template_choice)
+            template_id = selected_template.id
 
     with st.form("coach_feedback_form"):
         coach_name = st.text_input("Coach Name")
@@ -154,7 +169,6 @@ def display_feedback_form(player_id, player_name, player_position):
             if not coach_name or not feedback_text:
                 st.error("Please fill in all required fields")
             else:
-                template_id = selected_template.id if selected_template else None
                 success = submit_coach_feedback(
                     player_id=player_id,
                     coach_name=coach_name,
