@@ -54,12 +54,12 @@ def get_player_feedback(player_id):
                 'feedback': f.feedback_text
             }
 
-            # Add all available ratings
-            for attr in dir(f):
-                if attr.endswith('_rating') and not attr.startswith('_'):
-                    value = getattr(f, attr)
+            # Add all ratings that exist for this feedback
+            for column in CoachFeedback.__table__.columns:
+                if column.name.endswith('_rating'):
+                    value = getattr(f, column.name)
                     if value is not None:
-                        feedback_data[attr] = int(value)
+                        feedback_data[column.name] = int(value)
 
             data.append(feedback_data)
 
