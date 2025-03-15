@@ -10,11 +10,17 @@ def get_templates_for_player(player_type):
 def submit_coach_feedback(player_id, coach_name, feedback_text, ratings, template_id=None):
     """Submit new coach feedback for a player"""
     try:
+        # Ensure all rating values are integers
+        validated_ratings = {}
+        for key, value in ratings.items():
+            if key.endswith('_rating') and value is not None:
+                validated_ratings[key] = int(value)
+
         feedback = CoachFeedback(
             player_id=int(player_id),
             coach_name=coach_name,
             feedback_text=feedback_text,
-            **ratings
+            **validated_ratings
         )
         db.session.add(feedback)
 
@@ -35,20 +41,27 @@ def submit_coach_feedback(player_id, coach_name, feedback_text, ratings, templat
 def get_player_feedback(player_id):
     """Get all feedback for a specific player"""
     try:
-        feedback = CoachFeedback.query.filter_by(player_id=int(player_id)).order_by(CoachFeedback.date.desc()).all()
+        feedback = CoachFeedback.query.filter_by(player_id=player_id).order_by(CoachFeedback.date.desc()).all()
         if not feedback:
             return pd.DataFrame()
 
-        data = [{
-            'date': f.date.strftime('%Y-%m-%d %H:%M'),
-            'coach': f.coach_name,
-            'feedback': f.feedback_text,
-            'skating': f.skating_rating,
-            'shooting': f.shooting_rating,
-            'teamwork': f.teamwork_rating,
-            'save_technique_rating': getattr(f,'save_technique_rating',None),
-            'positioning_rating': getattr(f,'positioning_rating',None)
-        } for f in feedback]
+        data = []
+        for f in feedback:
+            feedback_data = {
+                'date': f.date.strftime('%Y-%m-%d %H:%M'),
+                'coach': f.coach_name,
+                'feedback': f.feedback_text
+            }
+
+            # Add all available ratings
+            for attr in dir(f):
+                if attr.endswith('_rating') and not attr.startswith('_'):
+                    value = getattr(f, attr)
+                    if value is not None:
+                        feedback_data[attr] = value
+
+            data.append(feedback_data)
+
         return pd.DataFrame(data)
     except Exception as e:
         print(f"Error getting feedback: {e}")
@@ -81,8 +94,9 @@ def display_feedback_form(player_id, player_name, player_position):
         if selected_template:
             st.subheader("Rating Categories")
             for category in selected_template.template_structure['categories']:
-                category_name = category.replace('_', ' ').title()
-                ratings[category] = st.slider(f"{category_name} Rating", 1, 5, 3)
+                if category.endswith('_rating'):
+                    category_name = category.replace('_rating', '').replace('_', ' ').title()
+                    ratings[category] = st.slider(f"{category_name}", 1, 5, 3)
         else:
             # Default rating fields based on position
             col1, col2, col3 = st.columns(3)
@@ -114,6 +128,7 @@ def display_feedback_form(player_id, player_name, player_position):
                 )
                 if success:
                     st.success(f"Feedback submitted for {player_name}")
+                    st.experimental_rerun()
                 else:
                     st.error("Error submitting feedback. Please try again.")
 
@@ -135,6 +150,6 @@ def display_feedback_history(player_id):
                 for i, (metric, value) in enumerate(ratings.items()):
                     with cols[i % 3]:
                         metric_name = metric.replace('_rating', '').replace('_', ' ').title()
-                        st.metric(metric_name, value)
+                        st.metric(metric_name, int(value))
     else:
         st.info("No feedback available yet.")
