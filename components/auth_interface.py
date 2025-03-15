@@ -34,14 +34,31 @@ def send_welcome_email(user_email, user_name):
         """
         msg.attach(MIMEText(body, 'plain'))
 
+        # Add debug prints
+        print(f"Attempting to send email to {user_email}")
+        print(f"Using sender: {os.getenv('MAIL_DEFAULT_SENDER')}")
+
         server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.set_debuglevel(1)  # Enable SMTP debugging
         server.starttls()
-        server.login(os.getenv('MAIL_USERNAME'), os.getenv('MAIL_PASSWORD'))
+
+        username = os.getenv('MAIL_USERNAME')
+        password = os.getenv('MAIL_PASSWORD')
+
+        if not username or not password:
+            print("Error: Missing email credentials")
+            return False
+
+        server.login(username, password)
         server.send_message(msg)
         server.quit()
+
+        print(f"Email sent successfully to {user_email}")
         return True
     except Exception as e:
-        print(f"Error sending email: {e}")
+        print(f"Detailed error sending email: {str(e)}")
+        if hasattr(e, 'smtp_error'):
+            print(f"SMTP error: {e.smtp_error}")
         return False
 
 def login_user():
