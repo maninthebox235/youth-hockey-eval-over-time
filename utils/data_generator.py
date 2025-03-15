@@ -36,6 +36,18 @@ def seed_database(n_players=20):
         db.session.rollback()
         return False
 
+def clear_database():
+    """Clear all players and related data from the database"""
+    try:
+        # The cascade delete will handle related records
+        Player.query.delete()
+        db.session.commit()
+        return True
+    except Exception as e:
+        print(f"Error clearing database: {e}")
+        db.session.rollback()
+        return False
+
 def generate_player_history(player, months=12):
     """Generate historical data for a player"""
     dates = pd.date_range(end=datetime.now(), periods=months, freq='ME')
