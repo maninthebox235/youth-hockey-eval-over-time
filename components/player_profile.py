@@ -23,37 +23,46 @@ def display_player_profile(player_data, player_history):
         # Display different metrics based on position
         if player_data['position'] == 'Goalie':
             metrics_col1, metrics_col2, metrics_col3 = st.columns(3)
+
+            # Handle potential None values
+            save_pct = player_data.get('save_percentage', 0) or 0
+            reaction = player_data.get('reaction_time', 0) or 0
+            pos = player_data.get('positioning', 0) or 0
+
             with metrics_col1:
-                st.metric("Save Percentage", f"{player_data['save_percentage']:.1f}%")
+                st.metric("Save Percentage", f"{save_pct:.1f}%")
             with metrics_col2:
-                st.metric("Reaction Time", f"{player_data['reaction_time']:.1f}")
+                st.metric("Reaction Time", f"{reaction:.1f}")
             with metrics_col3:
-                st.metric("Positioning", f"{player_data['positioning']:.1f}")
+                st.metric("Positioning", f"{pos:.1f}")
 
             # Additional goalie stats
             stats_col1, stats_col2 = st.columns(2)
             with stats_col1:
-                st.metric("Games Played", player_data['games_played'])
+                st.metric("Games Played", player_data.get('games_played', 0))
                 st.metric("Saves", player_data.get('saves', 0))
             with stats_col2:
                 st.metric("Goals Against", player_data.get('goals_against', 0))
-                save_pct = (player_data.get('saves', 0) / (player_data.get('saves', 0) + player_data.get('goals_against', 0))) * 100 if player_data.get('saves', 0) > 0 else 0
-                st.metric("Save Percentage", f"{save_pct:.1f}%")
+
+                # Calculate save percentage from actual saves and goals against
+                total_shots = player_data.get('saves', 0) + player_data.get('goals_against', 0)
+                save_percentage = (player_data.get('saves', 0) / total_shots * 100) if total_shots > 0 else 0
+                st.metric("Game Save Percentage", f"{save_percentage:.1f}%")
         else:
             metrics_col1, metrics_col2, metrics_col3 = st.columns(3)
             with metrics_col1:
-                st.metric("Skating Speed", f"{player_data['skating_speed']:.1f}")
+                st.metric("Skating Speed", f"{player_data.get('skating_speed', 0):.1f}")
             with metrics_col2:
-                st.metric("Shooting Accuracy", f"{player_data['shooting_accuracy']:.1f}%")
+                st.metric("Shooting Accuracy", f"{player_data.get('shooting_accuracy', 0):.1f}%")
             with metrics_col3:
-                st.metric("Games Played", player_data['games_played'])
+                st.metric("Games Played", player_data.get('games_played', 0))
 
             # Additional skater stats
             stats_col1, stats_col2 = st.columns(2)
             with stats_col1:
-                st.metric("Goals", player_data['goals'])
+                st.metric("Goals", player_data.get('goals', 0))
             with stats_col2:
-                st.metric("Assists", player_data['assists'])
+                st.metric("Assists", player_data.get('assists', 0))
 
         st.subheader("Season Performance")
         if not player_history.empty:
