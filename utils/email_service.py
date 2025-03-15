@@ -54,13 +54,35 @@ def test_email_configuration(mail, test_email=None):
     Returns:
         dict: Result of the test with status and message
     """
+    import logging
+    logging.info("Starting email test...")
+    
+    # Check mail configuration is valid
+    if not hasattr(mail, 'send'):
+        logging.error("Mail object doesn't have send method")
+        return {
+            "success": False,
+            "message": "Invalid mail configuration. Mail object doesn't have send method."
+        }
+    
     try:
+        # Validate mail settings
+        if not mail.server or not mail.username or not mail.password:
+            logging.error(f"Missing mail configuration: Server: {bool(mail.server)}, Username: {bool(mail.username)}, Password: {bool(mail.password)}")
+            return {
+                "success": False,
+                "message": "Email configuration incomplete. Check MAIL_USERNAME, MAIL_PASSWORD and MAIL_SERVER settings."
+            }
+        
         recipient = test_email or mail.default_sender
         if not recipient:
+            logging.error("No recipient specified and no default sender configured")
             return {
                 "success": False,
                 "message": "No recipient specified and no default sender configured"
             }
+        
+        logging.info(f"Attempting to send test email to: {recipient}")
         
         msg = Message(
             subject="Email Configuration Test",
@@ -68,14 +90,31 @@ def test_email_configuration(mail, test_email=None):
             body="This is a test email to verify that the email configuration is working correctly."
         )
         
+        # Try sending with explicit debug information
         mail.send(msg)
         
+        logging.info(f"Test email sent successfully to {recipient}")
         return {
             "success": True,
             "message": f"Test email sent successfully to {recipient}"
         }
     except Exception as e:
+        logging.error(f"Error sending test email: {str(e)}", exc_info=True)
+        
+        # Provide more detailed error information
+        error_details = str(e)
+        suggestion = ""
+        
+        if "getaddrinfo failed" in error_details:
+            suggestion = "There seems to be a network connectivity issue or DNS resolution problem."
+        elif "Authentication" in error_details:
+            suggestion = "Authentication failed. Ensure your MAIL_USERNAME and MAIL_PASSWORD are correct. If using Gmail, make sure you're using an App Password if 2FA is enabled."
+        elif "SSLError" in error_details or "SSL" in error_details:
+            suggestion = "SSL/TLS error. Your email provider may require different SSL settings."
+        elif "Timeout" in error_details:
+            suggestion = "Connection timed out. Check your network settings or try again later."
+        
         return {
             "success": False,
-            "message": f"Error sending test email: {str(e)}"
+            "message": f"Error sending test email: {str(e)}\n\nSuggestion: {suggestion if suggestion else 'Check your email configuration and network settings.'}"
         }

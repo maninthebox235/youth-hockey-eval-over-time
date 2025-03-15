@@ -35,6 +35,19 @@ def display_email_settings():
             if not test_email:
                 st.error("Please enter a valid email address")
             else:
+                # Show diagnostic information
+                with st.expander("Email Configuration Details", expanded=False):
+                    st.write("**Diagnostics Information**")
+                    st.write(f"Mail server: {mail.server}")
+                    st.write(f"Mail port: {mail.port}")
+                    st.write(f"Mail use TLS: {mail.use_tls}")
+                    st.write(f"Mail use SSL: {mail.use_ssl}")
+                    st.write(f"Mail username: {mail.username}")
+                    st.write(f"Mail password: {'Set' if mail.password else 'Not set'}")
+                    st.write(f"Mail max emails: {mail.max_emails}")
+                    st.write(f"Mail suppress: {mail.suppress}")
+                    st.write(f"Mail default sender: {mail.default_sender}")
+                
                 result = test_email_configuration(mail, test_email)
                 if result['success']:
                     st.success(result['message'])

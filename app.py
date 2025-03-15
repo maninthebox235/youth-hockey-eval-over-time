@@ -39,8 +39,12 @@ def create_app():
     logger.info(f"Mail password configured: {'Yes' if app.config['MAIL_PASSWORD'] else 'No'}")
     logger.info(f"Mail default sender configured: {'Yes' if app.config['MAIL_DEFAULT_SENDER'] else 'No'}")
 
-    # Initialize Flask-Mail
+    # Initialize Flask-Mail with additional logging
     mail = Mail(app)
+    
+    # Log mail object attributes for debugging
+    logger.info("Mail initialization complete")
+    logger.info(f"Mail object properties: server={mail.server}, port={mail.port}, username={bool(mail.username)}")
 
     # Initialize database
     db.init_app(app)
