@@ -6,6 +6,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import os
+import ssl  # Add SSL support
 
 def init_session_state():
     """Initialize session state variables"""
@@ -17,8 +18,21 @@ def init_session_state():
 def send_welcome_email(user_email, user_name):
     """Send welcome email to new users"""
     try:
+        # Add debug prints for environment variables
+        print("Checking email configuration...")
+        username = os.getenv('MAIL_USERNAME')
+        password = os.getenv('MAIL_PASSWORD')
+        sender = os.getenv('MAIL_DEFAULT_SENDER')
+
+        if not all([username, password, sender]):
+            print("Missing email configuration:")
+            print(f"Username present: {bool(username)}")
+            print(f"Password present: {bool(password)}")
+            print(f"Sender present: {bool(sender)}")
+            return False
+
         msg = MIMEMultipart()
-        msg['From'] = os.getenv('MAIL_DEFAULT_SENDER')
+        msg['From'] = sender
         msg['To'] = user_email
         msg['Subject'] = "Welcome to Hockey Development Tracker"
 
@@ -34,27 +48,21 @@ def send_welcome_email(user_email, user_name):
         """
         msg.attach(MIMEText(body, 'plain'))
 
-        # Add debug prints
         print(f"Attempting to send email to {user_email}")
-        print(f"Using sender: {os.getenv('MAIL_DEFAULT_SENDER')}")
+        print(f"Using sender: {sender}")
 
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.set_debuglevel(1)  # Enable SMTP debugging
-        server.starttls()
+        # Create SSL context
+        context = ssl.create_default_context()
 
-        username = os.getenv('MAIL_USERNAME')
-        password = os.getenv('MAIL_PASSWORD')
+        # Connect to Gmail's SMTP server with SSL
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as server:
+            print("Connected to SMTP server")
+            server.login(username, password)
+            print("Logged in successfully")
+            server.send_message(msg)
+            print(f"Email sent successfully to {user_email}")
+            return True
 
-        if not username or not password:
-            print("Error: Missing email credentials")
-            return False
-
-        server.login(username, password)
-        server.send_message(msg)
-        server.quit()
-
-        print(f"Email sent successfully to {user_email}")
-        return True
     except Exception as e:
         print(f"Detailed error sending email: {str(e)}")
         if hasattr(e, 'smtp_error'):
