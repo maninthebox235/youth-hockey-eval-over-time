@@ -1,4 +1,5 @@
 import streamlit as st
+from database.models import User, db
 
 def display_feature_preview():
     """Display feature preview for non-authenticated users"""
@@ -55,22 +56,21 @@ def display_feature_preview():
         st.markdown("### Start Your Free Trial Today!")
         st.markdown("""
         ✅ No credit card required\n
-        ✅ Full access to all features for 30 days\n
+        ✅ Full access to all features\n
         ✅ Unlimited player profiles\n
         ✅ Expert support
         """)
 
-        if st.button("Sign Up Now", type="primary", key="signup_button"):
+        if st.button("Create Account", type="primary"):
             display_signup_form()
-        if st.button("Login", key="login_button"):
+        if st.button("Already have an account? Login"):
             st.session_state.show_login = True
-
 
 def display_signup_form():
     """Display the signup form for new users"""
     st.title("Create Your Account")
 
-    with st.form("signup_form", clear_on_submit=True):
+    with st.form("signup_form"):
         name = st.text_input("Full Name")
         email = st.text_input("Email")
         password = st.text_input("Password", type="password")
@@ -85,18 +85,34 @@ def display_signup_form():
         submitted = st.form_submit_button("Create Account")
 
         if submitted:
+            if not all([name, email, password, organization]):
+                st.error("Please fill in all required fields")
+                return
+
             if password != confirm_password:
                 st.error("Passwords do not match")
-            else:
-                # Handle account creation here
-                st.success("Account created! Please check your email for verification.")
+                return
+
+            if User.query.filter_by(email=email).first():
+                st.error("Email already registered")
+                return
+
+            try:
+                new_user = User(
+                    email=email,
+                    name=name,
+                    is_admin=False
+                )
+                new_user.set_password(password)
+                db.session.add(new_user)
+                db.session.commit()
+                st.success("Account created successfully! You can now log in.")
                 st.session_state.show_login = True
+            except Exception as e:
+                st.error(f"Error creating account: {str(e)}")
 
 def display_landing_page():
     """Main landing page handler"""
-    if 'show_signup' not in st.session_state:
-        st.session_state.show_signup = False
-
     if st.session_state.get('show_login', False):
         from components.auth_interface import login_user
         login_user()

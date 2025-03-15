@@ -2,10 +2,6 @@ import streamlit as st
 from database.models import User, db
 from datetime import datetime
 from werkzeug.security import generate_password_hash
-from flask_mail import Mail, Message
-from flask import current_app
-import os
-import ssl  # Add SSL support
 
 def init_session_state():
     """Initialize session state variables"""
@@ -13,40 +9,6 @@ def init_session_state():
         st.session_state.user = None
     if 'is_admin' not in st.session_state:
         st.session_state.is_admin = False
-
-def send_welcome_email(user_email, user_name):
-    """Send welcome email to new users using Flask-Mail"""
-    try:
-        # Get mail instance from current app
-        mail = current_app.extensions['mail']
-
-        msg = Message(
-            "Welcome to Hockey Development Tracker",
-            sender=current_app.config['MAIL_DEFAULT_SENDER'],
-            recipients=[user_email]
-        )
-
-        msg.body = f"""
-Hi {user_name},
-
-Welcome to the Hockey Development Tracker! Your account has been successfully created.
-
-You can now log in to access player profiles, track development progress, and manage feedback.
-
-Best regards,
-The Hockey Development Team
-"""
-
-        print(f"Attempting to send email to {user_email}")
-        mail.send(msg)
-        print(f"Email sent successfully to {user_email}")
-        return True
-
-    except Exception as e:
-        print(f"Error sending email: {str(e)}")
-        if hasattr(e, 'smtp_error'):
-            print(f"SMTP error: {e.smtp_error}")
-        return False
 
 def login_user():
     """Handle user login"""
@@ -70,10 +32,6 @@ def login_user():
 
 def create_admin():
     """Create initial admin user"""
-    from utils.email_service import send_welcome_email
-    from app import mail
-    import logging
-    
     st.header("Create Admin Account")
     with st.form("admin_form"):
         name = st.text_input("Name")
@@ -84,6 +42,10 @@ def create_admin():
         submitted = st.form_submit_button("Create Admin")
 
         if submitted:
+            if not name or not email or not password:
+                st.error("Please fill in all fields")
+                return
+
             if password != confirm_password:
                 st.error("Passwords do not match")
                 return
@@ -92,78 +54,53 @@ def create_admin():
                 st.error("Email already registered")
                 return
 
-            admin = User(
-                email=email,
-                name=name,
-                is_admin=True
-            )
-            admin.set_password(password)
-
             try:
+                admin = User(
+                    email=email,
+                    name=name,
+                    is_admin=True
+                )
+                admin.set_password(password)
                 db.session.add(admin)
                 db.session.commit()
-                
-                email_result = send_welcome_email(mail, email, name)
-                
-                if email_result:
-                    st.success("Admin account created successfully! Welcome email sent.")
-                else:
-                    logging.error(f"Failed to send welcome email to {email}")
-                    st.warning("Admin account created but welcome email could not be sent. Check server logs for details.")
-                
+                st.success("Admin account created successfully!")
                 st.session_state.user = admin
                 st.session_state.is_admin = True
                 st.rerun()
             except Exception as e:
-                logging.error(f"Error creating admin account: {str(e)}")
                 st.error(f"Error creating admin account: {str(e)}")
 
 def display_admin_controls():
     """Display admin control panel"""
-    from components.email_settings import display_email_settings, send_email_interface
-    
     if not st.session_state.is_admin:
         st.error("Access denied. Admin privileges required.")
         return
 
     st.header("Admin Control Panel")
 
-    # Create tabs for different admin functions
-    admin_tabs = ["User Management", "Email Settings", "Send Email"]
-    tab1, tab2, tab3 = st.tabs(admin_tabs)
+    # User Management tab
+    st.subheader("User Management")
+    users = User.query.all()
 
-    with tab1:
-        # User Management
-        st.subheader("User Management")
-        users = User.query.all()
+    for user in users:
+        with st.expander(f"User: {user.name} ({user.email})"):
+            col1, col2 = st.columns(2)
+            with col1:
+                st.write(f"Admin: {'Yes' if user.is_admin else 'No'}")
+                st.write(f"Last Login: {user.last_login or 'Never'}")
+            with col2:
+                if user.id != st.session_state.user.id:  # Can't modify own account
+                    if st.button(f"{'Remove' if user.is_admin else 'Make'} Admin", key=f"admin_{user.id}"):
+                        user.is_admin = not user.is_admin
+                        db.session.commit()
+                        st.success(f"Updated admin status for {user.name}")
+                        st.rerun()
 
-        for user in users:
-            with st.expander(f"User: {user.name} ({user.email})"):
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.write(f"Admin: {'Yes' if user.is_admin else 'No'}")
-                    st.write(f"Last Login: {user.last_login or 'Never'}")
-                with col2:
-                    if user.id != st.session_state.user.id:  # Can't modify own account
-                        if st.button(f"{'Remove' if user.is_admin else 'Make'} Admin", key=f"admin_{user.id}"):
-                            user.is_admin = not user.is_admin
-                            db.session.commit()
-                            st.success(f"Updated admin status for {user.name}")
-                            st.rerun()
-
-                        if st.button("Delete User", key=f"delete_{user.id}"):
-                            db.session.delete(user)
-                            db.session.commit()
-                            st.success(f"Deleted user {user.name}")
-                            st.rerun()
-    
-    with tab2:
-        # Email settings
-        display_email_settings()
-        
-    with tab3:
-        # Send email interface
-        send_email_interface()
+                    if st.button("Delete User", key=f"delete_{user.id}"):
+                        db.session.delete(user)
+                        db.session.commit()
+                        st.success(f"Deleted user {user.name}")
+                        st.rerun()
 
     # Add New User
     st.subheader("Add New User")
@@ -174,23 +111,23 @@ def display_admin_controls():
         is_admin = st.checkbox("Make Admin")
 
         if st.form_submit_button("Add User"):
+            if not new_name or not new_email or not new_password:
+                st.error("Please fill in all fields")
+                return
+
             if User.query.filter_by(email=new_email).first():
                 st.error("Email already registered")
             else:
-                new_user = User(
-                    email=new_email,
-                    name=new_name,
-                    is_admin=is_admin
-                )
-                new_user.set_password(new_password)
-
                 try:
+                    new_user = User(
+                        email=new_email,
+                        name=new_name,
+                        is_admin=is_admin
+                    )
+                    new_user.set_password(new_password)
                     db.session.add(new_user)
                     db.session.commit()
-                    if send_welcome_email(new_email, new_name):
-                        st.success("User added successfully! Welcome email sent.")
-                    else:
-                        st.warning("User added but welcome email could not be sent.")
+                    st.success("User added successfully!")
                     st.rerun()
                 except Exception as e:
                     st.error(f"Error adding user: {str(e)}")
