@@ -14,7 +14,11 @@ def submit_coach_feedback(player_id, coach_name, feedback_text, ratings, templat
         validated_ratings = {}
         for key, value in ratings.items():
             if key.endswith('_rating') and value is not None:
-                validated_ratings[key] = int(value)
+                try:
+                    validated_ratings[key] = int(value)
+                except (ValueError, TypeError):
+                    print(f"Error converting rating {key}: {value}")
+                    continue
 
         # Create feedback entry
         feedback = CoachFeedback(
@@ -27,10 +31,13 @@ def submit_coach_feedback(player_id, coach_name, feedback_text, ratings, templat
 
         # Update template usage if a template was used
         if template_id:
-            template = FeedbackTemplate.query.get(template_id)
-            if template:
-                template.times_used = (template.times_used or 0) + 1
-                template.last_used = datetime.utcnow()
+            try:
+                template = FeedbackTemplate.query.get(template_id)
+                if template:
+                    template.times_used = (template.times_used or 0) + 1
+                    template.last_used = datetime.utcnow()
+            except Exception as e:
+                print(f"Error updating template usage: {e}")
 
         db.session.commit()
         return True
@@ -59,7 +66,10 @@ def get_player_feedback(player_id):
                 if column.name.endswith('_rating'):
                     value = getattr(f, column.name)
                     if value is not None:
-                        feedback_data[column.name] = int(value)
+                        try:
+                            feedback_data[column.name] = int(value)
+                        except (ValueError, TypeError):
+                            continue
 
             data.append(feedback_data)
 
