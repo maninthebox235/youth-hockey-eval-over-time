@@ -7,6 +7,7 @@ from components.player_profile import display_player_profile
 from components.development_charts import display_development_charts
 from components.team_management import display_team_management
 from components.stats_dashboard import display_age_group_stats, display_player_rankings
+import time
 
 # Initialize Flask app
 app = init_app()
@@ -22,6 +23,13 @@ st.set_page_config(
     layout="wide"
 )
 
+# App header
+st.title("🏒 Youth Hockey Development Tracker")
+
+# Sidebar
+st.sidebar.image("https://images.unsplash.com/photo-1547223431-cc59f141f389",
+                 caption="Player Development Platform")
+
 # Initialize database if empty
 if 'db_initialized' not in st.session_state:
     try:
@@ -31,19 +39,14 @@ if 'db_initialized' not in st.session_state:
             if seed_database(n_players=20):
                 st.session_state.db_initialized = True
                 st.success("Database initialized successfully!")
+                # Add a small delay to ensure database is ready
+                time.sleep(2)
             else:
                 st.error("Error initializing database. Please check the logs.")
         else:
             st.session_state.db_initialized = True
     except Exception as e:
         st.error(f"Database initialization error: {str(e)}")
-
-# App header
-st.title("🏒 Youth Hockey Development Tracker")
-
-# Sidebar
-st.sidebar.image("https://images.unsplash.com/photo-1547223431-cc59f141f389",
-                 caption="Player Development Platform")
 
 # Get current player data
 try:
@@ -76,8 +79,8 @@ try:
             if age_groups:
                 age_group = st.selectbox("Select Age Group", age_groups)
                 filtered_df = players_df[players_df['age_group'] == age_group]
-                col1, col2 = st.columns(2)
 
+                col1, col2 = st.columns(2)
                 with col1:
                     st.write("Player Distribution")
                     st.dataframe(filtered_df[['name', 'position', 'skating_speed', 'shooting_accuracy']])

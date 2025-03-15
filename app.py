@@ -8,8 +8,11 @@ app = init_app()
 migrate = Migrate(app, db)
 
 if __name__ == '__main__':
-    with app.app_context():
-        try:
+    try:
+        # Create all tables before running migrations
+        with app.app_context():
+            db.create_all()
+
             # Check if database needs seeding
             from database.models import Player
             if not Player.query.first():
@@ -21,9 +24,9 @@ if __name__ == '__main__':
             else:
                 print("Database already contains data")
 
-        except Exception as e:
-            print(f"Error initializing database: {e}")
-            raise
+    except Exception as e:
+        print(f"Error initializing database: {e}")
+        raise
 
-        # Run Flask on port 5001 to avoid conflict with Streamlit
-        app.run(host='0.0.0.0', port=5001, debug=True)
+    # Run Flask on port 5001 to avoid conflict with Streamlit
+    app.run(host='0.0.0.0', port=5001, debug=True)
