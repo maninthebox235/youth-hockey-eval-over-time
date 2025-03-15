@@ -49,8 +49,8 @@ def create_template_form():
         # Common categories for all players
         common_categories = {
             "effort_rating": st.checkbox("Effort"),
-            "improvement_areas": st.checkbox("Areas for Improvement"),
-            "strengths": st.checkbox("Key Strengths")
+            "improvement_rating": st.checkbox("Areas for Improvement"),
+            "strengths_rating": st.checkbox("Key Strengths")
         }
 
         submitted = st.form_submit_button("Create Template")

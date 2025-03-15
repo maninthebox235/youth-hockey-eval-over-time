@@ -102,15 +102,24 @@ def display_feedback_form(player_id, player_name, player_position):
         # Initialize ratings dictionary
         ratings = {}
 
+        st.subheader("Rating Categories")
+
         if selected_template:
-            st.subheader("Rating Categories")
-            for category in selected_template.template_structure['categories']:
-                if category.endswith('_rating'):
-                    category_name = category.replace('_rating', '').replace('_', ' ').title()
-                    ratings[category] = st.slider(f"{category_name}", 1, 5, 3)
+            # Use template structure to create rating sliders
+            categories = selected_template.template_structure['categories']
+
+            # Create sliders in columns, 3 per row
+            for i in range(0, len(categories), 3):
+                cols = st.columns(3)
+                for j, col in enumerate(cols):
+                    if i + j < len(categories):
+                        category = categories[i + j]
+                        if category.endswith('_rating'):
+                            category_name = category.replace('_rating', '').replace('_', ' ').title()
+                            with col:
+                                ratings[category] = st.slider(category_name, 1, 5, 3)
         else:
             # Default rating fields based on position
-            st.subheader("Rating Categories")
             if player_position == "Goalie":
                 col1, col2, col3 = st.columns(3)
                 with col1:
