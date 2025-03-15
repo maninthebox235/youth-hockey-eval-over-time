@@ -31,7 +31,8 @@ class Team(db.Model):
     players = db.relationship('Player', 
                             secondary='team_membership',
                             back_populates='teams',
-                            lazy='dynamic')
+                            lazy='dynamic',
+                            overlaps="memberships,team")
 
 class Player(db.Model):
     __tablename__ = 'players'
@@ -66,7 +67,8 @@ class Player(db.Model):
     teams = db.relationship('Team', 
                           secondary='team_membership',
                           back_populates='players',
-                          lazy='dynamic')
+                          lazy='dynamic',
+                          overlaps="memberships,player")
     history = db.relationship('PlayerHistory', backref='player', lazy=True)
     feedback = db.relationship('CoachFeedback', backref='player', lazy=True)
 

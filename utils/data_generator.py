@@ -98,7 +98,7 @@ def get_player_history(player_id):
     """Get historical data for a specific player"""
     try:
         # Get player position first
-        player = Player.query.get(player_id)
+        player = Player.query.get(int(player_id))
         if not player:
             return pd.DataFrame()
 
