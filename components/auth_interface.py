@@ -2,9 +2,8 @@ import streamlit as st
 from database.models import User, db
 from datetime import datetime
 from werkzeug.security import generate_password_hash
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+from flask_mail import Mail, Message
+from flask import current_app
 import os
 import ssl  # Add SSL support
 
@@ -16,55 +15,35 @@ def init_session_state():
         st.session_state.is_admin = False
 
 def send_welcome_email(user_email, user_name):
-    """Send welcome email to new users"""
+    """Send welcome email to new users using Flask-Mail"""
     try:
-        # Add debug prints for environment variables
-        print("Checking email configuration...")
-        username = os.getenv('MAIL_USERNAME')
-        password = os.getenv('MAIL_PASSWORD')
-        sender = os.getenv('MAIL_DEFAULT_SENDER')
+        # Get mail instance from current app
+        mail = current_app.extensions['mail']
 
-        if not all([username, password, sender]):
-            print("Missing email configuration:")
-            print(f"Username present: {bool(username)}")
-            print(f"Password present: {bool(password)}")
-            print(f"Sender present: {bool(sender)}")
-            return False
+        msg = Message(
+            "Welcome to Hockey Development Tracker",
+            sender=current_app.config['MAIL_DEFAULT_SENDER'],
+            recipients=[user_email]
+        )
 
-        msg = MIMEMultipart()
-        msg['From'] = sender
-        msg['To'] = user_email
-        msg['Subject'] = "Welcome to Hockey Development Tracker"
+        msg.body = f"""
+Hi {user_name},
 
-        body = f"""
-        Hi {user_name},
+Welcome to the Hockey Development Tracker! Your account has been successfully created.
 
-        Welcome to the Hockey Development Tracker! Your account has been successfully created.
+You can now log in to access player profiles, track development progress, and manage feedback.
 
-        You can now log in to access player profiles, track development progress, and manage feedback.
-
-        Best regards,
-        The Hockey Development Team
-        """
-        msg.attach(MIMEText(body, 'plain'))
+Best regards,
+The Hockey Development Team
+"""
 
         print(f"Attempting to send email to {user_email}")
-        print(f"Using sender: {sender}")
-
-        # Create SSL context
-        context = ssl.create_default_context()
-
-        # Connect to Gmail's SMTP server with SSL
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as server:
-            print("Connected to SMTP server")
-            server.login(username, password)
-            print("Logged in successfully")
-            server.send_message(msg)
-            print(f"Email sent successfully to {user_email}")
-            return True
+        mail.send(msg)
+        print(f"Email sent successfully to {user_email}")
+        return True
 
     except Exception as e:
-        print(f"Detailed error sending email: {str(e)}")
+        print(f"Error sending email: {str(e)}")
         if hasattr(e, 'smtp_error'):
             print(f"SMTP error: {e.smtp_error}")
         return False
