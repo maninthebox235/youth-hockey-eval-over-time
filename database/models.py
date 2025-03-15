@@ -1,7 +1,52 @@
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin
 from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
 
 db = SQLAlchemy()
+
+class User(UserMixin, db.Model):
+    __tablename__ = 'users'
+
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(256))
+    name = db.Column(db.String(100), nullable=False)
+    is_admin = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    last_login = db.Column(db.DateTime)
+
+    # Relationship with feedback
+    feedback_given = db.relationship('CoachFeedback', backref='coach', lazy=True,
+                                   foreign_keys='CoachFeedback.coach_id')
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+# Update CoachFeedback to link with User model
+class CoachFeedback(db.Model):
+    __tablename__ = 'coach_feedback'
+
+    id = db.Column(db.Integer, primary_key=True)
+    player_id = db.Column(db.Integer, db.ForeignKey('players.id'), nullable=False)
+    coach_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    coach_name = db.Column(db.String(100), nullable=False)
+    feedback_text = db.Column(db.Text, nullable=False)
+
+    # Position-specific ratings
+    skating_rating = db.Column(db.Integer, nullable=True)
+    shooting_rating = db.Column(db.Integer, nullable=True)
+    teamwork_rating = db.Column(db.Integer)
+
+    # Goalie-specific ratings
+    save_technique_rating = db.Column(db.Integer, nullable=True)
+    positioning_rating = db.Column(db.Integer, nullable=True)
+    rebound_control_rating = db.Column(db.Integer, nullable=True)
+
+    date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
 class TeamMembership(db.Model):
     __tablename__ = 'team_membership'
@@ -96,26 +141,6 @@ class PlayerHistory(db.Model):
     # Goalie specific stats
     goals_against = db.Column(db.Integer, nullable=True)
     saves = db.Column(db.Integer, nullable=True)
-
-class CoachFeedback(db.Model):
-    __tablename__ = 'coach_feedback'
-
-    id = db.Column(db.Integer, primary_key=True)
-    player_id = db.Column(db.Integer, db.ForeignKey('players.id'), nullable=False)
-    coach_name = db.Column(db.String(100), nullable=False)
-    feedback_text = db.Column(db.Text, nullable=False)
-
-    # Position-specific ratings
-    skating_rating = db.Column(db.Integer, nullable=True)
-    shooting_rating = db.Column(db.Integer, nullable=True)
-    teamwork_rating = db.Column(db.Integer)
-
-    # Goalie-specific ratings
-    save_technique_rating = db.Column(db.Integer, nullable=True)
-    positioning_rating = db.Column(db.Integer, nullable=True)
-    rebound_control_rating = db.Column(db.Integer, nullable=True)
-
-    date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
 class TeamCoachFeedback(db.Model):
     __tablename__ = 'team_coach_feedback'
