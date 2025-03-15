@@ -53,7 +53,6 @@ try:
     players_df = get_players_df()
     if players_df.empty:
         st.warning("No player data available. Please check the database connection.")
-        st.info("Try refreshing the page to initialize the database.")
     else:
         menu = st.sidebar.selectbox(
             "Navigation",

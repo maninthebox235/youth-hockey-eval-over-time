@@ -99,19 +99,23 @@ def display_feedback_form(player_id, player_name, player_position):
                     ratings[category] = st.slider(f"{category_name}", 1, 5, 3)
         else:
             # Default rating fields based on position
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                if player_position == "Goalie":
+            st.subheader("Rating Categories")
+            if player_position == "Goalie":
+                col1, col2, col3 = st.columns(3)
+                with col1:
                     ratings['save_technique_rating'] = st.slider("Save Technique", 1, 5, 3)
-                else:
-                    ratings['skating_rating'] = st.slider("Skating Rating", 1, 5, 3)
-            with col2:
-                if player_position == "Goalie":
+                with col2:
                     ratings['positioning_rating'] = st.slider("Positioning", 1, 5, 3)
-                else:
-                    ratings['shooting_rating'] = st.slider("Shooting Rating", 1, 5, 3)
-            with col3:
-                ratings['teamwork_rating'] = st.slider("Teamwork Rating", 1, 5, 3)
+                with col3:
+                    ratings['rebound_control_rating'] = st.slider("Rebound Control", 1, 5, 3)
+            else:
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    ratings['skating_rating'] = st.slider("Skating", 1, 5, 3)
+                with col2:
+                    ratings['shooting_rating'] = st.slider("Shooting", 1, 5, 3)
+                with col3:
+                    ratings['teamwork_rating'] = st.slider("Teamwork", 1, 5, 3)
 
         submitted = st.form_submit_button("Submit Feedback")
 
@@ -128,7 +132,15 @@ def display_feedback_form(player_id, player_name, player_position):
                 )
                 if success:
                     st.success(f"Feedback submitted for {player_name}")
-                    st.experimental_rerun()
+                    # Refresh the page using JavaScript
+                    st.markdown(
+                        """
+                        <script>
+                            window.location.reload();
+                        </script>
+                        """,
+                        unsafe_allow_html=True
+                    )
                 else:
                     st.error("Error submitting feedback. Please try again.")
 
