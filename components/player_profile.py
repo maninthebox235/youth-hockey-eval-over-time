@@ -1,6 +1,7 @@
 import streamlit as st
 import plotly.express as px
 from components.coach_feedback import display_feedback_form, display_feedback_history
+from components.feedback_templates import manage_feedback_templates
 
 def display_player_profile(player_data, player_history):
     col1, col2 = st.columns([1, 2])
@@ -79,10 +80,17 @@ def display_player_profile(player_data, player_history):
 
     # Add coach feedback section
     st.markdown("---")
-    tab1, tab2 = st.tabs(["Submit Feedback", "Feedback History"])
+    tab1, tab2, tab3 = st.tabs(["Submit Feedback", "Feedback History", "Manage Templates"])
 
     with tab1:
-        display_feedback_form(player_data['player_id'], player_data['name'])
+        display_feedback_form(
+            player_data['player_id'], 
+            player_data['name'],
+            player_data['position']
+        )
 
     with tab2:
         display_feedback_history(player_data['player_id'])
+
+    with tab3:
+        manage_feedback_templates()

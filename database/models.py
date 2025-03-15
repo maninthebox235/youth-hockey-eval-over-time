@@ -128,3 +128,22 @@ class TeamCoachFeedback(db.Model):
 
     def __repr__(self):
         return f'<TeamCoachFeedback {self.id} for Team {self.team_id}>'
+
+class FeedbackTemplate(db.Model):
+    __tablename__ = 'feedback_templates'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    player_type = db.Column(db.String(20), nullable=False)  # 'Goalie' or 'Skater'
+    created_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    # Template structure stored as JSON
+    template_structure = db.Column(db.JSON, nullable=False)
+
+    # Track template usage
+    times_used = db.Column(db.Integer, default=0)
+    last_used = db.Column(db.DateTime, nullable=True)
+
+    def __repr__(self):
+        return f'<FeedbackTemplate {self.name} for {self.player_type}>'

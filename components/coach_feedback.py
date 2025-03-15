@@ -1,19 +1,30 @@
 import streamlit as st
 import pandas as pd
-from database.models import db, CoachFeedback
+from database.models import db, CoachFeedback, FeedbackTemplate
+from datetime import datetime
 
-def submit_coach_feedback(player_id, coach_name, feedback_text, skating_rating, shooting_rating, teamwork_rating):
+def get_templates_for_player(player_type):
+    """Get available templates for the player type"""
+    return FeedbackTemplate.query.filter_by(player_type=player_type).all()
+
+def submit_coach_feedback(player_id, coach_name, feedback_text, ratings, template_id=None):
     """Submit new coach feedback for a player"""
     try:
         feedback = CoachFeedback(
-            player_id=int(player_id),  # Ensure integer conversion
+            player_id=int(player_id),
             coach_name=coach_name,
             feedback_text=feedback_text,
-            skating_rating=int(skating_rating),
-            shooting_rating=int(shooting_rating),
-            teamwork_rating=int(teamwork_rating)
+            **ratings
         )
         db.session.add(feedback)
+
+        # Update template usage if a template was used
+        if template_id:
+            template = FeedbackTemplate.query.get(template_id)
+            if template:
+                template.times_used += 1
+                template.last_used = datetime.utcnow()
+
         db.session.commit()
         return True
     except Exception as e:
@@ -34,28 +45,59 @@ def get_player_feedback(player_id):
             'feedback': f.feedback_text,
             'skating': f.skating_rating,
             'shooting': f.shooting_rating,
-            'teamwork': f.teamwork_rating
+            'teamwork': f.teamwork_rating,
+            'save_technique_rating': getattr(f,'save_technique_rating',None),
+            'positioning_rating': getattr(f,'positioning_rating',None)
         } for f in feedback]
         return pd.DataFrame(data)
     except Exception as e:
         print(f"Error getting feedback: {e}")
         return pd.DataFrame()
 
-def display_feedback_form(player_id, player_name):
+def display_feedback_form(player_id, player_name, player_position):
     """Display the coach feedback submission form"""
     st.subheader("Submit Coach Feedback")
+
+    # Get available templates for this player type
+    player_type = "Goalie" if player_position == "Goalie" else "Skater"
+    templates = get_templates_for_player(player_type)
+
+    # Template selection
+    selected_template = None
+    if templates:
+        template_names = ["Custom Feedback"] + [t.name for t in templates]
+        template_choice = st.selectbox("Select Template", template_names)
+
+        if template_choice != "Custom Feedback":
+            selected_template = next(t for t in templates if t.name == template_choice)
 
     with st.form("coach_feedback_form"):
         coach_name = st.text_input("Coach Name")
         feedback_text = st.text_area("Feedback Comments")
 
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            skating_rating = st.slider("Skating Rating", 1, 5, 3)
-        with col2:
-            shooting_rating = st.slider("Shooting Rating", 1, 5, 3)
-        with col3:
-            teamwork_rating = st.slider("Teamwork Rating", 1, 5, 3)
+        # Initialize ratings dictionary
+        ratings = {}
+
+        if selected_template:
+            st.subheader("Rating Categories")
+            for category in selected_template.template_structure['categories']:
+                category_name = category.replace('_', ' ').title()
+                ratings[category] = st.slider(f"{category_name} Rating", 1, 5, 3)
+        else:
+            # Default rating fields based on position
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                if player_position == "Goalie":
+                    ratings['save_technique_rating'] = st.slider("Save Technique", 1, 5, 3)
+                else:
+                    ratings['skating_rating'] = st.slider("Skating Rating", 1, 5, 3)
+            with col2:
+                if player_position == "Goalie":
+                    ratings['positioning_rating'] = st.slider("Positioning", 1, 5, 3)
+                else:
+                    ratings['shooting_rating'] = st.slider("Shooting Rating", 1, 5, 3)
+            with col3:
+                ratings['teamwork_rating'] = st.slider("Teamwork Rating", 1, 5, 3)
 
         submitted = st.form_submit_button("Submit Feedback")
 
@@ -67,9 +109,8 @@ def display_feedback_form(player_id, player_name):
                     player_id=player_id,
                     coach_name=coach_name,
                     feedback_text=feedback_text,
-                    skating_rating=skating_rating,
-                    shooting_rating=shooting_rating,
-                    teamwork_rating=teamwork_rating
+                    ratings=ratings,
+                    template_id=selected_template.id if selected_template else None
                 )
                 if success:
                     st.success(f"Feedback submitted for {player_name}")
@@ -87,12 +128,13 @@ def display_feedback_history(player_id):
             with st.expander(f"Feedback from {row['coach']} on {row['date']}"):
                 st.write(row['feedback'])
 
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    st.metric("Skating", row['skating'])
-                with col2:
-                    st.metric("Shooting", row['shooting'])
-                with col3:
-                    st.metric("Teamwork", row['teamwork'])
+                # Display ratings in columns
+                cols = st.columns(3)
+                ratings = {k: v for k, v in row.items() if k.endswith('_rating') and pd.notna(v)}
+
+                for i, (metric, value) in enumerate(ratings.items()):
+                    with cols[i % 3]:
+                        metric_name = metric.replace('_rating', '').replace('_', ' ').title()
+                        st.metric(metric_name, value)
     else:
         st.info("No feedback available yet.")
