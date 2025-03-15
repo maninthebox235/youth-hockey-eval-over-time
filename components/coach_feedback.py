@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from database.models import db, CoachFeedback, FeedbackTemplate
+from database.models import db, CoachFeedback, FeedbackTemplate, Player
 from datetime import datetime
 
 def get_templates_for_player(player_type):
@@ -59,7 +59,7 @@ def get_player_feedback(player_id):
                 if attr.endswith('_rating') and not attr.startswith('_'):
                     value = getattr(f, attr)
                     if value is not None:
-                        feedback_data[attr] = int(value)  # Ensure integer values
+                        feedback_data[attr] = int(value)
 
             data.append(feedback_data)
 
@@ -109,6 +109,12 @@ def display_feedback_form(player_id, player_name, player_position):
                     ratings['positioning_rating'] = st.slider("Positioning", 1, 5, 3)
                 with col3:
                     ratings['rebound_control_rating'] = st.slider("Rebound Control", 1, 5, 3)
+
+                col1, col2 = st.columns(2)
+                with col1:
+                    ratings['communication_rating'] = st.slider("Communication", 1, 5, 3)
+                with col2:
+                    ratings['mental_toughness_rating'] = st.slider("Mental Toughness", 1, 5, 3)
             else:
                 col1, col2, col3 = st.columns(3)
                 with col1:
@@ -133,7 +139,7 @@ def display_feedback_form(player_id, player_name, player_position):
                 )
                 if success:
                     st.success(f"Feedback submitted for {player_name}")
-                    st.rerun()  # Use st.rerun() instead of experimental_rerun
+                    st.rerun()
                 else:
                     st.error("Error submitting feedback. Please try again.")
 
@@ -145,7 +151,7 @@ def display_feedback_history(player_id):
         st.subheader("Previous Feedback")
 
         for _, row in feedback_df.iterrows():
-            with st.expander(f"Feedback from {row['coach']} on {row['date']}"):
+            with st.expander(f"Feedback from {row['coach']} on {row['date']}", expanded=True):
                 st.write(row['feedback'])
 
                 # Display ratings in columns

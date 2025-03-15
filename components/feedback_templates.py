@@ -3,6 +3,20 @@ import json
 from database.models import db, FeedbackTemplate
 from datetime import datetime
 
+def delete_template(template_id):
+    """Delete a feedback template"""
+    try:
+        template = FeedbackTemplate.query.get(template_id)
+        if template:
+            db.session.delete(template)
+            db.session.commit()
+            return True
+    except Exception as e:
+        print(f"Error deleting template: {e}")
+        db.session.rollback()
+        return False
+    return False
+
 def create_template_form():
     """Display form for creating a new feedback template"""
     st.subheader("Create Feedback Template")
@@ -87,12 +101,19 @@ def display_templates():
             for category in template.template_structure['categories']:
                 st.write(f"- {category.replace('_rating', '').replace('_', ' ').title()}")
 
-            col1, col2 = st.columns(2)
+            col1, col2, col3 = st.columns([1, 1, 1])
             with col1:
                 st.metric("Times Used", template.times_used or 0)
             with col2:
                 last_used = template.last_used.strftime("%Y-%m-%d") if template.last_used else "Never"
                 st.metric("Last Used", last_used)
+            with col3:
+                if st.button("Delete Template", key=f"delete_{template.id}"):
+                    if delete_template(template.id):
+                        st.success(f"Template '{template.name}' deleted successfully!")
+                        st.rerun()
+                    else:
+                        st.error("Error deleting template")
 
 def manage_feedback_templates():
     """Main interface for managing feedback templates"""
