@@ -16,6 +16,7 @@ def submit_coach_feedback(player_id, coach_name, feedback_text, ratings, templat
             if key.endswith('_rating') and value is not None:
                 validated_ratings[key] = int(value)
 
+        # Create feedback entry
         feedback = CoachFeedback(
             player_id=int(player_id),
             coach_name=coach_name,
@@ -28,7 +29,7 @@ def submit_coach_feedback(player_id, coach_name, feedback_text, ratings, templat
         if template_id:
             template = FeedbackTemplate.query.get(template_id)
             if template:
-                template.times_used += 1
+                template.times_used = (template.times_used or 0) + 1
                 template.last_used = datetime.utcnow()
 
         db.session.commit()
@@ -58,7 +59,7 @@ def get_player_feedback(player_id):
                 if attr.endswith('_rating') and not attr.startswith('_'):
                     value = getattr(f, attr)
                     if value is not None:
-                        feedback_data[attr] = value
+                        feedback_data[attr] = int(value)  # Ensure integer values
 
             data.append(feedback_data)
 
@@ -132,15 +133,7 @@ def display_feedback_form(player_id, player_name, player_position):
                 )
                 if success:
                     st.success(f"Feedback submitted for {player_name}")
-                    # Refresh the page using JavaScript
-                    st.markdown(
-                        """
-                        <script>
-                            window.location.reload();
-                        </script>
-                        """,
-                        unsafe_allow_html=True
-                    )
+                    st.rerun()  # Use st.rerun() instead of experimental_rerun
                 else:
                     st.error("Error submitting feedback. Please try again.")
 
