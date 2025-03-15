@@ -13,7 +13,6 @@ class TeamMembership(db.Model):
     position_in_team = db.Column(db.String(20))
     is_active = db.Column(db.Boolean, default=True)
 
-    # Add relationships to both sides
     player = db.relationship('Player', back_populates='memberships')
     team = db.relationship('Team', back_populates='memberships')
 
@@ -24,13 +23,10 @@ class Team(db.Model):
     name = db.Column(db.String(100), nullable=False)
     age_group = db.Column(db.String(10), nullable=False)
     created_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-
-    # Team statistics
     games_played = db.Column(db.Integer, default=0)
     wins = db.Column(db.Integer, default=0)
     losses = db.Column(db.Integer, default=0)
 
-    # Update relationships
     memberships = db.relationship('TeamMembership', back_populates='team', lazy='dynamic')
     players = db.relationship('Player', 
                             secondary='team_membership',
@@ -47,14 +43,25 @@ class Player(db.Model):
     position = db.Column(db.String(20), nullable=False)
     join_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
-    # Latest metrics
-    skating_speed = db.Column(db.Float)
-    shooting_accuracy = db.Column(db.Float)
+    # Player metrics based on position
+    # Skater metrics
+    skating_speed = db.Column(db.Float, nullable=True)
+    shooting_accuracy = db.Column(db.Float, nullable=True)
+
+    # Goalie metrics
+    save_percentage = db.Column(db.Float, nullable=True)
+    reaction_time = db.Column(db.Float, nullable=True)
+    positioning = db.Column(db.Float, nullable=True)
+
+    # Common stats
     games_played = db.Column(db.Integer, default=0)
     goals = db.Column(db.Integer, default=0)
     assists = db.Column(db.Integer, default=0)
 
-    # Update relationships
+    # For goalies: goals against and saves
+    goals_against = db.Column(db.Integer, default=0)
+    saves = db.Column(db.Integer, default=0)
+
     memberships = db.relationship('TeamMembership', back_populates='player', lazy='dynamic')
     teams = db.relationship('Team', 
                           secondary='team_membership',
@@ -69,11 +76,24 @@ class PlayerHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     player_id = db.Column(db.Integer, db.ForeignKey('players.id'), nullable=False)
     date = db.Column(db.Date, nullable=False)
-    skating_speed = db.Column(db.Float)
-    shooting_accuracy = db.Column(db.Float)
+
+    # Skater metrics
+    skating_speed = db.Column(db.Float, nullable=True)
+    shooting_accuracy = db.Column(db.Float, nullable=True)
+
+    # Goalie metrics
+    save_percentage = db.Column(db.Float, nullable=True)
+    reaction_time = db.Column(db.Float, nullable=True)
+    positioning = db.Column(db.Float, nullable=True)
+
+    # Common stats
     games_played = db.Column(db.Integer)
     goals = db.Column(db.Integer)
     assists = db.Column(db.Integer)
+
+    # Goalie specific stats
+    goals_against = db.Column(db.Integer, nullable=True)
+    saves = db.Column(db.Integer, nullable=True)
 
 class CoachFeedback(db.Model):
     __tablename__ = 'coach_feedback'
@@ -82,9 +102,17 @@ class CoachFeedback(db.Model):
     player_id = db.Column(db.Integer, db.ForeignKey('players.id'), nullable=False)
     coach_name = db.Column(db.String(100), nullable=False)
     feedback_text = db.Column(db.Text, nullable=False)
-    skating_rating = db.Column(db.Integer)
-    shooting_rating = db.Column(db.Integer)
+
+    # Position-specific ratings
+    skating_rating = db.Column(db.Integer, nullable=True)
+    shooting_rating = db.Column(db.Integer, nullable=True)
     teamwork_rating = db.Column(db.Integer)
+
+    # Goalie-specific ratings
+    save_technique_rating = db.Column(db.Integer, nullable=True)
+    positioning_rating = db.Column(db.Integer, nullable=True)
+    rebound_control_rating = db.Column(db.Integer, nullable=True)
+
     date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
 class TeamCoachFeedback(db.Model):

@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 from database.models import db, Team, TeamMembership, Player
 from datetime import datetime
 from sqlalchemy.exc import SQLAlchemyError
@@ -14,6 +15,15 @@ def create_player_form():
         age_group = f"U{(age // 2) * 2}"
         position = st.selectbox("Position", ["Forward", "Defense", "Goalie"])
 
+        # Show different metrics based on position
+        if position == "Goalie":
+            save_percentage = st.slider("Save Percentage", 50.0, 100.0, 85.0)
+            reaction_time = st.slider("Reaction Time", 50.0, 100.0, 75.0)
+            positioning = st.slider("Positioning", 50.0, 100.0, 75.0)
+        else:
+            skating_speed = st.slider("Skating Speed", 50.0, 100.0, 75.0)
+            shooting_accuracy = st.slider("Shooting Accuracy", 50.0, 100.0, 75.0)
+
         submitted = st.form_submit_button("Create Player")
 
         if submitted and name:
@@ -23,13 +33,21 @@ def create_player_form():
                     age=age,
                     age_group=age_group,
                     position=position,
-                    skating_speed=float(70),
-                    shooting_accuracy=float(70),
-                    games_played=0,
-                    goals=0,
-                    assists=0,
                     join_date=datetime.utcnow()
                 )
+
+                if position == "Goalie":
+                    player.save_percentage = float(save_percentage)
+                    player.reaction_time = float(reaction_time)
+                    player.positioning = float(positioning)
+                    player.goals_against = 0
+                    player.saves = 0
+                else:
+                    player.skating_speed = float(skating_speed)
+                    player.shooting_accuracy = float(shooting_accuracy)
+                    player.goals = 0
+                    player.assists = 0
+
                 db.session.add(player)
                 db.session.commit()
                 st.success(f"Player '{name}' created successfully!")
