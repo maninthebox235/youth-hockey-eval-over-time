@@ -62,6 +62,9 @@ def display_feature_preview():
 
         if st.button("Sign Up Now", type="primary", key="signup_button"):
             display_signup_form()
+        if st.button("Login", key="login_button"):
+            st.session_state.show_login = True
+
 
 def display_signup_form():
     """Display the signup form for new users"""
