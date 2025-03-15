@@ -8,7 +8,12 @@ import os
 def create_app():
     app = Flask(__name__)
 
-    # Configure Flask-Mail
+    # Configure Flask app
+    app.config['SECRET_KEY'] = os.urandom(24)
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    # Configure Flask-Mail with Gmail
     app.config['MAIL_SERVER'] = 'smtp.gmail.com'
     app.config['MAIL_PORT'] = 587
     app.config['MAIL_USE_TLS'] = True
@@ -18,6 +23,9 @@ def create_app():
 
     # Initialize Flask-Mail
     mail = Mail(app)
+
+    # Initialize database
+    db.init_app(app)
 
     return app, mail
 
