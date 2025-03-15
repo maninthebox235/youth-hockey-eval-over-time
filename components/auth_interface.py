@@ -70,6 +70,10 @@ def login_user():
 
 def create_admin():
     """Create initial admin user"""
+    from utils.email_service import send_welcome_email
+    from app import mail
+    import logging
+    
     st.header("Create Admin Account")
     with st.form("admin_form"):
         name = st.text_input("Name")
@@ -98,47 +102,68 @@ def create_admin():
             try:
                 db.session.add(admin)
                 db.session.commit()
-                if send_welcome_email(email, name):
+                
+                email_result = send_welcome_email(mail, email, name)
+                
+                if email_result:
                     st.success("Admin account created successfully! Welcome email sent.")
                 else:
-                    st.warning("Admin account created but welcome email could not be sent.")
+                    logging.error(f"Failed to send welcome email to {email}")
+                    st.warning("Admin account created but welcome email could not be sent. Check server logs for details.")
+                
                 st.session_state.user = admin
                 st.session_state.is_admin = True
                 st.rerun()
             except Exception as e:
+                logging.error(f"Error creating admin account: {str(e)}")
                 st.error(f"Error creating admin account: {str(e)}")
 
 def display_admin_controls():
     """Display admin control panel"""
+    from components.email_settings import display_email_settings, send_email_interface
+    
     if not st.session_state.is_admin:
         st.error("Access denied. Admin privileges required.")
         return
 
     st.header("Admin Control Panel")
 
-    # User Management
-    st.subheader("User Management")
-    users = User.query.all()
+    # Create tabs for different admin functions
+    admin_tabs = ["User Management", "Email Settings", "Send Email"]
+    tab1, tab2, tab3 = st.tabs(admin_tabs)
 
-    for user in users:
-        with st.expander(f"User: {user.name} ({user.email})"):
-            col1, col2 = st.columns(2)
-            with col1:
-                st.write(f"Admin: {'Yes' if user.is_admin else 'No'}")
-                st.write(f"Last Login: {user.last_login or 'Never'}")
-            with col2:
-                if user.id != st.session_state.user.id:  # Can't modify own account
-                    if st.button(f"{'Remove' if user.is_admin else 'Make'} Admin", key=f"admin_{user.id}"):
-                        user.is_admin = not user.is_admin
-                        db.session.commit()
-                        st.success(f"Updated admin status for {user.name}")
-                        st.rerun()
+    with tab1:
+        # User Management
+        st.subheader("User Management")
+        users = User.query.all()
 
-                    if st.button("Delete User", key=f"delete_{user.id}"):
-                        db.session.delete(user)
-                        db.session.commit()
-                        st.success(f"Deleted user {user.name}")
-                        st.rerun()
+        for user in users:
+            with st.expander(f"User: {user.name} ({user.email})"):
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.write(f"Admin: {'Yes' if user.is_admin else 'No'}")
+                    st.write(f"Last Login: {user.last_login or 'Never'}")
+                with col2:
+                    if user.id != st.session_state.user.id:  # Can't modify own account
+                        if st.button(f"{'Remove' if user.is_admin else 'Make'} Admin", key=f"admin_{user.id}"):
+                            user.is_admin = not user.is_admin
+                            db.session.commit()
+                            st.success(f"Updated admin status for {user.name}")
+                            st.rerun()
+
+                        if st.button("Delete User", key=f"delete_{user.id}"):
+                            db.session.delete(user)
+                            db.session.commit()
+                            st.success(f"Deleted user {user.name}")
+                            st.rerun()
+    
+    with tab2:
+        # Email settings
+        display_email_settings()
+        
+    with tab3:
+        # Send email interface
+        send_email_interface()
 
     # Add New User
     st.subheader("Add New User")

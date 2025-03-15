@@ -4,6 +4,14 @@ from flask_migrate import Migrate
 from flask_mail import Mail
 from utils.data_generator import seed_database
 import os
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 def create_app():
     app = Flask(__name__)
@@ -20,6 +28,16 @@ def create_app():
     app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
     app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
     app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
+    app.config['MAIL_MAX_EMAILS'] = 5  # Limit of emails to send in a single connection
+    app.config['MAIL_DEBUG'] = True  # Enable debug mode for troubleshooting
+    
+    # Log mail configuration (without sensitive data)
+    logger.info(f"Mail server: {app.config['MAIL_SERVER']}")
+    logger.info(f"Mail port: {app.config['MAIL_PORT']}")
+    logger.info(f"Mail use TLS: {app.config['MAIL_USE_TLS']}")
+    logger.info(f"Mail username configured: {'Yes' if app.config['MAIL_USERNAME'] else 'No'}")
+    logger.info(f"Mail password configured: {'Yes' if app.config['MAIL_PASSWORD'] else 'No'}")
+    logger.info(f"Mail default sender configured: {'Yes' if app.config['MAIL_DEFAULT_SENDER'] else 'No'}")
 
     # Initialize Flask-Mail
     mail = Mail(app)
@@ -32,6 +50,15 @@ def create_app():
 # Initialize Flask app and extensions
 app, mail = create_app()
 migrate = Migrate(app, db)
+
+# Route to test email configuration
+@app.route('/test-email', methods=['GET'])
+def test_email():
+    from utils.email_service import test_email_configuration
+    from flask import jsonify
+    
+    result = test_email_configuration(mail)
+    return jsonify(result)
 
 if __name__ == '__main__':
     try:
