@@ -10,19 +10,22 @@ def get_templates_for_player(player_type):
 def submit_coach_feedback(player_id, coach_name, feedback_text, ratings, template_id=None):
     """Submit new coach feedback for a player"""
     try:
-        # Ensure all rating values are integers
+        # Ensure player_id is a regular Python int
+        player_id = int(player_id)
+
+        # Ensure all rating values are integers and filter out None values
         validated_ratings = {}
         for key, value in ratings.items():
             if key.endswith('_rating') and value is not None:
                 try:
-                    validated_ratings[key] = int(value)
+                    validated_ratings[key] = int(float(value))
                 except (ValueError, TypeError):
                     print(f"Error converting rating {key}: {value}")
                     continue
 
         # Create feedback entry
         feedback = CoachFeedback(
-            player_id=int(player_id),
+            player_id=player_id,
             coach_name=coach_name,
             feedback_text=feedback_text,
             **validated_ratings
@@ -49,6 +52,9 @@ def submit_coach_feedback(player_id, coach_name, feedback_text, ratings, templat
 def get_player_feedback(player_id):
     """Get all feedback for a specific player"""
     try:
+        # Ensure player_id is a regular Python int
+        player_id = int(player_id)
+
         feedback = CoachFeedback.query.filter_by(player_id=player_id).order_by(CoachFeedback.date.desc()).all()
         if not feedback:
             return pd.DataFrame()
@@ -67,7 +73,7 @@ def get_player_feedback(player_id):
                     value = getattr(f, column.name)
                     if value is not None:
                         try:
-                            feedback_data[column.name] = int(value)
+                            feedback_data[column.name] = int(float(value))
                         except (ValueError, TypeError):
                             continue
 
