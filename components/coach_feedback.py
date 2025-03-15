@@ -120,10 +120,9 @@ def display_feedback_form(player_id, player_name, player_position):
                 for j, col in enumerate(cols):
                     if i + j < len(categories):
                         category = categories[i + j]
-                        if category.endswith('_rating'):
-                            category_name = category.replace('_rating', '').replace('_', ' ').title()
-                            with col:
-                                ratings[category] = st.slider(category_name, 1, 5, 3)
+                        category_name = category.replace('_rating', '').replace('_', ' ').title()
+                        with col:
+                            ratings[category] = st.slider(category_name, 1, 5, 3)
         else:
             # Default rating fields based on position
             if player_position == "Goalie":
@@ -155,12 +154,13 @@ def display_feedback_form(player_id, player_name, player_position):
             if not coach_name or not feedback_text:
                 st.error("Please fill in all required fields")
             else:
+                template_id = selected_template.id if selected_template else None
                 success = submit_coach_feedback(
                     player_id=player_id,
                     coach_name=coach_name,
                     feedback_text=feedback_text,
                     ratings=ratings,
-                    template_id=selected_template.id if selected_template else None
+                    template_id=template_id
                 )
                 if success:
                     st.success(f"Feedback submitted for {player_name}")
