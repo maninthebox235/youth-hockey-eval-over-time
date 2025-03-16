@@ -391,6 +391,10 @@ class TrainingPlans:
         # Identify skills with lowest ratings
         skills = {}
         for attr, value in player_data.items():
+            # Make sure we're dealing with a scalar value, not a pandas Series
+            if isinstance(value, pd.Series):
+                continue
+                
             if attr in self.skill_drills and isinstance(value, (int, float)):
                 skills[attr] = value
                 
