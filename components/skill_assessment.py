@@ -101,8 +101,15 @@ def display_skill_assessment(player_id):
         st.write(f"### Skill Assessment for {player.name}")
         st.write(f"Position: {player.position} | Age: {player.age}")
 
+        # Check if we should show the Current Skills tab first
+        tab_index = 0
+        if 'assessment_saved' in st.session_state and st.session_state.assessment_saved:
+            tab_index = 0  # Default to Current Skills tab after saving
+            st.session_state.assessment_saved = False  # Reset the flag
+
         # Create tabs for current skills and adding new assessment
-        current_tab, new_tab = st.tabs(["Current Skills", "Add New Assessment"])
+        tab_names = ["Current Skills", "Add New Assessment"]
+        current_tab, new_tab = st.tabs(tab_names)
         
         with current_tab:
             display_current_skills(player)
@@ -110,6 +117,8 @@ def display_skill_assessment(player_id):
         with new_tab:
             assessment_saved = add_new_assessment(player)
             if assessment_saved:
+                # This will be handled on the next rerun
+                st.session_state.assessment_saved = True
                 return True
                 
         return False
@@ -212,6 +221,7 @@ def add_new_assessment(player):
                 except (ValueError, TypeError):
                     current_value = 3
 
+                # Make sure all sliders use the 1-5 scale
                 all_ratings[metric] = st.slider(
                     f"{metric.replace('_', ' ').title()} Rating",
                     min_value=1,
@@ -293,8 +303,7 @@ def add_new_assessment(player):
                 st.success("Assessment saved successfully!")
                 
                 # Set a session state flag to indicate we should switch tabs
-                if 'assessment_saved' not in st.session_state:
-                    st.session_state.assessment_saved = True
+                st.session_state.assessment_saved = True
                 
                 # Return True to trigger tab switch in the parent function
                 return True

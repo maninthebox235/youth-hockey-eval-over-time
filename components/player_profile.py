@@ -67,10 +67,7 @@ def display_player_profile(player_data, player_history):
         assessment_saved = display_skill_assessment(player_data['player_id'])
         
         # Check if assessment was just saved and we need to switch tabs
-        if assessment_saved or ('assessment_saved' in st.session_state and st.session_state.assessment_saved):
-            # Reset the flag
-            if 'assessment_saved' in st.session_state:
-                st.session_state.assessment_saved = False
+        if assessment_saved:
             # Rerun to show updated data and reset the form
             st.rerun()
 
