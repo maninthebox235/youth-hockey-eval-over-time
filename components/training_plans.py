@@ -385,7 +385,7 @@ class TrainingPlans:
     
     def get_player_needs(self, player_data):
         """Identify a player's development needs based on metrics"""
-        if not player_data:
+        if player_data is None or len(player_data) == 0:
             return []
             
         # Identify skills with lowest ratings
@@ -395,7 +395,8 @@ class TrainingPlans:
             if isinstance(value, pd.Series):
                 continue
                 
-            if attr in self.skill_drills and isinstance(value, (int, float)):
+            # Check if the attribute is in skill_drills and is a numeric value
+            if attr in self.skill_drills and isinstance(value, (int, float)) and not pd.isna(value):
                 skills[attr] = value
                 
         # Sort by value, lowest first
@@ -406,12 +407,21 @@ class TrainingPlans:
     
     def generate_personalized_plan(self, player_data):
         """Generate a personalized training plan for a player"""
-        if not player_data:
+        if player_data is None or len(player_data) == 0:
             return None
             
         # Get age and position
-        age = player_data.get('age', 12)
-        position = player_data.get('position', 'Forward')
+        # Handle case where player_data might be a DataFrame or Series
+        if isinstance(player_data, pd.DataFrame) or isinstance(player_data, pd.Series):
+            age = player_data.get('age', 12)
+            if isinstance(age, pd.Series):
+                age = age.iloc[0] if not age.empty else 12
+            position = player_data.get('position', 'Forward')
+            if isinstance(position, pd.Series):
+                position = position.iloc[0] if not position.empty else 'Forward'
+        else:
+            age = player_data.get('age', 12)
+            position = player_data.get('position', 'Forward')
         
         # Get age-appropriate plan
         base_plan = self.get_age_plan(age)
@@ -482,7 +492,16 @@ def display_drill_details(drill):
 
 def display_player_weaknesses(player_data, trainer):
     """Display a player's weaknesses and recommended focus areas"""
-    needs = trainer.get_player_needs(player_data)
+    # Convert DataFrame to dict if needed
+    if isinstance(player_data, pd.DataFrame):
+        if len(player_data) > 0:
+            player_dict = player_data.iloc[0].to_dict()
+        else:
+            player_dict = {}
+    else:
+        player_dict = player_data
+        
+    needs = trainer.get_player_needs(player_dict)
     
     if not needs:
         st.info("Not enough skill data available to identify specific needs.")
@@ -536,7 +555,13 @@ def display_training_schedule(player_data, plan):
     st.subheader("Weekly Training Schedule")
     
     # Get age-appropriate plan
-    age = player_data.get('age', 12)
+    if isinstance(player_data, pd.DataFrame) or isinstance(player_data, pd.Series):
+        age = player_data.get('age', 12)
+        if isinstance(age, pd.Series):
+            age = age.iloc[0] if not age.empty else 12
+    else:
+        age = player_data.get('age', 12)
+        
     age_plan = plan['sessions_per_week']
     
     # Define days of the week
@@ -676,15 +701,31 @@ def display_training_plan_interface(player_id, player_data):
     # Initialize training plans system
     trainer = TrainingPlans()
     
+    # Convert player_data to dictionary if it's a DataFrame
+    if isinstance(player_data, pd.DataFrame):
+        if len(player_data) > 0:
+            player_dict = player_data.iloc[0].to_dict()
+        else:
+            player_dict = {}
+    else:
+        player_dict = player_data
+    
     # Generate personalized plan
-    plan = trainer.generate_personalized_plan(player_data)
+    plan = trainer.generate_personalized_plan(player_dict)
     
     if not plan:
         st.error("Could not generate training plan with available data")
         return
+    
+    # Get name safely
+    player_name = "Player"
+    if isinstance(player_data, pd.DataFrame) and 'name' in player_data.columns and not player_data.empty:
+        player_name = player_data['name'].iloc[0]
+    elif isinstance(player_dict, dict) and 'name' in player_dict:
+        player_name = player_dict['name']
         
     # Display plan overview
-    st.subheader(f"Training Plan Overview for {player_data.get('name', 'Player')}")
+    st.subheader(f"Training Plan Overview for {player_name}")
     st.write(f"**Age:** {plan['age_group']} | **Position:** {plan['position']}")
     
     col1, col2, col3 = st.columns(3)
