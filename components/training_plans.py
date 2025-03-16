@@ -7,6 +7,15 @@ import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import random
 
+def fix_youtube_url(url):
+    """Convert YouTube embed URL to watch URL for Streamlit compatibility"""
+    if not url:
+        return url
+    if 'youtube.com/embed/' in url:
+        video_id = url.split('/')[-1]
+        return f"https://www.youtube.com/watch?v={video_id}"
+    return url
+
 class TrainingPlans:
     def __init__(self):
         # Training Library
@@ -19,7 +28,7 @@ class TrainingPlans:
                     'duration': '10 minutes',
                     'difficulty': 'Medium',
                     'resources': 'None',
-                    'video_url': 'https://www.youtube.com/embed/ZsdRdPNUWcE'
+                    'video_url': 'https://www.youtube.com/watch?v=ZsdRdPNUWcE'
                 },
                 {
                     'name': 'Explosive Starts',
