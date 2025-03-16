@@ -18,44 +18,39 @@ logger = logging.getLogger(__name__)
 def create_app():
     app = Flask(__name__)
 
-    # Configure Flask app
-    app.config['SECRET_KEY'] = os.urandom(24)
+    # Set a stable secret key
+    app.config['SECRET_KEY'] = 'your-secret-key-goes-here'  # Changed from os.urandom(24) for session stability
+
+    # Configure database
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-    # Session configuration
-    app.config['SESSION_TYPE'] = 'sqlalchemy'
-    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=14)
-    app.config['SESSION_SQLALCHEMY'] = db
-
-    # Configure Flask-Mail with Gmail
-    app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-    app.config['MAIL_PORT'] = 587
-    app.config['MAIL_USE_TLS'] = True
-    app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
-    app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
-    app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
-    app.config['MAIL_MAX_EMAILS'] = 5
-    app.config['MAIL_DEBUG'] = True
-
-    # Initialize Flask extensions
+    # Initialize database
     db.init_app(app)
-    mail = Mail(app)
+
+    # Configure login manager
     login_manager = LoginManager()
     login_manager.init_app(app)
     login_manager.session_protection = "strong"
 
-    # User loader callback
     @login_manager.user_loader
     def load_user(user_id):
         from database.models import User
         return User.query.get(int(user_id))
 
-    return app, mail, login_manager
+    with app.app_context():
+        try:
+            db.create_all()
+            logger.info("Database tables created successfully")
+        except Exception as e:
+            logger.error(f"Error creating database tables: {str(e)}")
+            raise
 
-# Initialize Flask app and extensions
-app, mail, login_manager = create_app()
-migrate = Migrate(app, db)
+    return app
+
+def init_app():
+    app = create_app()
+    return app
 
 # Route to test email configuration
 @app.route('/test-email', methods=['GET'])
@@ -67,24 +62,7 @@ def test_email():
     return jsonify(result)
 
 if __name__ == '__main__':
-    try:
-        with app.app_context():
-            db.create_all()
-
-            # Check if database needs seeding
-            from database.models import Player
-            if not Player.query.first():
-                print("No players found, seeding database...")
-                if seed_database(n_players=20):
-                    print("Database seeded successfully")
-                else:
-                    print("Error seeding database")
-            else:
-                print("Database already contains data")
-
-    except Exception as e:
-        print(f"Error initializing database: {e}")
-        raise
-
+    app = create_app()
+    
     # Run Flask on port 5001 to avoid conflict with Streamlit
     app.run(host='0.0.0.0', port=5001, debug=True)
