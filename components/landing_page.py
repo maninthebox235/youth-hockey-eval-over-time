@@ -106,8 +106,12 @@ def display_signup_form():
                 new_user.set_password(password)
                 db.session.add(new_user)
                 db.session.commit()
-                st.success("Account created successfully! You can now log in.")
-                st.session_state.show_login = True
+
+                # Set session state to log in the user
+                st.session_state.user = new_user
+                st.session_state.is_admin = new_user.is_admin
+                st.success("Account created successfully! Welcome to Hockey Development Tracker.")
+                st.rerun()
             except Exception as e:
                 st.error(f"Error creating account: {str(e)}")
 
@@ -116,5 +120,8 @@ def display_landing_page():
     if st.session_state.get('show_login', False):
         from components.auth_interface import login_user
         login_user()
+    elif 'user' in st.session_state and st.session_state.user:
+        # Skip landing page if user is logged in
+        return
     else:
         display_feature_preview()
