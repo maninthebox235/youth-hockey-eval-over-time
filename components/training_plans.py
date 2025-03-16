@@ -19,6 +19,8 @@ def fix_youtube_url(url):
 class TrainingPlans:
     def __init__(self):
         # Training Library
+        
+        # Define the skill drills data
         self.skill_drills = {
             # Skating drills
             'skating_speed': [
@@ -339,6 +341,9 @@ class TrainingPlans:
             ]
         }
         
+        # Fix all video URLs to work with Streamlit
+        self._fix_all_video_urls()
+        
         # Age-appropriate training plans
         self.age_plans = {
             (6, 8): {
@@ -374,6 +379,13 @@ class TrainingPlans:
                 'off_ice_focus': 'Strength training, explosive power, conditioning'
             }
         }
+    
+    def _fix_all_video_urls(self):
+        """Convert all video URLs to use watch format instead of embed format"""
+        for skill_category in self.skill_drills:
+            for drill in self.skill_drills[skill_category]:
+                if 'video_url' in drill and drill['video_url']:
+                    drill['video_url'] = fix_youtube_url(drill['video_url'])
     
     def get_age_plan(self, age):
         """Get the appropriate training plan for a player's age"""
