@@ -50,18 +50,26 @@ class User(UserMixin, db.Model):
         if not token:
             return None
 
-        s = Serializer(current_app.config['SECRET_KEY'])
-
         try:
-            data = s.loads(token)
-            user_id = data.get('id')
-            exp = data.get('exp')
+            secret_key = current_app.config.get('SECRET_KEY', 'default-secret-key')
+            s = Serializer(secret_key)
 
-            if not user_id or time.time() > exp:
+            try:
+                data = s.loads(token)
+                user_id = data.get('id')
+                exp = data.get('exp')
+
+                if not user_id or time.time() > exp:
+                    return None
+
+                return User.query.get(user_id)
+            except Exception as e:
+                import logging
+                logging.error(f"Error verifying auth token: {str(e)}")
                 return None
-
-            return User.query.get(user_id)
-        except:
+        except Exception as e:
+            import logging
+            logging.error(f"Error accessing app context: {str(e)}")
             return None
 
 class CoachFeedback(db.Model):
