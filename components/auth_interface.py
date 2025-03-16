@@ -126,7 +126,6 @@ def login_user():
                 st.error("Invalid login credentials. Please try again.")
                 db.session.rollback()
 
-
 def create_admin():
     """Create initial admin user"""
     st.header("Create Admin Account")
