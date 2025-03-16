@@ -658,6 +658,11 @@ def display_tryout_evaluation_mode(team_id):
                         db.session.commit()
 
                         st.success(f"Evaluation for {player_name} saved successfully!")
+                        
+                        # Add redirect to team overview
+                        st.session_state.show_tryout_mode = False  # Turn off tryout mode
+                        st.session_state.redirect_to_overview = True  # Signal to redirect
+                        st.rerun()  # Rerun to apply the state change
                     except Exception as e:
                         db.session.rollback()
                         st.error(f"Error saving evaluation: {str(e)}")
@@ -995,7 +1000,19 @@ def display_team_dashboard(team_id=None):
         "Tryout Evaluation", 
         "Custom Reports"
     ])
-
+    
+    # Initialize tab index in session state if not already set
+    if 'active_tab' not in st.session_state:
+        st.session_state.active_tab = 0
+    
+    # Check if we should redirect from tryout mode to overview
+    if 'redirect_to_overview' in st.session_state and st.session_state.redirect_to_overview:
+        st.session_state.active_tab = 0  # Set to team overview tab
+        st.session_state.redirect_to_overview = False  # Reset the flag
+        
+    # Set the active tab index (Streamlit will show this tab first)
+    st.session_state.active_tab_index = st.session_state.active_tab
+    
     with dashboard_tabs[0]:
         display_team_overview(team, players_df)
 
