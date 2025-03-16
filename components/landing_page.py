@@ -244,7 +244,7 @@ def display_feature_preview():
         video_col1, video_col2 = st.columns([1, 1])
         
         with video_col1:
-            st.image("static/images/hockey_player_action.svg", caption="Video Analysis Interface")
+            st.image("static/images/hockey/player_action.png", caption="Video Analysis Interface")
             st.markdown("""
             <div style="margin-top: 10px;">
                 <h4>Technique Assessment</h4>
@@ -310,7 +310,7 @@ def display_feature_preview():
         plan_col1, plan_col2 = st.columns([1, 1])
         
         with plan_col1:
-            st.image("static/images/hockey_training.svg", caption="Personalized Hockey Training")
+            st.image("static/images/hockey/training.png", caption="Personalized Hockey Training")
             st.markdown("""
             <div style="margin-top: 10px;">
                 <h4>Personalized Development</h4>
