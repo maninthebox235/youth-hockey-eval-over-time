@@ -635,11 +635,13 @@ def display_feature_preview():
     team_cols = st.columns(3)
     
     # Team Dashboard Card
-    with team_cols[0]:        
+    with team_cols[0]:
+        # Create a clickable container
+        team_dashboard_container = st.container()
+        
         # Create the card with clickable class
-        st.markdown("""
-        <div class="team-card team-card-1 clickable-card" id="team-dashboard-card-div" 
-             onclick="document.getElementById('team-dashboard-button').click();">
+        team_dashboard_container.markdown("""
+        <div class="team-card team-card-1 clickable-card" id="team-dashboard-card-div">
             <div class="team-badge">TEAM</div>
             <div class="team-card-title">Team Dashboard</div>
             <div class="team-card-text">
@@ -648,22 +650,19 @@ def display_feature_preview():
         </div>
         """, unsafe_allow_html=True)
         
-        # Create invisible button with no text and minimal size
-        col1, col2, col3 = st.columns([10, 1, 10])
-        with col2:
-            button_clicked = st.button("", key="team-dashboard-button", help="Team Dashboard")
-        
-        # Handle button click
-        if button_clicked:
+        # Handle container click
+        if team_dashboard_container.button("Team Dashboard", key="team-dashboard-button", label_visibility="collapsed"):
             st.session_state.show_team_preview = "team_dashboard"
             st.rerun()
     
     # Tryout Evaluation Card
-    with team_cols[1]:        
+    with team_cols[1]:
+        # Create a clickable container
+        tryout_evaluation_container = st.container()
+        
         # Create the card with clickable class
-        st.markdown("""
-        <div class="team-card team-card-2 clickable-card" id="tryout-evaluation-card-div" 
-             onclick="document.getElementById('tryout-evaluation-button').click();">
+        tryout_evaluation_container.markdown("""
+        <div class="team-card team-card-2 clickable-card" id="tryout-evaluation-card-div">
             <div class="team-badge">TEAM</div>
             <div class="team-card-title">Tryout Evaluation</div>
             <div class="team-card-text">
@@ -672,22 +671,19 @@ def display_feature_preview():
         </div>
         """, unsafe_allow_html=True)
         
-        # Create invisible button with no text and minimal size
-        col1, col2, col3 = st.columns([10, 1, 10])
-        with col2:
-            button_clicked = st.button("", key="tryout-evaluation-button", help="Tryout Evaluation")
-        
-        # Handle button click
-        if button_clicked:
+        # Handle container click
+        if tryout_evaluation_container.button("Tryout Evaluation", key="tryout-evaluation-button", label_visibility="collapsed"):
             st.session_state.show_team_preview = "tryout_evaluation"
             st.rerun()
     
     # Custom Reports Card
-    with team_cols[2]:        
+    with team_cols[2]:
+        # Create a clickable container
+        custom_reports_container = st.container()
+        
         # Create the card with clickable class
-        st.markdown("""
-        <div class="team-card team-card-3 clickable-card" id="custom-reports-card-div" 
-             onclick="document.getElementById('custom-reports-button').click();">
+        custom_reports_container.markdown("""
+        <div class="team-card team-card-3 clickable-card" id="custom-reports-card-div">
             <div class="team-badge">TEAM</div>
             <div class="team-card-title">Custom Reports</div>
             <div class="team-card-text">
@@ -696,13 +692,8 @@ def display_feature_preview():
         </div>
         """, unsafe_allow_html=True)
         
-        # Create invisible button with no text and minimal size
-        col1, col2, col3 = st.columns([10, 1, 10])
-        with col2:
-            button_clicked = st.button("", key="custom-reports-button", help="Custom Reports")
-        
-        # Handle button click
-        if button_clicked:
+        # Handle container click
+        if custom_reports_container.button("Custom Reports", key="custom-reports-button", label_visibility="collapsed"):
             st.session_state.show_team_preview = "custom_reports"
             st.rerun()
     
