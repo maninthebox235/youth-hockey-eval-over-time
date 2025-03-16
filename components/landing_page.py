@@ -85,10 +85,25 @@ def display_landing_page():
         st.session_state.show_signup = False
     if 'show_login' not in st.session_state:
         st.session_state.show_login = False
+    if 'show_forgot_password' not in st.session_state:
+        st.session_state.show_forgot_password = False
+    if 'show_reset_confirmation' not in st.session_state:
+        st.session_state.show_reset_confirmation = False
 
     # Check if user is already logged in
     if 'user' in st.session_state and st.session_state.user:
         return False  # Skip landing page
+        
+    # Check for reset token in URL
+    query_params = st.experimental_get_query_params()
+    if "reset_token" in query_params and "username" in query_params:
+        st.session_state.show_reset_confirmation = True
+        st.session_state.show_login = False
+        st.session_state.show_signup = False
+        st.session_state.show_forgot_password = False
+        from components.auth_interface import confirm_password_reset
+        confirm_password_reset()
+        return True
 
     # Handle auth flow
     if st.session_state.show_signup:
@@ -96,6 +111,9 @@ def display_landing_page():
     elif st.session_state.get('show_login', False):
         from components.auth_interface import login_user
         login_user()
+    elif st.session_state.get('show_forgot_password', False):
+        from components.auth_interface import request_password_reset
+        request_password_reset()
     else:
         display_feature_preview()
 

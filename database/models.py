@@ -15,6 +15,10 @@ class User(UserMixin, db.Model):
     is_admin = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_login = db.Column(db.DateTime)
+    
+    # Password reset fields
+    reset_token = db.Column(db.String(256), nullable=True)
+    reset_token_expiry = db.Column(db.DateTime, nullable=True)
 
     # Relationship with feedback
     feedback_given = db.relationship('CoachFeedback', backref='coach', lazy=True,

@@ -9,6 +9,10 @@ def init_session_state():
         st.session_state.user = None
     if 'is_admin' not in st.session_state:
         st.session_state.is_admin = False
+    if 'show_forgot_password' not in st.session_state:
+        st.session_state.show_forgot_password = False
+    if 'show_reset_confirmation' not in st.session_state:
+        st.session_state.show_reset_confirmation = False
 
 def login_user():
     """Handle user login"""
@@ -37,6 +41,14 @@ def login_user():
             except Exception as e:
                 st.error(f"Login error: {str(e)}")
                 db.session.rollback()
+    
+    # Password reset link
+    col1, col2 = st.columns([3, 1])
+    with col2:
+        if st.button("Forgot Password?"):
+            st.session_state.show_forgot_password = True
+            st.session_state.show_login = False
+            st.rerun()
 
 def create_admin():
     """Create initial admin user"""
@@ -119,6 +131,148 @@ def display_admin_controls():
     with st.form("add_user_form"):
         new_name = st.text_input("Full Name")
         new_username = st.text_input("Username")
+
+def request_password_reset():
+    """Display password reset request form"""
+    from app import mail
+    from utils.token_manager import generate_reset_token
+    import logging
+    
+    st.header("Reset Your Password")
+    st.write("Enter your username to receive a password reset link.")
+    
+    with st.form("reset_request_form"):
+        username = st.text_input("Username")
+        submitted = st.form_submit_button("Request Reset Link")
+        
+        if submitted:
+            if not username:
+                st.error("Please enter your username")
+                return
+            
+            user = User.query.filter_by(username=username).first()
+            if not user:
+                # Still show success to prevent username enumeration
+                st.success("If an account with that username exists, a reset link has been sent.")
+                return
+            
+            try:
+                # Generate token
+                token = generate_reset_token(user)
+                
+                # Create reset link
+                reset_link = f"?reset_token={token}&username={username}"
+                
+                # Prepare and send email
+                from flask_mail import Message
+                
+                subject = "Password Reset Request"
+                body = f"""
+                Hello {user.name},
+                
+                We received a request to reset your password for the Youth Hockey Development Tracker.
+                
+                To reset your password, please click on the following link:
+                
+                {reset_link}
+                
+                If you did not request a password reset, please ignore this email.
+                
+                This link will expire in 24 hours.
+                
+                Best regards,
+                The Youth Hockey Development Team
+                """
+                
+                try:
+                    msg = Message(
+                        subject=subject,
+                        recipients=[username],
+                        body=body
+                    )
+                    
+                    mail.send(msg)
+                    st.success("Password reset link has been sent to your email address.")
+                    logging.info(f"Password reset email sent to {username}")
+                except Exception as e:
+                    st.error(f"Error sending email: {str(e)}")
+                    logging.error(f"Error sending password reset email: {str(e)}")
+                    st.info("For testing purposes, here's your reset link (this would normally be sent via email):")
+                    st.code(reset_link)
+            except Exception as e:
+                st.error(f"Error generating reset token: {str(e)}")
+                logging.error(f"Error in password reset: {str(e)}")
+    
+    # Back to login link
+    if st.button("Back to Login"):
+        st.session_state.show_forgot_password = False
+        st.session_state.show_login = True
+        st.rerun()
+
+def confirm_password_reset():
+    """Handle password reset confirmation"""
+    from utils.token_manager import verify_reset_token
+    
+    # Get token and username from query parameters
+    query_params = st.experimental_get_query_params()
+    token = query_params.get("reset_token", [""])[0]
+    username = query_params.get("username", [""])[0]
+    
+    if not token or not username:
+        st.error("Invalid or missing reset token.")
+        if st.button("Return to Login"):
+            st.session_state.show_reset_confirmation = False
+            st.session_state.show_login = True
+            st.experimental_set_query_params()
+            st.rerun()
+        return
+    
+    st.header("Set New Password")
+    
+    with st.form("reset_confirmation_form"):
+        new_password = st.text_input("New Password", type="password")
+        confirm_password = st.text_input("Confirm New Password", type="password")
+        submitted = st.form_submit_button("Reset Password")
+        
+        if submitted:
+            if not new_password or not confirm_password:
+                st.error("Please fill in all fields")
+                return
+            
+            if new_password != confirm_password:
+                st.error("Passwords do not match")
+                return
+            
+            # Verify token and get user
+            user = verify_reset_token(token, username)
+            
+            if not user:
+                st.error("Invalid or expired reset token.")
+                return
+            
+            try:
+                # Update password
+                user.set_password(new_password)
+                
+                # Clear reset token
+                user.reset_token = None
+                user.reset_token_expiry = None
+                
+                db.session.commit()
+                st.success("Password has been reset successfully!")
+                
+                # Clear query parameters
+                st.experimental_set_query_params()
+                
+                # Show login button
+                if st.button("Login with New Password"):
+                    st.session_state.show_reset_confirmation = False
+                    st.session_state.show_login = True
+                    st.rerun()
+            except Exception as e:
+                st.error(f"Error resetting password: {str(e)}")
+                db.session.rollback()
+
         new_password = st.text_input("Password", type="password")
         is_admin = st.checkbox("Make Admin")
 
@@ -152,10 +306,27 @@ def display_admin_controls():
 def display_auth_interface():
     """Main authentication interface"""
     init_session_state()
+    
+    # Initialize password reset state if not present
+    if 'show_forgot_password' not in st.session_state:
+        st.session_state.show_forgot_password = False
+    if 'show_reset_confirmation' not in st.session_state:
+        st.session_state.show_reset_confirmation = False
+    
+    # Check for reset token in URL
+    query_params = st.experimental_get_query_params()
+    if "reset_token" in query_params and "username" in query_params:
+        st.session_state.show_reset_confirmation = True
+        st.session_state.show_login = False
+        st.session_state.show_forgot_password = False
 
     if not st.session_state.user:
         if not User.query.filter_by(is_admin=True).first():
             create_admin()
+        elif st.session_state.show_forgot_password:
+            request_password_reset()
+        elif st.session_state.show_reset_confirmation:
+            confirm_password_reset()
         else:
             login_user()
     else:
