@@ -1,56 +1,13 @@
 import streamlit as st
 from database.models import User, db
+from datetime import datetime
 
 def display_feature_preview():
-    """Display feature preview for non-authenticated users"""
-    st.title("🏒 Welcome to Hockey Development Tracker")
+    """Display feature preview on landing page"""
+    st.title("Hockey Player Tracking System")
+    st.markdown("##### Track player development, manage teams, and provide structured feedback")
 
-    st.markdown("""
-    ### Transform Your Hockey Program with Advanced Analytics
-
-    Track player development, manage teams, and make data-driven decisions with our comprehensive platform.
-    """)
-
-    # Feature Highlights
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.markdown("### 📊 Player Development Tracking")
-        st.markdown("""
-        - Advanced metrics for both skaters and goalies
-        - Customizable feedback templates
-        - Progress visualization and reporting
-        - Age-specific development milestones
-        """)
-
-        st.markdown("### 🎯 Performance Analytics")
-        st.markdown("""
-        - Detailed statistical analysis
-        - Development trend visualization
-        - Custom report generation
-        - Compare against age group averages
-        """)
-
-    with col2:
-        st.markdown("### 👥 Team Management")
-        st.markdown("""
-        - Roster management
-        - Practice planning tools
-        - Team performance tracking
-        - Parent communication portal
-        """)
-
-        st.markdown("### 📝 Coach Feedback System")
-        st.markdown("""
-        - Structured evaluation templates
-        - Real-time feedback submission
-        - Development recommendations
-        - Progress tracking
-        """)
-
-    # Call to Action
-    st.markdown("---")
-    col1, col2, col3 = st.columns([1,2,1])
+    col1, col2 = st.columns([1,2,1])
 
     with col2:
         st.markdown("### Start Your Free Trial Today!")
@@ -142,4 +99,4 @@ def display_landing_page():
     else:
         display_feature_preview()
 
-    return True  # Show landing page content
+    return True  # Show landing page

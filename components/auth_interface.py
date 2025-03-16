@@ -23,16 +23,20 @@ def login_user():
                 st.error("Please enter both username and password")
                 return
 
-            user = User.query.filter_by(username=username).first()
-            if user and user.check_password(password):
-                user.last_login = datetime.utcnow()
-                db.session.commit()
-                st.session_state.user = user
-                st.session_state.is_admin = user.is_admin
-                st.success(f"Welcome back, {user.name}!")
-                st.rerun()
-            else:
-                st.error("Invalid username or password")
+            try:
+                user = User.query.filter_by(username=username).first()
+                if user and user.check_password(password):
+                    user.last_login = datetime.utcnow()
+                    db.session.commit()
+                    st.session_state.user = user
+                    st.session_state.is_admin = user.is_admin
+                    st.success(f"Welcome back, {user.name}!")
+                    st.rerun()
+                else:
+                    st.error("Invalid username or password")
+            except Exception as e:
+                st.error(f"Login error: {str(e)}")
+                db.session.rollback()
 
 def create_admin():
     """Create initial admin user"""
