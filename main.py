@@ -98,6 +98,15 @@ if not show_landing:
                     st.error(f"Error initializing database: {str(e)}")
 
             try:
+                # Add a prominent logout button in the header
+                header_col1, header_col2 = st.columns([6, 1])
+                with header_col2:
+                    if st.button("🚪 Logout", type="primary", use_container_width=True):
+                        st.session_state.clear()
+                        st.query_params.clear()
+                        st.info("Logging out...")
+                        st.rerun()
+                
                 # Display main content - filter players by current user
                 user_id = st.session_state.user['id'] if 'user' in st.session_state else None
                 players_df = get_players_df(user_id=user_id)
