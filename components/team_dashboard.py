@@ -137,15 +137,22 @@ def create_team_skill_heatmap(players_df):
     skill_data = []
 
     for _, player in players_df.iterrows():
-        player_skills = {'Player': player['name'], 'Position': player['team_position']}
+        player_skills = {'Player': to_str(player['name']), 'Position': to_str(player['team_position'])}
 
         for skill in skill_cols:
             if pd.notna(player[skill]):
-                # Convert to a 1-5 scale if needed
-                val = float(player[skill])
-                if val > 5:  # Percentage values
-                    val = val / 20  # Convert percentage to rough 0-5 scale
-                player_skills[skill.replace('_', ' ').title()] = val
+                # Convert to a 1-5 scale if needed (ensuring native Python float)
+                try:
+                    val = to_float(player[skill])
+                    if val is None:
+                        continue
+                        
+                    if val > 5:  # Percentage values
+                        val = val / 20  # Convert percentage to rough 0-5 scale
+                    player_skills[skill.replace('_', ' ').title()] = val
+                except (TypeError, ValueError):
+                    # Skip skills with invalid values
+                    continue
 
         skill_data.append(player_skills)
 
@@ -354,10 +361,18 @@ def display_player_comparison_tool(players_df):
         player_skills = []
         for metric in skill_metrics:
             if pd.notna(player[metric]):
-                val = float(player[metric])
-                if val > 5:  # Percentage values
-                    val = val / 20  # Convert to 0-5 scale
-                player_skills.append(val)
+                # Safely convert to Python float (handles numpy types)
+                try:
+                    val = to_float(player[metric])
+                    if val is None:
+                        player_skills.append(0)
+                        continue
+                        
+                    if val > 5:  # Percentage values
+                        val = val / 20  # Convert to 0-5 scale
+                    player_skills.append(val)
+                except (TypeError, ValueError):
+                    player_skills.append(0)
             else:
                 player_skills.append(0)
 
@@ -365,7 +380,7 @@ def display_player_comparison_tool(players_df):
             r=player_skills,
             theta=[m.replace('_', ' ').title() for m in skill_metrics],
             fill='toself',
-            name=player['name']
+            name=to_str(player['name'])
         ))
 
     fig.update_layout(
@@ -391,14 +406,22 @@ def display_player_comparison_tool(players_df):
         row = {'Metric': metric.replace('_', ' ').title()}
 
         for _, player in compare_df.iterrows():
-            player_name = player['name']
+            player_name = to_str(player['name'])
             value = player.get(metric, 'N/A')
 
             if pd.notna(value):
-                if isinstance(value, (int, float)):
-                    row[player_name] = f"{value:.1f}" if isinstance(value, float) else str(value)
+                if isinstance(value, (int, float, np.integer, np.floating)):
+                    # Handle numpy numeric types
+                    if hasattr(value, 'item'):
+                        value = value.item()
+                    
+                    # Format the value
+                    if isinstance(value, float):
+                        row[player_name] = f"{value:.1f}" 
+                    else:
+                        row[player_name] = str(value)
                 else:
-                    row[player_name] = str(value)
+                    row[player_name] = to_str(value)
             else:
                 row[player_name] = 'N/A'
 
