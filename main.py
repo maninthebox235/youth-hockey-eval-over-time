@@ -16,6 +16,7 @@ from components.peer_comparison import display_peer_comparison_interface
 from components.training_plans import display_training_plan_interface
 from components.video_analysis import display_video_analysis_interface
 from components.onboarding import display_onboarding
+from components.admin_dashboard import display_admin_dashboard
 import time
 
 # Page configuration
