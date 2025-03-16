@@ -14,8 +14,8 @@ def seed_database(n_players=20):
             player = Player(
                 name=names[i],
                 age=int(ages[i]),  # Convert numpy int to Python int
-                age_group=f"U{(ages[i] // 2) * 2}",
-                position=np.random.choice(['Forward', 'Defense', 'Goalie']),  # String is already Python string
+                age_group=f"U{(int(ages[i]) // 2) * 2}",  # Convert age for group calculation
+                position=np.random.choice(['Forward', 'Defense', 'Goalie']).item(),  # Convert numpy string
                 skating_speed=float(np.random.uniform(60, 100)),  # Convert numpy float
                 shooting_accuracy=float(np.random.uniform(50, 95)),
                 games_played=int(np.random.randint(10, 50)),  # Convert numpy int
@@ -36,25 +36,13 @@ def seed_database(n_players=20):
         db.session.rollback()
         return False
 
-def clear_database():
-    """Clear all players and related data from the database"""
-    try:
-        # The cascade delete will handle related records
-        Player.query.delete()
-        db.session.commit()
-        return True
-    except Exception as e:
-        print(f"Error clearing database: {e}")
-        db.session.rollback()
-        return False
-
 def generate_player_history(player, months=12):
     """Generate historical data for a player"""
     dates = pd.date_range(end=datetime.now(), periods=months, freq='ME')
 
     for i, date in enumerate(dates):
         history = PlayerHistory(
-            player_id=player.id,
+            player_id=int(player.id),  # Ensure Python int
             date=date.date(),
             skating_speed=float(70 + (20 * i/months) + np.random.normal(0, 2)),
             shooting_accuracy=float(60 + (25 * i/months) + np.random.normal(0, 3)),
@@ -89,6 +77,7 @@ def get_players_df():
             'saves': int(p.saves) if p.saves is not None else 0,
             'join_date': p.join_date
         } for p in players]
+
         return pd.DataFrame(data)
     except Exception as e:
         print(f"Error getting players data: {e}")
@@ -100,11 +89,12 @@ def get_player_history(player_id):
         # Convert player_id to Python int to avoid numpy type issues
         player_id = int(player_id)
 
-        # Get player position first
+        # Query the player
         player = Player.query.get(player_id)
         if not player:
             return pd.DataFrame()
 
+        # Get history records
         history = PlayerHistory.query.filter_by(player_id=player_id).order_by(PlayerHistory.date).all()
         if not history:
             return pd.DataFrame()
@@ -131,3 +121,15 @@ def get_player_history(player_id):
     except Exception as e:
         print(f"Error getting player history: {e}")
         return pd.DataFrame()
+
+def clear_database():
+    """Clear all players and related data from the database"""
+    try:
+        # The cascade delete will handle related records
+        Player.query.delete()
+        db.session.commit()
+        return True
+    except Exception as e:
+        print(f"Error clearing database: {e}")
+        db.session.rollback()
+        return False
