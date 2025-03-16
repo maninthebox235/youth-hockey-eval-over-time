@@ -108,6 +108,8 @@ def display_player_profile(player_data, player_history):
 
 def _display_skater_stats(player_data):
     """Display statistics for skater players"""
+    from utils.type_converter import to_float, to_int
+    
     metrics_col1, metrics_col2, metrics_col3 = st.columns(3)
 
     # Get benchmarks
@@ -115,10 +117,8 @@ def _display_skater_stats(player_data):
     shooting_benchmark = get_age_benchmark(player_data['age'], 'shooting_accuracy')
 
     with metrics_col1:
-        current = player_data.get('skating_speed', 0) or 0
-        # Handle pandas Series correctly
-        if hasattr(current, 'item'):
-            current = current.item()
+        # Use type converter to handle various numeric types consistently
+        current = to_float(player_data.get('skating_speed', 0)) or 0
         # Ensure value is in 1-5 range
         current = min(max(current, 1), 5) if current else 0
         st.metric(
@@ -128,10 +128,8 @@ def _display_skater_stats(player_data):
         )
 
     with metrics_col2:
-        current = player_data.get('shooting_accuracy', 0) or 0
-        # Handle pandas Series correctly
-        if hasattr(current, 'item'):
-            current = current.item()
+        # Use type converter to handle various numeric types consistently
+        current = to_float(player_data.get('shooting_accuracy', 0)) or 0
         # Ensure value is in 1-5 range
         current = min(max(current, 1), 5) if current else 0
         st.metric(
@@ -141,30 +139,25 @@ def _display_skater_stats(player_data):
         )
 
     with metrics_col3:
-        st.metric("Games Played", player_data.get('games_played', 0))
+        st.metric("Games Played", to_int(player_data.get('games_played', 0)) or 0)
 
     # Additional stats
     stats_col1, stats_col2 = st.columns(2)
     with stats_col1:
-        st.metric("Goals", player_data.get('goals', 0))
+        st.metric("Goals", to_int(player_data.get('goals', 0)) or 0)
     with stats_col2:
-        st.metric("Assists", player_data.get('assists', 0))
+        st.metric("Assists", to_int(player_data.get('assists', 0)) or 0)
 
 def _display_goalie_stats(player_data):
     """Display statistics for goalie players"""
+    from utils.type_converter import to_float, to_int
+    
     metrics_col1, metrics_col2, metrics_col3 = st.columns(3)
 
-    save_pct = player_data.get('save_percentage', 0) or 0
-    reaction = player_data.get('reaction_time', 0) or 0
-    positioning = player_data.get('positioning', 0) or 0
-    
-    # Handle pandas Series correctly
-    if hasattr(save_pct, 'item'):
-        save_pct = save_pct.item()
-    if hasattr(reaction, 'item'):
-        reaction = reaction.item()
-    if hasattr(positioning, 'item'):
-        positioning = positioning.item()
+    # Use type conversion functions for consistent data handling
+    save_pct = to_float(player_data.get('save_percentage', 0)) or 0
+    reaction = to_float(player_data.get('reaction_time', 0)) or 0
+    positioning = to_float(player_data.get('positioning', 0)) or 0
     
     # Ensure values are in 1-5 range
     reaction = min(max(reaction, 1), 5) if reaction else 0
@@ -179,15 +172,21 @@ def _display_goalie_stats(player_data):
 
     # Additional goalie stats
     stats_col1, stats_col2 = st.columns(2)
+    
+    # Get integer metrics with proper conversion
+    games_played = to_int(player_data.get('games_played', 0)) or 0
+    saves = to_int(player_data.get('saves', 0)) or 0
+    goals_against = to_int(player_data.get('goals_against', 0)) or 0
+    
     with stats_col1:
-        st.metric("Games Played", player_data.get('games_played', 0))
-        st.metric("Saves", player_data.get('saves', 0))
+        st.metric("Games Played", games_played)
+        st.metric("Saves", saves)
     with stats_col2:
-        st.metric("Goals Against", player_data.get('goals_against', 0))
+        st.metric("Goals Against", goals_against)
 
         # Calculate save percentage
-        total_shots = player_data.get('saves', 0) + player_data.get('goals_against', 0)
-        save_percentage = (player_data.get('saves', 0) / total_shots * 100) if total_shots > 0 else 0
+        total_shots = saves + goals_against
+        save_percentage = (saves / total_shots * 100) if total_shots > 0 else 0
         st.metric("Game Save Percentage", f"{save_percentage:.1f}%")
 
 def _display_development_charts(player_data, player_history):
@@ -225,14 +224,13 @@ def _display_development_charts(player_data, player_history):
 def get_player(player_id):
     """Get player by ID"""
     try:
-        # Convert numpy int64 or any other numeric type to Python int
-        try:
-            player_id = int(player_id)
-        except (TypeError, ValueError):
-            if hasattr(player_id, 'item'):
-                player_id = int(player_id.item())
-            else:
-                raise ValueError("Invalid player ID type")
+        # Use our type_converter utility to handle any numeric type including numpy types
+        from utils.type_converter import to_int
+        player_id = to_int(player_id)
+        
+        if player_id is None:
+            print("Invalid player ID: None after conversion")
+            return None
 
         from database.models import Player
         player = Player.query.get(player_id)
