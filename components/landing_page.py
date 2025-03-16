@@ -271,16 +271,9 @@ def display_feature_preview():
         </div>
         """
         
-        # Using a container to make the whole card area clickable
-        video_card = st.container()
-        with video_card:
-            st.markdown(card_html, unsafe_allow_html=True)
-            button_clicked = st.button("", key="video-analysis-button", help="Video Analysis")
-            # We don't need this CSS here since we're using the unified button styles
-            # from the main premium cards CSS
-        
-        # Handle button click
-        if button_clicked:
+        # Simply display the card and use a normal button below it
+        st.markdown(card_html, unsafe_allow_html=True)
+        if st.button("View Feature", key="video-analysis-button"):
             st.session_state.show_premium_preview = "video_analysis"
             st.rerun()
     
@@ -297,14 +290,9 @@ def display_feature_preview():
         </div>
         """
         
-        # Using a container to make the whole card area clickable
-        training_card = st.container()
-        with training_card:
-            st.markdown(card_html, unsafe_allow_html=True)
-            button_clicked = st.button("", key="training-plans-button", help="Training Plans")
-        
-        # Handle button click
-        if button_clicked:
+        # Simply display the card and use a normal button below it
+        st.markdown(card_html, unsafe_allow_html=True)
+        if st.button("View Feature", key="training-plans-button"):
             st.session_state.show_premium_preview = "training_plans"
             st.rerun()
     
@@ -321,14 +309,9 @@ def display_feature_preview():
         </div>
         """
         
-        # Using a container to make the whole card area clickable
-        peer_card = st.container()
-        with peer_card:
-            st.markdown(card_html, unsafe_allow_html=True)
-            button_clicked = st.button("", key="peer-comparison-button", help="Peer Comparison")
-        
-        # Handle button click
-        if button_clicked:
+        # Simply display the card and use a normal button below it
+        st.markdown(card_html, unsafe_allow_html=True)
+        if st.button("View Feature", key="peer-comparison-button"):
             st.session_state.show_premium_preview = "peer_comparison"
             st.rerun()
     
@@ -638,12 +621,9 @@ def display_feature_preview():
     
     # Team Dashboard Card
     with team_cols[0]:
-        # Create a clickable container
-        team_dashboard_container = st.container()
-        
-        # Create the card with clickable class
-        team_dashboard_container.markdown("""
-        <div class="team-card team-card-1 clickable-card" id="team-dashboard-card-div">
+        # Create the card
+        st.markdown("""
+        <div class="team-card team-card-1 clickable-card">
             <div class="team-badge">TEAM</div>
             <div class="team-card-title">Team Dashboard</div>
             <div class="team-card-text">
@@ -652,19 +632,16 @@ def display_feature_preview():
         </div>
         """, unsafe_allow_html=True)
         
-        # Handle container click
-        if team_dashboard_container.button("", key="team-dashboard-button", help="Team Dashboard"):
+        # Add a normal button below it
+        if st.button("View Feature", key="team-dashboard-button"):
             st.session_state.show_team_preview = "team_dashboard"
             st.rerun()
     
     # Tryout Evaluation Card
     with team_cols[1]:
-        # Create a clickable container
-        tryout_evaluation_container = st.container()
-        
-        # Create the card with clickable class
-        tryout_evaluation_container.markdown("""
-        <div class="team-card team-card-2 clickable-card" id="tryout-evaluation-card-div">
+        # Create the card
+        st.markdown("""
+        <div class="team-card team-card-2 clickable-card">
             <div class="team-badge">TEAM</div>
             <div class="team-card-title">Tryout Evaluation</div>
             <div class="team-card-text">
@@ -673,19 +650,16 @@ def display_feature_preview():
         </div>
         """, unsafe_allow_html=True)
         
-        # Handle container click
-        if tryout_evaluation_container.button("", key="tryout-evaluation-button", help="Tryout Evaluation"):
+        # Add a normal button below it
+        if st.button("View Feature", key="tryout-evaluation-button"):
             st.session_state.show_team_preview = "tryout_evaluation"
             st.rerun()
     
     # Custom Reports Card
     with team_cols[2]:
-        # Create a clickable container
-        custom_reports_container = st.container()
-        
-        # Create the card with clickable class
-        custom_reports_container.markdown("""
-        <div class="team-card team-card-3 clickable-card" id="custom-reports-card-div">
+        # Create the card
+        st.markdown("""
+        <div class="team-card team-card-3 clickable-card">
             <div class="team-badge">TEAM</div>
             <div class="team-card-title">Custom Reports</div>
             <div class="team-card-text">
@@ -694,8 +668,8 @@ def display_feature_preview():
         </div>
         """, unsafe_allow_html=True)
         
-        # Handle container click
-        if custom_reports_container.button("", key="custom-reports-button", help="Custom Reports"):
+        # Add a normal button below it
+        if st.button("View Feature", key="custom-reports-button"):
             st.session_state.show_team_preview = "custom_reports"
             st.rerun()
     
