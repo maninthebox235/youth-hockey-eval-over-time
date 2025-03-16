@@ -478,8 +478,8 @@ def display_tryout_evaluation_mode(team_id):
                 form_key = f"tryout_form_{team.id}"
                 
                 # Check if we have a player_id in the URL query params
-                query_params = st.experimental_get_query_params()
-                url_player_id = query_params.get("player_id", [None])[0]
+                query_params = st.query_params
+                url_player_id = query_params.get("player_id", None)
                 
                 if url_player_id and url_player_id.isdigit():
                     # We have a player_id in the URL, let's use it
@@ -517,7 +517,7 @@ def display_tryout_evaluation_mode(team_id):
                         player_position = selected_player.position
                     else:
                         # If player not found, clear the URL param
-                        st.experimental_set_query_params()
+                        st.query_params.clear()
                         st.rerun()
                 else:
                     # No player_id in URL, show normal dropdown
@@ -535,7 +535,7 @@ def display_tryout_evaluation_mode(team_id):
                         # If an existing player is selected and it's different from URL
                         if selected_player_id > 0 and str(selected_player_id) != url_player_id:
                             # Update URL and trigger rerun
-                            st.experimental_set_query_params(player_id=selected_player_id)
+                            st.query_params["player_id"] = str(selected_player_id)
                             st.rerun()
                         
                         # Handle new player selection
