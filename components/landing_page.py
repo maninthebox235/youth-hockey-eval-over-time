@@ -109,66 +109,468 @@ def display_feature_preview():
     # Premium Features Section
     st.subheader("Premium Features")
     
+    # Initialize session state for feature previews if not exists
+    if 'show_premium_preview' not in st.session_state:
+        st.session_state.show_premium_preview = None
+    
     premium_cols = st.columns(3)
     
+    # Video Analysis Card
     with premium_cols[0]:
         st.markdown("""
-        <div class="feature-card">
+        <div class="feature-card" style="cursor: pointer;" onclick="this.style.backgroundColor='#f0f8ff'; setTimeout(function(){
+            document.querySelector('button[kind=secondary][data-testid*=video-analysis-preview]').click();
+        }, 100);">
             <div class="feature-icon">🎬</div>
             <div class="feature-title">Video Analysis <span class="premium-badge">PREMIUM</span></div>
             <p>Upload practice or game footage for detailed technique analysis with actionable feedback.</p>
+            <div style="text-align: center; color: #1E88E5; margin-top: 10px;">Click to preview ↓</div>
         </div>
         """, unsafe_allow_html=True)
+        
+        # Hidden button that will be clicked by JavaScript
+        if st.button("Preview Video Analysis", key="video-analysis-preview", type="secondary", use_container_width=True, help="Click to see a preview of video analysis features"):
+            st.session_state.show_premium_preview = "video_analysis"
     
+    # Training Plans Card
     with premium_cols[1]:
         st.markdown("""
-        <div class="feature-card">
+        <div class="feature-card" style="cursor: pointer;" onclick="this.style.backgroundColor='#f0f8ff'; setTimeout(function(){
+            document.querySelector('button[kind=secondary][data-testid*=training-plans-preview]').click();
+        }, 100);">
             <div class="feature-icon">🏋️</div>
             <div class="feature-title">Training Plans <span class="premium-badge">PREMIUM</span></div>
             <p>Personalized development plans based on player metrics with targeted drills and exercises.</p>
+            <div style="text-align: center; color: #1E88E5; margin-top: 10px;">Click to preview ↓</div>
         </div>
         """, unsafe_allow_html=True)
+        
+        # Hidden button that will be clicked by JavaScript
+        if st.button("Preview Training Plans", key="training-plans-preview", type="secondary", use_container_width=True, help="Click to see a preview of training plan features"):
+            st.session_state.show_premium_preview = "training_plans"
     
+    # Peer Comparison Card
     with premium_cols[2]:
         st.markdown("""
-        <div class="feature-card">
+        <div class="feature-card" style="cursor: pointer;" onclick="this.style.backgroundColor='#f0f8ff'; setTimeout(function(){
+            document.querySelector('button[kind=secondary][data-testid*=peer-comparison-preview]').click();
+        }, 100);">
             <div class="feature-icon">🔍</div>
             <div class="feature-title">Peer Comparison <span class="premium-badge">PREMIUM</span></div>
             <p>Anonymous benchmarking against other players in the same age group and position.</p>
+            <div style="text-align: center; color: #1E88E5; margin-top: 10px;">Click to preview ↓</div>
         </div>
         """, unsafe_allow_html=True)
+        
+        # Hidden button that will be clicked by JavaScript
+        if st.button("Preview Peer Comparison", key="peer-comparison-preview", type="secondary", use_container_width=True, help="Click to see a preview of peer comparison features"):
+            st.session_state.show_premium_preview = "peer_comparison"
+    
+    # Show premium feature preview if one is selected
+    if st.session_state.show_premium_preview == "video_analysis":
+        st.markdown("""
+        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 10px; margin-top: 20px; border-left: 5px solid #FFD700;">
+            <h3>Video Analysis Preview</h3>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        video_col1, video_col2 = st.columns([1, 1])
+        
+        with video_col1:
+            st.image("https://images.unsplash.com/photo-1515703407324-5f753afd8be8", caption="Video Analysis Interface")
+            st.markdown("""
+            <div style="margin-top: 10px;">
+                <h4>Technique Assessment</h4>
+                <p>Upload videos of practice sessions or games for detailed technical analysis</p>
+                <ul>
+                    <li>Skating technique analysis</li>
+                    <li>Shooting form assessment</li>
+                    <li>Automated technique scoring</li>
+                </ul>
+            </div>
+            """, unsafe_allow_html=True)
+            
+        with video_col2:
+            # Create sample technique analysis
+            st.markdown("#### Sample Analysis Results")
+            
+            # Add sample feedback
+            st.info("**Skating Analysis**: Good knee bend and stride length. Work on edge control during crossovers.")
+            st.info("**Shooting Analysis**: Proper weight transfer. Aim for quicker release and follow-through.")
+            
+            # Add sample metrics
+            metrics = {
+                "Technique Score": 82,
+                "Efficiency Rating": 78,
+                "Form Quality": 85
+            }
+            
+            for metric, value in metrics.items():
+                st.metric(metric, f"{value}/100")
+        
+        # Close button
+        if st.button("Close Preview", key="close_video_preview", use_container_width=True):
+            st.session_state.show_premium_preview = None
+            st.rerun()
+            
+    elif st.session_state.show_premium_preview == "training_plans":
+        st.markdown("""
+        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 10px; margin-top: 20px; border-left: 5px solid #FFD700;">
+            <h3>Training Plans Preview</h3>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        plan_col1, plan_col2 = st.columns([1, 1])
+        
+        with plan_col1:
+            st.image("https://images.unsplash.com/photo-1471295253337-3ceaaedca402", caption="Personalized Training Interface")
+            st.markdown("""
+            <div style="margin-top: 10px;">
+                <h4>Personalized Development</h4>
+                <p>Get custom training plans based on player's specific needs and metrics</p>
+                <ul>
+                    <li>Age-appropriate drills</li>
+                    <li>Position-specific exercises</li>
+                    <li>Targeted skills improvement</li>
+                    <li>Progress tracking and adjustments</li>
+                </ul>
+            </div>
+            """, unsafe_allow_html=True)
+            
+        with plan_col2:
+            # Create sample training plan
+            st.markdown("#### Weekly Training Schedule")
+            
+            # Create sample schedule
+            schedule = [
+                {"Day": "Monday", "Focus": "Skating & Edges", "Duration": "45 min"},
+                {"Day": "Tuesday", "Focus": "Stickhandling", "Duration": "30 min"},
+                {"Day": "Wednesday", "Focus": "Rest Day", "Duration": "—"},
+                {"Day": "Thursday", "Focus": "Shooting Technique", "Duration": "40 min"},
+                {"Day": "Friday", "Focus": "Game Situations", "Duration": "45 min"},
+                {"Day": "Saturday", "Focus": "Team Practice", "Duration": "90 min"},
+                {"Day": "Sunday", "Focus": "Light Skills Work", "Duration": "30 min"}
+            ]
+            
+            # Display schedule
+            st.dataframe(pd.DataFrame(schedule), use_container_width=True)
+            
+            st.markdown("#### Recommended Drills")
+            st.success("**Edge Control Drill**: Figure 8s around cones focusing on inside and outside edges")
+            st.success("**Quick Release**: Rapid fire shooting from different angles with minimal setup time")
+        
+        # Close button
+        if st.button("Close Preview", key="close_plan_preview", use_container_width=True):
+            st.session_state.show_premium_preview = None
+            st.rerun()
+            
+    elif st.session_state.show_premium_preview == "peer_comparison":
+        st.markdown("""
+        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 10px; margin-top: 20px; border-left: 5px solid #FFD700;">
+            <h3>Peer Comparison Preview</h3>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        from utils.showcase_data import get_sample_player_data, get_sample_peer_data, generate_peer_comparison_chart
+        
+        # Get sample data
+        player = get_sample_player_data()
+        peer_data = get_sample_peer_data(player)
+        
+        peer_col1, peer_col2 = st.columns([1, 1])
+        
+        with peer_col1:
+            # Create percentile gauges
+            import plotly.graph_objects as go
+            
+            # Calculate percentile for skating speed
+            player_value = player['skating_speed']
+            peer_values = peer_data['skating_speed'].values
+            percentile = sum(1 for x in peer_values if x < player_value) / len(peer_values) * 100
+            
+            fig = go.Figure(go.Indicator(
+                mode="gauge+number",
+                value=percentile,
+                domain={'x': [0, 1], 'y': [0, 1]},
+                title={'text': "Skating Speed Percentile"},
+                gauge={
+                    'axis': {'range': [0, 100]},
+                    'bar': {'color': "royalblue"},
+                    'steps': [
+                        {'range': [0, 25], 'color': "lightgray"},
+                        {'range': [25, 50], 'color': "lightgreen"},
+                        {'range': [50, 75], 'color': "green"},
+                        {'range': [75, 100], 'color': "darkgreen"}
+                    ],
+                    'threshold': {
+                        'line': {'color': "red", 'width': 4},
+                        'thickness': 0.75,
+                        'value': 50
+                    }
+                }
+            ))
+            
+            fig.update_layout(height=250)
+            st.plotly_chart(fig, use_container_width=True)
+            
+            st.markdown("""
+            <div style="margin-top: 10px;">
+                <h4>Anonymous Benchmarking</h4>
+                <p>Compare your player's performance against peers in the same age group and position</p>
+                <ul>
+                    <li>Percentile rankings for key metrics</li>
+                    <li>Age-appropriate comparisons</li>
+                    <li>Position-specific metrics</li>
+                </ul>
+            </div>
+            """, unsafe_allow_html=True)
+            
+        with peer_col2:
+            # Create histogram comparison
+            st.markdown("#### Skill Distribution Comparison")
+            
+            hist_fig = generate_peer_comparison_chart(
+                player_value=player['skating_speed'], 
+                peer_values=peer_data['skating_speed'].values,
+                metric_name="Skating Speed"
+            )
+            st.plotly_chart(hist_fig, use_container_width=True)
+            
+            st.markdown("#### Peer Competition Insights")
+            st.info("**Top 15%** in skating speed among peers")
+            st.info("**Above average** in shooting accuracy (65th percentile)")
+            st.warning("**Development needed** in puck control (32nd percentile)")
+        
+        # Close button
+        if st.button("Close Preview", key="close_peer_preview", use_container_width=True):
+            st.session_state.show_premium_preview = None
+            st.rerun()
     
     # Team Features Section
     st.subheader("Team & Organization Features")
     
+    # Initialize session state for team feature previews if not exists
+    if 'show_team_preview' not in st.session_state:
+        st.session_state.show_team_preview = None
+    
     team_cols = st.columns(3)
     
+    # Team Dashboard Card
     with team_cols[0]:
         st.markdown("""
-        <div class="feature-card">
+        <div class="feature-card" style="cursor: pointer;" onclick="this.style.backgroundColor='#f0f8ff'; setTimeout(function(){
+            document.querySelector('button[kind=secondary][data-testid*=team-dashboard-preview]').click();
+        }, 100);">
             <div class="feature-icon">📋</div>
             <div class="feature-title">Team Dashboard <span class="team-badge">TEAM</span></div>
             <p>Comprehensive team overview with skill heatmaps, performance metrics, and development tracking.</p>
+            <div style="text-align: center; color: #1E88E5; margin-top: 10px;">Click to preview ↓</div>
         </div>
         """, unsafe_allow_html=True)
+        
+        # Hidden button that will be clicked by JavaScript
+        if st.button("Preview Team Dashboard", key="team-dashboard-preview", type="secondary", use_container_width=True, help="Click to see a preview of team dashboard features"):
+            st.session_state.show_team_preview = "team_dashboard"
     
+    # Tryout Evaluation Card
     with team_cols[1]:
         st.markdown("""
-        <div class="feature-card">
+        <div class="feature-card" style="cursor: pointer;" onclick="this.style.backgroundColor='#f0f8ff'; setTimeout(function(){
+            document.querySelector('button[kind=secondary][data-testid*=tryout-evaluation-preview]').click();
+        }, 100);">
             <div class="feature-icon">🏁</div>
             <div class="feature-title">Tryout Evaluation <span class="team-badge">TEAM</span></div>
             <p>Streamlined assessment system for player tryouts with customizable evaluation criteria.</p>
+            <div style="text-align: center; color: #1E88E5; margin-top: 10px;">Click to preview ↓</div>
         </div>
         """, unsafe_allow_html=True)
+        
+        # Hidden button that will be clicked by JavaScript
+        if st.button("Preview Tryout Evaluation", key="tryout-evaluation-preview", type="secondary", use_container_width=True, help="Click to see a preview of tryout evaluation features"):
+            st.session_state.show_team_preview = "tryout_evaluation"
     
+    # Custom Reports Card
     with team_cols[2]:
         st.markdown("""
-        <div class="feature-card">
+        <div class="feature-card" style="cursor: pointer;" onclick="this.style.backgroundColor='#f0f8ff'; setTimeout(function(){
+            document.querySelector('button[kind=secondary][data-testid*=custom-reports-preview]').click();
+        }, 100);">
             <div class="feature-icon">📝</div>
             <div class="feature-title">Custom Reports <span class="team-badge">TEAM</span></div>
             <p>Generate detailed team and player reports for season reviews and development planning.</p>
+            <div style="text-align: center; color: #1E88E5; margin-top: 10px;">Click to preview ↓</div>
         </div>
         """, unsafe_allow_html=True)
+        
+        # Hidden button that will be clicked by JavaScript
+        if st.button("Preview Custom Reports", key="custom-reports-preview", type="secondary", use_container_width=True, help="Click to see a preview of custom reports features"):
+            st.session_state.show_team_preview = "custom_reports"
+    
+    # Show team feature preview if one is selected
+    if st.session_state.show_team_preview == "team_dashboard":
+        st.markdown("""
+        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 10px; margin-top: 20px; border-left: 5px solid #4169E1;">
+            <h3>Team Dashboard Preview</h3>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        import plotly.express as px
+        import numpy as np
+        
+        # Create sample team data for heatmap
+        players = ['Player 1', 'Player 2', 'Player 3', 'Player 4', 'Player 5', 
+                 'Player 6', 'Player 7', 'Player 8', 'Player 9', 'Player 10']
+        
+        skills = ['Skating', 'Shooting', 'Passing', 'Puck Control', 'Hockey IQ']
+        
+        # Generate random skill values (1-5 scale)
+        data = np.random.uniform(2.5, 4.8, size=(len(players), len(skills)))
+        
+        # Create heatmap
+        fig = px.imshow(
+            data, 
+            x=skills, 
+            y=players,
+            color_continuous_scale='RdBu_r',
+            aspect="auto",
+            labels=dict(x="Skill", y="Player", color="Rating"),
+            title="Team Skills Heatmap",
+            zmin=1, zmax=5
+        )
+        
+        fig.update_layout(height=400)
+        st.plotly_chart(fig, use_container_width=True)
+        
+        metrics_col1, metrics_col2, metrics_col3, metrics_col4 = st.columns(4)
+        
+        with metrics_col1:
+            st.metric("Team Size", "18 players")
+        with metrics_col2:
+            st.metric("Games Played", "24")
+        with metrics_col3:
+            st.metric("Win Rate", "62%")
+        with metrics_col4:
+            st.metric("Avg. Goals/Game", "3.7")
+            
+        st.markdown("""
+        <div style="margin-top: 15px;">
+            <h4>Team Dashboard Features</h4>
+            <ul>
+                <li>Visual skill distribution across the team</li>
+                <li>Identify team strengths and weaknesses</li>
+                <li>Track team performance metrics over time</li>
+                <li>Position-based analysis and recommendations</li>
+            </ul>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Close button
+        if st.button("Close Preview", key="close_team_dashboard", use_container_width=True):
+            st.session_state.show_team_preview = None
+            st.rerun()
+            
+    elif st.session_state.show_team_preview == "tryout_evaluation":
+        st.markdown("""
+        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 10px; margin-top: 20px; border-left: 5px solid #4169E1;">
+            <h3>Tryout Evaluation Preview</h3>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        tryout_col1, tryout_col2 = st.columns([1, 1])
+        
+        with tryout_col1:
+            st.image("https://images.unsplash.com/photo-1580692475446-c2fabbbbf835", caption="Tryout Evaluation Interface")
+            
+            st.markdown("""
+            <div style="margin-top: 15px;">
+                <h4>Streamlined Evaluation Process</h4>
+                <ul>
+                    <li>Real-time player scoring during tryouts</li>
+                    <li>Customizable evaluation criteria by age/level</li>
+                    <li>Multiple evaluator input with automatic averaging</li>
+                    <li>Easy-to-use mobile interface for on-ice use</li>
+                </ul>
+            </div>
+            """, unsafe_allow_html=True)
+            
+        with tryout_col2:
+            # Create sample evaluation form
+            st.markdown("#### Sample Tryout Evaluation Form")
+            
+            player_name = st.text_input("Player Name", value="Tryout Player #42")
+            position = st.selectbox("Position", ["Forward", "Defense", "Goalie"])
+            
+            st.markdown("##### Skill Ratings")
+            
+            # Sample sliders
+            skating = st.slider("Skating", 1, 5, 3)
+            shooting = st.slider("Shooting", 1, 5, 4)
+            passing = st.slider("Passing", 1, 5, 3)
+            
+            st.text_area("Notes", "Good speed and first step. Needs work on backwards skating.")
+            
+            st.button("Submit Evaluation (Demo)", key="demo_submit", type="primary", use_container_width=True)
+            
+        # Close button
+        if st.button("Close Preview", key="close_tryout_preview", use_container_width=True):
+            st.session_state.show_team_preview = None
+            st.rerun()
+            
+    elif st.session_state.show_team_preview == "custom_reports":
+        st.markdown("""
+        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 10px; margin-top: 20px; border-left: 5px solid #4169E1;">
+            <h3>Custom Reports Preview</h3>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        reports_col1, reports_col2 = st.columns([1, 1])
+        
+        with reports_col1:
+            st.markdown("#### Report Templates")
+            
+            # Display report types
+            report_types = [
+                "Team Performance Summary",
+                "Individual Player Assessment",
+                "Season Development Progress",
+                "Game-by-Game Analysis",
+                "Position Group Comparison"
+            ]
+            
+            selected_report = st.selectbox("Select Report Type", report_types)
+            
+            st.markdown("""
+            <div style="margin-top: 15px;">
+                <h4>Professional Report Generation</h4>
+                <ul>
+                    <li>Customizable report templates</li>
+                    <li>Export to PDF, Excel, or printable formats</li>
+                    <li>Data-driven insights and visualizations</li>
+                    <li>Coach recommendations and notes inclusion</li>
+                </ul>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            if st.button("Generate Sample Report", key="demo_report", type="primary"):
+                st.success("Sample report generated! See preview on the right.")
+            
+        with reports_col2:
+            st.image("https://images.unsplash.com/photo-1517842645767-c639042777db", caption="Sample Team Report")
+            
+            # Sample report sections
+            st.markdown("""
+            #### Report Sections
+            - **Team Overview**: Season statistics and standings
+            - **Performance Trends**: Charts showing improvement over time
+            - **Strengths & Weaknesses**: Team skill assessment
+            - **Player Highlights**: Top performers in key metrics
+            - **Development Recommendations**: Focus areas for team improvement
+            """)
+        
+        # Close button
+        if st.button("Close Preview", key="close_reports_preview", use_container_width=True):
+            st.session_state.show_team_preview = None
+            st.rerun()
     
     # Pricing Banner
     st.markdown("""
