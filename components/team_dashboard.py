@@ -490,15 +490,20 @@ def display_tryout_evaluation_mode(team_id):
                     player_age = player.age
                     player_position = player.position
                     
-                    # Display player info (read-only)
+                    # Store player info in session state for use in the rest of the form
+                    st.session_state.selected_player_name = player_name
+                    st.session_state.selected_player_age = player_age
+                    st.session_state.selected_player_position = player_position
+                    
+                    # Display player info with updated values from the selected player
                     st.write(f"**Name:** {player_name}")
                     st.write(f"**Age:** {player_age}")
                     st.write(f"**Position:** {player_position}")
                     
                     # Hidden fields to keep the values
-                    st.text_input("Player Name", value=player_name, key="tryout_player_name", label_visibility="collapsed")
-                    st.number_input("Age", min_value=6, max_value=18, value=player_age, key="tryout_player_age", label_visibility="collapsed")
-                    st.selectbox("Position", ["Forward", "Defense", "Goalie"], index=["Forward", "Defense", "Goalie"].index(player_position), key="tryout_player_position", label_visibility="collapsed")
+                    player_name_input = st.text_input("Player Name", value=player_name, key="tryout_player_name", label_visibility="collapsed")
+                    player_age_input = st.number_input("Age", min_value=6, max_value=18, value=player_age, key="tryout_player_age", label_visibility="collapsed")
+                    player_position_input = st.selectbox("Position", ["Forward", "Defense", "Goalie"], index=["Forward", "Defense", "Goalie"].index(player_position), key="tryout_player_position", label_visibility="collapsed")
                 else:
                     # New player form
                     player_name = st.text_input("Player Name", key="tryout_player_name")
@@ -519,8 +524,11 @@ def display_tryout_evaluation_mode(team_id):
 
             # Create skill evaluation sliders based on position
             st.subheader("Skills Assessment")
-
-            if player_position == "Goalie":
+            
+            # Determine the position to use for skills (use the session state if available from dropdown)
+            display_position = st.session_state.get('selected_player_position', player_position)
+            
+            if display_position == "Goalie":
                 # Goalie skills
                 col1, col2 = st.columns(2)
                 with col1:
@@ -553,7 +561,7 @@ def display_tryout_evaluation_mode(team_id):
                     compete_level = st.slider("Compete Level", 1, 5, 3)
 
                 # Add position-specific skills
-                if player_position == "Defense":
+                if display_position == "Defense":
                     defensive_ability = st.slider("Defensive Ability", 1, 5, 3)
                     gap_control = st.slider("Gap Control", 1, 5, 3)
 
