@@ -133,13 +133,14 @@ def display_current_skills(player):
         db.session.rollback()
         player_history = None
     
-    col1, col2 = st.columns(2)
+    # Create a 3-column layout for better display of more metrics
+    col1, col2, col3 = st.columns(3)
     metrics_list = list(metrics.items())
-    mid_point = len(metrics_list) // 2
+    section_size = len(metrics_list) // 3
     
     # First column
     with col1:
-        for metric, description in metrics_list[:mid_point]:
+        for metric, description in metrics_list[:section_size]:
             if hasattr(player, metric):
                 value = getattr(player, metric)
                 if value is not None:
@@ -151,7 +152,19 @@ def display_current_skills(player):
     
     # Second column
     with col2:
-        for metric, description in metrics_list[mid_point:]:
+        for metric, description in metrics_list[section_size:section_size*2]:
+            if hasattr(player, metric):
+                value = getattr(player, metric)
+                if value is not None:
+                    st.metric(
+                        label=metric.replace('_', ' ').title(), 
+                        value=f"{value:.1f}",
+                        help=description
+                    )
+    
+    # Third column
+    with col3:
+        for metric, description in metrics_list[section_size*2:]:
             if hasattr(player, metric):
                 value = getattr(player, metric)
                 if value is not None:
@@ -204,7 +217,8 @@ def add_new_assessment(player):
                     min_value=1,
                     max_value=5,
                     value=current_value,
-                    key=f"rating_{metric}_1"
+                    key=f"rating_{metric}_1",
+                    step=1
                 )
 
         # Second column
@@ -225,7 +239,8 @@ def add_new_assessment(player):
                     min_value=1,
                     max_value=5,
                     value=current_value,
-                    key=f"rating_{metric}_2"
+                    key=f"rating_{metric}_2",
+                    step=1
                 )
 
         # Assessment notes
@@ -274,7 +289,14 @@ def add_new_assessment(player):
                 db.session.add(history)
                 db.session.commit()
 
+                # Clear the form by rerunning
                 st.success("Assessment saved successfully!")
+                
+                # Set a session state flag to indicate we should switch tabs
+                if 'assessment_saved' not in st.session_state:
+                    st.session_state.assessment_saved = True
+                
+                # Return True to trigger tab switch in the parent function
                 return True
 
             except Exception as e:
