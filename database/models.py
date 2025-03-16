@@ -53,7 +53,13 @@ class User(UserMixin, db.Model):
         try:
             print(f"Attempting to verify token: {token[:10]}...") # Print first part of token for debugging
             data = s.loads(token)
-            print(f"Token data loaded successfully: {str(data.keys())}")
+            
+            # Verify that data is a dictionary before accessing keys
+            if not isinstance(data, dict):
+                print(f"Token data has unexpected type: {type(data)}")
+                return None
+                
+            print(f"Token data loaded successfully: {list(data.keys())}")
 
             # Get user ID from token
             user_id = data.get('user_id')
