@@ -293,7 +293,7 @@ def display_auth_interface():
         st.session_state.show_reset_confirmation = False
     
     # Check for reset token in URL
-    query_params = st.experimental_get_query_params()
+    query_params = st.query_params
     if "reset_token" in query_params and "username" in query_params:
         st.session_state.show_reset_confirmation = True
         st.session_state.show_login = False
