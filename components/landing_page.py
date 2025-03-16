@@ -116,6 +116,69 @@ def display_feature_preview():
     
     premium_cols = st.columns(3)
     
+    # Add custom CSS for feature cards
+    st.markdown("""
+    <style>
+    .feature-card {
+        background-color: #f0f8ff;
+        border-radius: 10px;
+        padding: 15px;
+        border-left: 4px solid #1E88E5;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        height: 220px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        position: relative;
+        cursor: pointer;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        background-color: #e6f3ff;
+    }
+    
+    .feature-icon {
+        font-size: 28px;
+        margin-bottom: 10px;
+    }
+    
+    .feature-title {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    
+    .premium-badge {
+        background-color: #FFD700;
+        color: #333;
+        font-size: 12px;
+        padding: 2px 8px;
+        border-radius: 10px;
+        vertical-align: middle;
+    }
+    
+    .team-badge {
+        background-color: #4169E1;
+        color: white;
+        font-size: 12px;
+        padding: 2px 8px;
+        border-radius: 10px;
+        vertical-align: middle;
+    }
+    
+    [data-testid="stButton"] button {
+        background-color: transparent;
+        color: transparent;
+        border: none;
+        position: relative;
+        top: -220px;
+        height: 220px;
+        width: 100%;
+        z-index: 1;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
     # Video Analysis Card
     with premium_cols[0]:
         # Using a transparent button that covers the card
@@ -133,22 +196,6 @@ def display_feature_preview():
             if st.button("Video Analysis", key="video-analysis-card"):
                 st.session_state.show_premium_preview = "video_analysis"
                 st.rerun()
-                
-            # Adding custom CSS to make button invisible but clickable
-            st.markdown("""
-            <style>
-            [data-testid="stButton"] button {
-                background-color: transparent;
-                color: transparent;
-                border: none;
-                position: relative;
-                top: -220px;
-                height: 220px;
-                width: 100%;
-                z-index: 1;
-            }
-            </style>
-            """, unsafe_allow_html=True)
     
     # Training Plans Card
     with premium_cols[1]:
@@ -197,7 +244,7 @@ def display_feature_preview():
         video_col1, video_col2 = st.columns([1, 1])
         
         with video_col1:
-            st.image("https://images.unsplash.com/photo-1508004685479-ba7109026b86", caption="Video Analysis Interface")
+            st.image("https://cdn.pixabay.com/photo/2014/10/22/18/04/man-498473_1280.jpg", caption="Video Analysis Interface")
             st.markdown("""
             <div style="margin-top: 10px;">
                 <h4>Technique Assessment</h4>
@@ -243,7 +290,7 @@ def display_feature_preview():
         plan_col1, plan_col2 = st.columns([1, 1])
         
         with plan_col1:
-            st.image("https://images.unsplash.com/photo-1580813116707-63e986645116", caption="Personalized Hockey Training")
+            st.image("https://cdn.pixabay.com/photo/2019/02/15/08/06/ice-hockey-3997825_1280.jpg", caption="Personalized Hockey Training")
             st.markdown("""
             <div style="margin-top: 10px;">
                 <h4>Personalized Development</h4>
@@ -502,7 +549,7 @@ def display_feature_preview():
         tryout_col1, tryout_col2 = st.columns([1, 1])
         
         with tryout_col1:
-            st.image("https://images.unsplash.com/photo-1515647771017-b5bf9195ae9f", caption="Hockey Tryout Evaluation")
+            st.image("https://cdn.pixabay.com/photo/2017/04/24/09/25/ice-hockey-2255687_1280.jpg", caption="Hockey Tryout Evaluation")
             
             st.markdown("""
             <div style="margin-top: 15px;">
@@ -578,7 +625,7 @@ def display_feature_preview():
                 st.success("Sample report generated! See preview on the right.")
             
         with reports_col2:
-            st.image("https://images.unsplash.com/photo-1486128105845-91daff43f404", caption="Hockey Team Performance Report")
+            st.image("https://cdn.pixabay.com/photo/2018/01/06/23/25/hockey-3066858_1280.jpg", caption="Hockey Team Performance Report")
             
             # Sample report sections
             st.markdown("""
