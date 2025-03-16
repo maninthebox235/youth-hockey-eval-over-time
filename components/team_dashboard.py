@@ -7,6 +7,7 @@ import numpy as np
 from sqlalchemy import func, desc
 from datetime import datetime, timedelta
 from components.age_benchmarks import get_age_appropriate_benchmark
+from utils.type_converter import to_int, to_float, to_str
 
 def get_team_data(team_id):
     """Get comprehensive team data including player metrics"""
@@ -42,12 +43,12 @@ def get_team_data(team_id):
 
             # Collect all metrics that we can find for this player
             player_data = {
-                'player_id': player.id,
+                'player_id': to_int(player.id),
                 'name': player.name,
-                'age': player.age,
+                'age': to_int(player.age),
                 'position': player.position,
                 'team_position': membership.position_in_team,
-                'games_played': player.games_played or 0
+                'games_played': to_int(player.games_played) or 0
             }
 
             # Add all numeric attributes
@@ -56,8 +57,12 @@ def get_team_data(team_id):
                     continue
 
                 value = getattr(player, attr)
-                if isinstance(value, (int, float)) and not isinstance(value, bool):
-                    player_data[attr] = value
+                if isinstance(value, (int, float, np.integer, np.floating)) and not isinstance(value, bool):
+                    # Convert numpy types to Python native types
+                    if hasattr(value, 'item'):
+                        player_data[attr] = value.item()
+                    else:
+                        player_data[attr] = value
 
             players_data.append(player_data)
 
@@ -205,7 +210,9 @@ def identify_team_strengths_weaknesses(players_df):
     for skill in skill_cols:
         valid_values = players_df[skill].dropna()
         if not valid_values.empty:
-            skill_averages[skill] = float(valid_values.mean())
+            # Convert to Python float to ensure we don't have numpy types
+            avg_value = float(valid_values.mean())
+            skill_averages[skill] = avg_value
 
     # Sort skills by average
     sorted_skills = sorted(skill_averages.items(), key=lambda x: x[1], reverse=True)
