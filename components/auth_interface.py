@@ -17,8 +17,8 @@ def login_user():
                 return
 
             try:
-                # Try both username and email login
-                user = User.query.filter((User.username == username) | (User.email == username)).first()
+                # Check username login
+                user = User.query.filter_by(username=username).first()
                 if not user or not user.check_password(password):
                     st.error("Invalid username/email or password")
                     return
