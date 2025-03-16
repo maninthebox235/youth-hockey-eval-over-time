@@ -38,6 +38,8 @@ def init_session_state():
         st.session_state.show_reset_confirmation = False
     if 'authentication_token' not in st.session_state:
         st.session_state.authentication_token = None
+    if 'current_page' not in st.session_state:
+        st.session_state.current_page = None
 
 def login_user():
     """Handle user login"""
@@ -179,27 +181,27 @@ def display_admin_controls():
     with tab1:
         # User Management tab
         st.subheader("User Management")
-    users = User.query.all()
+        users = User.query.all()
 
-    for user in users:
-        with st.expander(f"User: {user.name} ({user.username})"):
-            col1, col2 = st.columns(2)
-            with col1:
-                st.write(f"Admin: {'Yes' if user.is_admin else 'No'}")
-                st.write(f"Last Login: {user.last_login or 'Never'}")
-            with col2:
-                if user.id != st.session_state.user['id']:  # Can't modify own account
-                    if st.button(f"{'Remove' if user.is_admin else 'Make'} Admin", key=f"admin_{user.id}"):
-                        user.is_admin = not user.is_admin
-                        db.session.commit()
-                        st.success(f"Updated admin status for {user.name}")
-                        st.rerun()
+        for user in users:
+            with st.expander(f"User: {user.name} ({user.username})"):
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.write(f"Admin: {'Yes' if user.is_admin else 'No'}")
+                    st.write(f"Last Login: {user.last_login or 'Never'}")
+                with col2:
+                    if user.id != st.session_state.user['id']:  # Can't modify own account
+                        if st.button(f"{'Remove' if user.is_admin else 'Make'} Admin", key=f"admin_{user.id}"):
+                            user.is_admin = not user.is_admin
+                            db.session.commit()
+                            st.success(f"Updated admin status for {user.name}")
+                            st.rerun()
 
-                    if st.button("Delete User", key=f"delete_{user.id}"):
-                        db.session.delete(user)
-                        db.session.commit()
-                        st.success(f"Deleted user {user.name}")
-                        st.rerun()
+                        if st.button("Delete User", key=f"delete_{user.id}"):
+                            db.session.delete(user)
+                            db.session.commit()
+                            st.success(f"Deleted user {user.name}")
+                            st.rerun()
 
     # Add New User
     st.subheader("Add New User")
@@ -354,25 +356,17 @@ def confirm_password_reset():
                     st.rerun()
             except Exception as e:
                 st.error(f"Error resetting password: {str(e)}")
-                db.session_rollback()
+                db.session.rollback()
 
 def display_auth_interface():
     """Main authentication interface"""
     init_session_state()
 
     # Try to authenticate using stored token
-    if ('authentication_token' in st.session_state and 
-        st.session_state.authentication_token and 
-        (not st.session_state.user or not st.session_state.user.get('id'))):
+    if not st.session_state.user and 'authentication_token' in st.session_state and st.session_state.authentication_token:
         try:
-            # Import current app
-            from app import app
-
-            # Verify token with explicit app context
-            with app.app_context():
-                user = User.verify_auth_token(st.session_state.authentication_token)
-
-            if user and user.id:
+            user = User.verify_auth_token(st.session_state.authentication_token)
+            if user:
                 st.session_state.user = {
                     'id': user.id,
                     'username': user.username,
@@ -380,15 +374,9 @@ def display_auth_interface():
                     'is_admin': user.is_admin
                 }
                 st.session_state.is_admin = user.is_admin
-            else:
-                st.session_state.authentication_token = None
-                st.session_state.user = None
-                st.session_state.is_admin = False
-        except Exception as e:
-            print(f"Token verification error: {str(e)}")
+        except:
+            # Clear invalid token
             st.session_state.authentication_token = None
-            st.session_state.user = None
-            st.session_state.is_admin = False
 
     if not st.session_state.user:
         if not User.query.filter_by(is_admin=True).first():
@@ -400,15 +388,26 @@ def display_auth_interface():
         else:
             login_user()
     else:
-        # Display user info and logout button
-        st.sidebar.write(f"Logged in as: {st.session_state.user['name']}")
-        if st.sidebar.button("Logout"):
-            # Clear session state
-            st.session_state.user = None
-            st.session_state.is_admin = False
-            st.session_state.authentication_token = None
-            st.rerun()
+        # Display user info and navigation options
+        with st.sidebar:
+            st.write(f"Welcome, {st.session_state.user['name']}")
 
-        if st.session_state.is_admin:
-            if st.sidebar.button("Admin Controls"):
-                display_admin_controls()
+            # Navigation options
+            if st.button("My Profile"):
+                st.session_state.current_page = "profile"
+            if st.session_state.is_admin and st.button("Admin Controls"):
+                st.session_state.current_page = "admin"
+            if st.button("Logout"):
+                # Clear session state
+                st.session_state.user = None
+                st.session_state.is_admin = False
+                st.session_state.authentication_token = None
+                st.session_state.current_page = None
+                st.rerun()
+
+        # Display current page content
+        if st.session_state.get('current_page') == "profile":
+            from components.user_profile import display_user_profile
+            display_user_profile()
+        elif st.session_state.get('current_page') == "admin" and st.session_state.is_admin:
+            display_admin_controls()
