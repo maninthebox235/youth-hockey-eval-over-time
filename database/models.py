@@ -95,12 +95,40 @@ class CoachFeedback(db.Model):
     # Position-specific ratings
     skating_rating = db.Column(db.Integer, nullable=True)
     shooting_rating = db.Column(db.Integer, nullable=True)
-    teamwork_rating = db.Column(db.Integer)
-
+    teamwork_rating = db.Column(db.Integer, nullable=True)
+    
+    # Skating skills
+    skating_speed_rating = db.Column(db.Integer, nullable=True)
+    backward_skating_rating = db.Column(db.Integer, nullable=True)
+    agility_rating = db.Column(db.Integer, nullable=True)
+    edge_control_rating = db.Column(db.Integer, nullable=True)
+    
+    # Technical skills
+    puck_control_rating = db.Column(db.Integer, nullable=True)
+    passing_accuracy_rating = db.Column(db.Integer, nullable=True)
+    shooting_accuracy_rating = db.Column(db.Integer, nullable=True)
+    receiving_rating = db.Column(db.Integer, nullable=True)
+    stick_protection_rating = db.Column(db.Integer, nullable=True)
+    
+    # Hockey IQ skills
+    hockey_sense_rating = db.Column(db.Integer, nullable=True)
+    decision_making_rating = db.Column(db.Integer, nullable=True)
+    game_awareness_rating = db.Column(db.Integer, nullable=True)
+    
+    # Player-specific skills
+    compete_level_rating = db.Column(db.Integer, nullable=True)
+    offensive_ability_rating = db.Column(db.Integer, nullable=True)
+    defensive_ability_rating = db.Column(db.Integer, nullable=True)
+    net_front_rating = db.Column(db.Integer, nullable=True)
+    gap_control_rating = db.Column(db.Integer, nullable=True)
+    
     # Goalie-specific ratings
     save_technique_rating = db.Column(db.Integer, nullable=True)
     positioning_rating = db.Column(db.Integer, nullable=True)
     rebound_control_rating = db.Column(db.Integer, nullable=True)
+    recovery_rating = db.Column(db.Integer, nullable=True)
+    puck_handling_rating = db.Column(db.Integer, nullable=True)
+    communication_rating = db.Column(db.Integer, nullable=True)
 
     date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
