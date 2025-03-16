@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
 from database.models import db, Player, PlayerHistory
+from utils.type_converter import to_int, to_float, to_datetime, to_date, to_str
 
 def seed_database(n_players=20):
     """Seed the database with initial player data"""
@@ -11,17 +12,19 @@ def seed_database(n_players=20):
         names = [f"Player {i+1}" for i in range(n_players)]
 
         for i in range(n_players):
+            # Use our conversion utilities for consistent type handling
+            age = to_int(ages[i])
             player = Player(
                 name=names[i],
-                age=int(ages[i]),  # Convert numpy int to Python int
-                age_group=f"U{(int(ages[i]) // 2) * 2}",  # Convert age for group calculation
-                position=np.random.choice(['Forward', 'Defense', 'Goalie']).item(),  # Convert numpy string
-                skating_speed=float(np.random.uniform(60, 100)),  # Convert numpy float
-                shooting_accuracy=float(np.random.uniform(50, 95)),
-                games_played=int(np.random.randint(10, 50)),  # Convert numpy int
-                goals=int(np.random.randint(0, 30)),
-                assists=int(np.random.randint(0, 40)),
-                join_date=datetime.now() - timedelta(days=int(np.random.randint(30, 730)))
+                age=age,
+                age_group=f"U{(age // 2) * 2}",  # Age group calculation with Python int
+                position=to_str(np.random.choice(['Forward', 'Defense', 'Goalie'])),
+                skating_speed=to_float(np.random.uniform(60, 100)),
+                shooting_accuracy=to_float(np.random.uniform(50, 95)),
+                games_played=to_int(np.random.randint(10, 50)),
+                goals=to_int(np.random.randint(0, 30)),
+                assists=to_int(np.random.randint(0, 40)),
+                join_date=to_datetime(datetime.now() - timedelta(days=to_int(np.random.randint(30, 730))))
             )
             db.session.add(player)
             db.session.flush()  # Get the player ID
@@ -42,13 +45,13 @@ def generate_player_history(player, months=12):
 
     for i, date in enumerate(dates):
         history = PlayerHistory(
-            player_id=int(player.id),  # Ensure Python int
-            date=date.date(),
-            skating_speed=float(70 + (20 * i/months) + np.random.normal(0, 2)),
-            shooting_accuracy=float(60 + (25 * i/months) + np.random.normal(0, 3)),
-            games_played=int(np.random.randint(2, 6)),
-            goals=int(np.random.randint(0, 3)),
-            assists=int(np.random.randint(0, 4))
+            player_id=to_int(player.id),
+            date=to_date(date),
+            skating_speed=to_float(70 + (20 * i/months) + np.random.normal(0, 2)),
+            shooting_accuracy=to_float(60 + (25 * i/months) + np.random.normal(0, 3)),
+            games_played=to_int(np.random.randint(2, 6)),
+            goals=to_int(np.random.randint(0, 3)),
+            assists=to_int(np.random.randint(0, 4))
         )
         db.session.add(history)
 
@@ -63,7 +66,9 @@ def get_players_df(user_id=None):
         DataFrame containing player data
     """
     try:
-        if user_id:
+        # Convert user_id if provided
+        if user_id is not None:
+            user_id = to_int(user_id)
             players = Player.query.filter_by(user_id=user_id).all()
         else:
             players = Player.query.all()
@@ -72,22 +77,22 @@ def get_players_df(user_id=None):
             return pd.DataFrame()  # Return empty DataFrame if no players
 
         data = [{
-            'player_id': int(p.id),  # Ensure integer type
+            'player_id': to_int(p.id),
             'name': p.name,
-            'age': int(p.age) if p.age is not None else None,
+            'age': to_int(p.age),
             'age_group': p.age_group,
             'position': p.position,
-            'skating_speed': float(p.skating_speed) if p.skating_speed is not None else None,
-            'shooting_accuracy': float(p.shooting_accuracy) if p.shooting_accuracy is not None else None,
-            'save_percentage': float(p.save_percentage) if p.save_percentage is not None else None,
-            'reaction_time': float(p.reaction_time) if p.reaction_time is not None else None,
-            'positioning': float(p.positioning) if p.positioning is not None else None,
-            'games_played': int(p.games_played) if p.games_played is not None else 0,
-            'goals': int(p.goals) if p.goals is not None else 0,
-            'assists': int(p.assists) if p.assists is not None else 0,
-            'goals_against': int(p.goals_against) if p.goals_against is not None else 0,
-            'saves': int(p.saves) if p.saves is not None else 0,
-            'join_date': p.join_date
+            'skating_speed': to_float(p.skating_speed),
+            'shooting_accuracy': to_float(p.shooting_accuracy),
+            'save_percentage': to_float(p.save_percentage),
+            'reaction_time': to_float(p.reaction_time),
+            'positioning': to_float(p.positioning),
+            'games_played': to_int(p.games_played) or 0,
+            'goals': to_int(p.goals) or 0,
+            'assists': to_int(p.assists) or 0,
+            'goals_against': to_int(p.goals_against) or 0,
+            'saves': to_int(p.saves) or 0,
+            'join_date': to_datetime(p.join_date)
         } for p in players]
 
         return pd.DataFrame(data)
@@ -98,31 +103,36 @@ def get_players_df(user_id=None):
 def get_player_history(player_id):
     """Get historical data for a specific player"""
     try:
-        # Convert player_id to Python int to avoid numpy type issues
-        player_id = int(player_id)
+        # Convert player_id to Python int using our utility function
+        player_id = to_int(player_id)
+        if player_id is None:
+            print("Invalid player_id: None after conversion")
+            return pd.DataFrame()
 
         # Query the player
         player = Player.query.get(player_id)
         if not player:
+            print(f"Player not found for ID: {player_id}")
             return pd.DataFrame()
 
         # Get history records
         history = PlayerHistory.query.filter_by(player_id=player_id).order_by(PlayerHistory.date).all()
         if not history:
+            print(f"No history found for player ID: {player_id}")
             return pd.DataFrame()
 
         data = [{
-            'date': h.date,
-            'skating_speed': float(h.skating_speed) if h.skating_speed is not None else None,
-            'shooting_accuracy': float(h.shooting_accuracy) if h.shooting_accuracy is not None else None,
-            'save_percentage': float(h.save_percentage) if h.save_percentage is not None else None,
-            'reaction_time': float(h.reaction_time) if h.reaction_time is not None else None,
-            'positioning': float(h.positioning) if h.positioning is not None else None,
-            'games_played': int(h.games_played) if h.games_played is not None else 0,
-            'goals': int(h.goals) if h.goals is not None else 0,
-            'assists': int(h.assists) if h.assists is not None else 0,
-            'goals_against': int(h.goals_against) if h.goals_against is not None else 0,
-            'saves': int(h.saves) if h.saves is not None else 0
+            'date': to_date(h.date),
+            'skating_speed': to_float(h.skating_speed),
+            'shooting_accuracy': to_float(h.shooting_accuracy),
+            'save_percentage': to_float(h.save_percentage),
+            'reaction_time': to_float(h.reaction_time),
+            'positioning': to_float(h.positioning),
+            'games_played': to_int(h.games_played) or 0,  # Use 0 as fallback
+            'goals': to_int(h.goals) or 0,
+            'assists': to_int(h.assists) or 0,
+            'goals_against': to_int(h.goals_against) or 0,
+            'saves': to_int(h.saves) or 0
         } for h in history]
 
         # Convert to DataFrame and ensure date column is datetime
