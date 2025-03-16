@@ -56,8 +56,12 @@ def create_app():
     return app
 
 def init_app():
-    app = create_app()
-    return app
+    try:
+        app = create_app()
+        return app
+    except Exception as e:
+        logger.error(f"Failed to initialize app: {str(e)}")
+        return None
 
 if __name__ == '__main__':
     app = create_app()

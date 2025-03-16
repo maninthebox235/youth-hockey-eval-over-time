@@ -19,6 +19,7 @@ from components.video_analysis import display_video_analysis_interface
 from components.onboarding import display_onboarding
 from components.admin_dashboard import display_admin_dashboard
 import time
+import logging
 
 # Page configuration
 st.set_page_config(
@@ -29,8 +30,12 @@ st.set_page_config(
 
 # Initialize Flask app and context
 app = init_app()
-app_ctx = app.app_context()
-app_ctx.push()
+if app is not None:
+    app_ctx = app.app_context()
+    app_ctx.push()
+else:
+    app_ctx = None
+    logging.error("Failed to initialize Flask app")
 
 # Initialize basic session state
 if 'user' not in st.session_state:
@@ -54,12 +59,12 @@ if token and not st.session_state.user:
     if user:
         # Token is valid, set session state
         st.session_state.authentication_token = token
-        
+
         # Update query params for current session
         # If Remember Me is enabled, we keep token in the URL
         if st.session_state.get('remember_me', False):
             st.query_params["auth_token"] = token
-        
+
         # Set user info in session
         st.session_state.user = {
             'id': user.id,
@@ -78,11 +83,11 @@ if not show_landing:
     else:
         st.sidebar.image("https://images.unsplash.com/photo-1547223431-cc59f141f389",
                         caption="Player Development Platform")
-        
+
         # Check if we should show onboarding
         if 'show_onboarding' not in st.session_state:
             st.session_state.show_onboarding = False
-        
+
         # Show onboarding for new users before player profiles
         if st.session_state.show_onboarding:
             display_onboarding()
@@ -116,11 +121,11 @@ if not show_landing:
                         st.query_params.clear()
                         st.info("Logging out...")
                         st.rerun()
-                
+
                 # Display main content - filter players by current user
                 user_id = st.session_state.user['id'] if 'user' in st.session_state else None
                 players_df = get_players_df(user_id=user_id)
-                
+
                 if players_df.empty:
                     # If no players, redirect to onboarding
                     st.warning("No player data available.")
@@ -132,7 +137,7 @@ if not show_landing:
                     # Enhanced navigation menu
                     # Check if user is admin
                     is_admin = st.session_state.user.get('is_admin', False)
-                    
+
                     # Admin users get access to the admin dashboard
                     if is_admin:
                         menu_options = [
@@ -153,12 +158,12 @@ if not show_landing:
                             "Benchmarks & References",
                             "Team Management"
                         ]
-                    
+
                     menu = st.sidebar.selectbox(
                         "Navigation",
                         menu_options
                     )
-                    
+
                     # Display admin badge for admin users
                     if is_admin:
                         st.sidebar.success("Admin Access Enabled")
@@ -173,7 +178,7 @@ if not show_landing:
                             player_data = players_df[players_df['name'] == selected_player].iloc[0]
                             player_history = get_player_history(player_data['player_id'])
                             display_player_profile(player_data, player_history)
-                            
+
                             # Add sub-navigation for additional player features
                             player_submenu = st.radio(
                                 "Player Development Tools",
@@ -181,7 +186,7 @@ if not show_landing:
                                  "Training Plans", "Video Analysis"],
                                 horizontal=True
                             )
-                            
+
                             if player_submenu == "Development Charts":
                                 display_development_charts(player_data, player_history)
                             elif player_submenu == "Peer Comparison":
@@ -195,23 +200,23 @@ if not show_landing:
 
                     elif menu == "Training & Development":
                         st.subheader("Training & Development")
-                        
+
                         # Sub-navigation for training features
                         training_submenu = st.radio(
                             "Training Resources",
                             ["Training Plans", "Off-Ice Development", "Video Analysis"],
                             horizontal=True
                         )
-                        
+
                         # Select player first
                         selected_player = st.selectbox(
                             "Select Player",
                             players_df['name'].tolist()
                         )
-                        
+
                         if selected_player:
                             player_data = players_df[players_df['name'] == selected_player].iloc[0]
-                            
+
                             if training_submenu == "Training Plans":
                                 display_training_plan_interface(player_data['player_id'], player_data)
                             elif training_submenu == "Off-Ice Development":
@@ -225,14 +230,14 @@ if not show_landing:
 
                     elif menu == "Skill Analysis":
                         st.subheader("Skill Analysis")
-                        
+
                         # Sub-navigation for analysis features
                         analysis_submenu = st.radio(
                             "Analysis Tools",
                             ["Development Analytics", "Peer Comparison", "Team Statistics"],
                             horizontal=True
                         )
-                        
+
                         if analysis_submenu == "Development Analytics":
                             age_groups = sorted(players_df['age_group'].unique())
                             if age_groups:
@@ -245,42 +250,42 @@ if not show_landing:
                                 with col2:
                                     st.write("Performance Summary")
                                     st.dataframe(filtered_df.describe())
-                        
+
                         elif analysis_submenu == "Peer Comparison":
                             # Select player first
                             selected_player = st.selectbox(
                                 "Select Player for Comparison",
                                 players_df['name'].tolist()
                             )
-                            
+
                             if selected_player:
                                 player_data = players_df[players_df['name'] == selected_player].iloc[0]
                                 display_peer_comparison_interface(player_data['player_id'], player_data)
-                        
+
                         elif analysis_submenu == "Team Statistics":
                             display_age_group_stats(players_df)
                             display_player_rankings(players_df)
 
                     elif menu == "Benchmarks & References":
                         st.subheader("Age-Appropriate Benchmarks")
-                        
+
                         benchmark_submenu = st.radio(
                             "Benchmark Tools",
                             ["Player Benchmark Comparison", "All Benchmarks Reference"],
                             horizontal=True
                         )
-                        
+
                         if benchmark_submenu == "Player Benchmark Comparison":
                             # Select player to see their benchmarks
                             selected_player = st.selectbox(
                                 "Select Player",
                                 players_df['name'].tolist()
                             )
-                            
+
                             if selected_player:
                                 player_data = players_df[players_df['name'] == selected_player].iloc[0]
                                 display_age_benchmarks(player_data)
-                        
+
                         elif benchmark_submenu == "All Benchmarks Reference":
                             # Show all benchmarks by age
                             display_all_benchmarks_by_age()
@@ -292,7 +297,7 @@ if not show_landing:
                             ["Basic Team Management", "Enhanced Team Dashboard", "Tryout Evaluation"],
                             horizontal=True
                         )
-                        
+
                         if team_submenu == "Basic Team Management":
                             display_team_management()
                         elif team_submenu == "Enhanced Team Dashboard":
@@ -309,14 +314,14 @@ if not show_landing:
                                     format_func=lambda i: team_options[i][1]
                                 )
                                 team_id = team_options[selected][0]
-                                
+
                                 # Display tryout evaluation mode for this team
                                 # This requires a slightly different function signature
                                 from components.team_dashboard import display_tryout_evaluation_mode
                                 display_tryout_evaluation_mode(team_id)
                             else:
                                 st.info("No teams available. Please create a team first.")
-                    
+
                     elif menu == "Admin Dashboard":
                         # Show the admin dashboard
                         display_admin_dashboard()
@@ -324,4 +329,5 @@ if not show_landing:
                 st.error(f"Error: {str(e)}")
 
 # Clean up context
-app_ctx.pop()
+if app_ctx is not None:
+    app_ctx.pop()
