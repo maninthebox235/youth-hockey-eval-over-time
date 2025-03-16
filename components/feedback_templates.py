@@ -114,10 +114,15 @@ def create_template_form():
 
 def display_templates():
     """Display list of available feedback templates"""
-    templates = FeedbackTemplate.query.order_by(FeedbackTemplate.created_date.desc()).all()
+    try:
+        templates = FeedbackTemplate.query.order_by(FeedbackTemplate.created_date.desc()).all()
 
-    if not templates:
-        st.info("No feedback templates available. Create one to get started!")
+        if not templates:
+            st.info("No feedback templates available. Create one to get started!")
+            return
+    except Exception as e:
+        st.error(f"Error loading templates: {str(e)}")
+        print(f"Template display error: {str(e)}")
         return
 
     st.subheader("Available Templates")

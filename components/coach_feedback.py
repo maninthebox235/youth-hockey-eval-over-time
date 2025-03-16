@@ -5,7 +5,13 @@ from datetime import datetime
 
 def get_templates_for_player(player_type):
     """Get available templates for the player type"""
-    return FeedbackTemplate.query.filter_by(player_type=player_type).all()
+    try:
+        return FeedbackTemplate.query.filter_by(player_type=player_type).all()
+    except Exception as e:
+        st.error(f"Error loading templates: {str(e)}")
+        print(f"Template query error: {str(e)}")
+        # Return empty list as fallback
+        return []
 
 def submit_coach_feedback(player_id, coach_name, feedback_text, ratings, template_id=None):
     """Submit new coach feedback for a player"""
