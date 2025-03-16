@@ -4,6 +4,7 @@ from components.coach_feedback import display_feedback_form, display_feedback_hi
 from components.feedback_templates import manage_feedback_templates
 from components.skill_assessment import display_skill_assessment
 import pandas as pd
+from utils.pdf_report import display_pdf_export_section
 
 def get_age_benchmark(age, skill_type):
     """Get benchmark data for a given age and skill"""
@@ -53,7 +54,7 @@ def display_player_profile(player_data, player_history):
         """)
 
     # Create tabs for different sections
-    tabs = st.tabs(["Current Stats", "Skill Assessment", "Development Charts", "Feedback"])
+    tabs = st.tabs(["Current Stats", "Skill Assessment", "Development Charts", "Feedback", "Export Report"])
 
     with tabs[0]:  # Current Stats
         st.subheader("Current Statistics")
