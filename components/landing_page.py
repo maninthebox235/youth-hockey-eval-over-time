@@ -575,7 +575,7 @@ def display_feature_preview():
         tryout_col1, tryout_col2 = st.columns([1, 1])
         
         with tryout_col1:
-            st.image("static/images/hockey_tryout.svg", caption="Hockey Tryout Evaluation")
+            st.image("static/images/hockey/player_tryout.png", caption="Hockey Tryout Evaluation")
             
             st.markdown("""
             <div style="margin-top: 15px;">
@@ -653,7 +653,7 @@ def display_feature_preview():
                 st.success("Sample report generated! See preview on the right.")
             
         with reports_col2:
-            st.image("static/images/hockey_report.svg", caption="Hockey Team Performance Report")
+            st.image("static/images/hockey/report.png", caption="Hockey Team Performance Report")
             
             # Sample report sections
             st.markdown("""
