@@ -173,9 +173,33 @@ def display_manual_add_form():
         
         with col2:
             jersey_number = st.number_input("Jersey Number", min_value=0, max_value=99, value=0)
+            # Get user ID from session for team filtering
+            user_id = st.session_state.user['id'] if 'user' in st.session_state else None
+            
+            # Get teams that current user has access to
+            if user_id:
+                # Get the player IDs for this user
+                user_players = Player.query.filter_by(user_id=user_id).all()
+                player_ids = [p.id for p in user_players]
+                
+                # Get team memberships for these players
+                team_ids = []
+                if player_ids:
+                    memberships = TeamMembership.query.filter(TeamMembership.player_id.in_(player_ids)).all()
+                    team_ids = [m.team_id for m in memberships]
+                
+                # Get teams that contain these players
+                if team_ids:
+                    teams = Team.query.filter(Team.id.in_(team_ids)).all()
+                else:
+                    teams = []
+            else:
+                # If no user ID, show all teams (fallback for testing)
+                teams = Team.query.all()
+                
             team_id = st.selectbox(
                 "Team",
-                options=["No Team"] + [(t.id, t.name) for t in Team.query.all()],
+                options=["No Team"] + [(t.id, t.name) for t in teams],
                 format_func=lambda x: x[1] if isinstance(x, tuple) else x
             )
         
@@ -313,12 +337,42 @@ def display_onboarding():
         team_created = display_create_team_form()
     
     # Display current rosters if any
-    teams = Team.query.all()
+    # Get user ID from session
+    user_id = st.session_state.user['id'] if 'user' in st.session_state else None
+    
+    if user_id:
+        # Get the player IDs for this user
+        user_players = Player.query.filter_by(user_id=user_id).all()
+        player_ids = [p.id for p in user_players]
+        
+        # Get team memberships for these players
+        team_ids = []
+        if player_ids:
+            memberships = TeamMembership.query.filter(TeamMembership.player_id.in_(player_ids)).all()
+            team_ids = [m.team_id for m in memberships]
+        
+        # Get teams that contain these players
+        if team_ids:
+            teams = Team.query.filter(Team.id.in_(team_ids)).all()
+        else:
+            teams = []
+    else:
+        # If no user ID, show all teams (fallback for testing)
+        teams = Team.query.all()
+        
     if teams:
         st.subheader("Your Teams")
         for team in teams:
             with st.expander(f"{team.name} ({team.age_group})"):
-                players = team.players.all()
+                # Filter players to show only those belonging to current user
+                if user_id:
+                    players = Player.query.join(TeamMembership).filter(
+                        TeamMembership.team_id == team.id,
+                        Player.user_id == user_id
+                    ).all()
+                else:
+                    players = team.players.all()
+                    
                 if players:
                     data = []
                     for player in players:
