@@ -102,6 +102,9 @@ def display_player_profile(player_data, player_history):
                 if st.button("Manage Templates"):
                     st.session_state.manage_templates = True
                     st.rerun()
+                    
+    with tabs[4]:  # Export Report
+        display_pdf_export_section(player_data['player_id'])
 
 def _display_skater_stats(player_data):
     """Display statistics for skater players"""
