@@ -13,6 +13,8 @@ def init_session_state():
         st.session_state.show_forgot_password = False
     if 'show_reset_confirmation' not in st.session_state:
         st.session_state.show_reset_confirmation = False
+    if 'authentication_token' not in st.session_state:
+        st.session_state.authentication_token = None
 
 def login_user():
     """Handle user login"""
@@ -20,6 +22,7 @@ def login_user():
     with st.form("login_form"):
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")
+        remember = st.checkbox("Remember me", value=True)
         submitted = st.form_submit_button("Login")
 
         if submitted:
@@ -30,10 +33,23 @@ def login_user():
             try:
                 user = User.query.filter_by(username=username).first()
                 if user and user.check_password(password):
+                    # Update last login time
                     user.last_login = datetime.utcnow()
                     db.session.commit()
-                    st.session_state.user = user
+
+                    # Store user info in session state
+                    st.session_state.user = {
+                        'id': user.id,
+                        'username': user.username,
+                        'name': user.name,
+                        'is_admin': user.is_admin
+                    }
                     st.session_state.is_admin = user.is_admin
+
+                    # Generate and store authentication token if remember me is checked
+                    if remember:
+                        st.session_state.authentication_token = user.get_auth_token()
+
                     st.success(f"Welcome back, {user.name}!")
                     st.rerun()
                 else:
@@ -41,14 +57,6 @@ def login_user():
             except Exception as e:
                 st.error(f"Login error: {str(e)}")
                 db.session.rollback()
-    
-    # Password reset link
-    col1, col2 = st.columns([3, 1])
-    with col2:
-        if st.button("Forgot Password?"):
-            st.session_state.show_forgot_password = True
-            st.session_state.show_login = False
-            st.rerun()
 
 def create_admin():
     """Create initial admin user"""
@@ -113,7 +121,7 @@ def display_admin_controls():
                 st.write(f"Admin: {'Yes' if user.is_admin else 'No'}")
                 st.write(f"Last Login: {user.last_login or 'Never'}")
             with col2:
-                if user.id != st.session_state.user.id:  # Can't modify own account
+                if user.id != st.session_state.user['id']:  # Can't modify own account
                     if st.button(f"{'Remove' if user.is_admin else 'Make'} Admin", key=f"admin_{user.id}"):
                         user.is_admin = not user.is_admin
                         db.session.commit()
@@ -131,6 +139,35 @@ def display_admin_controls():
     with st.form("add_user_form"):
         new_name = st.text_input("Full Name")
         new_username = st.text_input("Username")
+        new_password = st.text_input("Password", type="password")
+        is_admin = st.checkbox("Make Admin")
+
+        if st.form_submit_button("Add User"):
+            if not all([new_name, new_username, new_password]):
+                st.error("Please fill in all fields")
+                return
+
+            if User.query.filter_by(username=new_username).first():
+                st.error("Username already taken")
+            else:
+                try:
+                    new_user = User(
+                        username=new_username,
+                        name=new_name,
+                        is_admin=is_admin
+                    )
+                    new_user.set_password(new_password)
+                    db.session.add(new_user)
+                    db.session.commit()
+                    st.success("User added successfully!")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Error adding user: {str(e)}")
+    
+    with tab2:
+        # Email Settings tab
+        from components.email_settings import display_email_settings
+        display_email_settings()
 
 def request_password_reset():
     """Display password reset form to reset password directly on the website"""
@@ -252,52 +289,25 @@ def confirm_password_reset():
                 st.error(f"Error resetting password: {str(e)}")
                 db.session.rollback()
 
-        new_password = st.text_input("Password", type="password")
-        is_admin = st.checkbox("Make Admin")
-
-        if st.form_submit_button("Add User"):
-            if not all([new_name, new_username, new_password]):
-                st.error("Please fill in all fields")
-                return
-
-            if User.query.filter_by(username=new_username).first():
-                st.error("Username already taken")
-            else:
-                try:
-                    new_user = User(
-                        username=new_username,
-                        name=new_name,
-                        is_admin=is_admin
-                    )
-                    new_user.set_password(new_password)
-                    db.session.add(new_user)
-                    db.session.commit()
-                    st.success("User added successfully!")
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Error adding user: {str(e)}")
-    
-    with tab2:
-        # Email Settings tab
-        from components.email_settings import display_email_settings
-        display_email_settings()
-
 def display_auth_interface():
     """Main authentication interface"""
     init_session_state()
-    
-    # Initialize password reset state if not present
-    if 'show_forgot_password' not in st.session_state:
-        st.session_state.show_forgot_password = False
-    if 'show_reset_confirmation' not in st.session_state:
-        st.session_state.show_reset_confirmation = False
-    
-    # Check for reset token in URL
-    query_params = st.query_params
-    if "reset_token" in query_params and "username" in query_params:
-        st.session_state.show_reset_confirmation = True
-        st.session_state.show_login = False
-        st.session_state.show_forgot_password = False
+
+    # Try to authenticate using stored token
+    if not st.session_state.user and 'authentication_token' in st.session_state and st.session_state.authentication_token:
+        try:
+            user = User.verify_auth_token(st.session_state.authentication_token)
+            if user:
+                st.session_state.user = {
+                    'id': user.id,
+                    'username': user.username,
+                    'name': user.name,
+                    'is_admin': user.is_admin
+                }
+                st.session_state.is_admin = user.is_admin
+        except:
+            # Clear invalid token
+            st.session_state.authentication_token = None
 
     if not st.session_state.user:
         if not User.query.filter_by(is_admin=True).first():
@@ -309,10 +319,13 @@ def display_auth_interface():
         else:
             login_user()
     else:
-        st.sidebar.write(f"Logged in as: {st.session_state.user.name}")
+        # Display user info and logout button
+        st.sidebar.write(f"Logged in as: {st.session_state.user['name']}")
         if st.sidebar.button("Logout"):
+            # Clear session state
             st.session_state.user = None
             st.session_state.is_admin = False
+            st.session_state.authentication_token = None
             st.rerun()
 
         if st.session_state.is_admin:

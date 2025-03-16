@@ -1,7 +1,10 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
-from datetime import datetime
+from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
+from itsdangerous import URLSafeTimedSerializer as Serializer
+from flask import current_app
+import os
 
 db = SQLAlchemy()
 
@@ -15,7 +18,7 @@ class User(UserMixin, db.Model):
     is_admin = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_login = db.Column(db.DateTime)
-    
+
     # Password reset fields
     reset_token = db.Column(db.String(256), nullable=True)
     reset_token_expiry = db.Column(db.DateTime, nullable=True)
@@ -30,7 +33,19 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-# Update CoachFeedback to link with User model
+    def get_auth_token(self, expiration=2592000):  # 30 days default
+        s = Serializer(current_app.config['SECRET_KEY'])
+        return s.dumps({'user_id': self.id}).decode('utf-8')
+
+    @staticmethod
+    def verify_auth_token(token):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token)
+            return User.query.get(data['user_id'])
+        except:
+            return None
+
 class CoachFeedback(db.Model):
     __tablename__ = 'coach_feedback'
 

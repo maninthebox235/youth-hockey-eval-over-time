@@ -2,9 +2,11 @@ from flask import Flask
 from database import init_app, db
 from flask_migrate import Migrate
 from flask_mail import Mail
+from flask_login import LoginManager
 from utils.data_generator import seed_database
 import os
 import logging
+from datetime import timedelta
 
 # Configure logging
 logging.basicConfig(
@@ -21,6 +23,11 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+    # Session configuration
+    app.config['SESSION_TYPE'] = 'sqlalchemy'
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=14)
+    app.config['SESSION_SQLALCHEMY'] = db
+
     # Configure Flask-Mail with Gmail
     app.config['MAIL_SERVER'] = 'smtp.gmail.com'
     app.config['MAIL_PORT'] = 587
@@ -28,31 +35,26 @@ def create_app():
     app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
     app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
     app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
-    app.config['MAIL_MAX_EMAILS'] = 5  # Limit of emails to send in a single connection
-    app.config['MAIL_DEBUG'] = True  # Enable debug mode for troubleshooting
-    
-    # Log mail configuration (without sensitive data)
-    logger.info(f"Mail server: {app.config['MAIL_SERVER']}")
-    logger.info(f"Mail port: {app.config['MAIL_PORT']}")
-    logger.info(f"Mail use TLS: {app.config['MAIL_USE_TLS']}")
-    logger.info(f"Mail username configured: {'Yes' if app.config['MAIL_USERNAME'] else 'No'}")
-    logger.info(f"Mail password configured: {'Yes' if app.config['MAIL_PASSWORD'] else 'No'}")
-    logger.info(f"Mail default sender configured: {'Yes' if app.config['MAIL_DEFAULT_SENDER'] else 'No'}")
+    app.config['MAIL_MAX_EMAILS'] = 5
+    app.config['MAIL_DEBUG'] = True
 
-    # Initialize Flask-Mail with additional logging
-    mail = Mail(app)
-    
-    # Log mail object attributes for debugging
-    logger.info("Mail initialization complete")
-    logger.info(f"Mail object properties: server={mail.server}, port={mail.port}, username={bool(mail.username)}")
-
-    # Initialize database
+    # Initialize Flask extensions
     db.init_app(app)
+    mail = Mail(app)
+    login_manager = LoginManager()
+    login_manager.init_app(app)
+    login_manager.session_protection = "strong"
 
-    return app, mail
+    # User loader callback
+    @login_manager.user_loader
+    def load_user(user_id):
+        from database.models import User
+        return User.query.get(int(user_id))
+
+    return app, mail, login_manager
 
 # Initialize Flask app and extensions
-app, mail = create_app()
+app, mail, login_manager = create_app()
 migrate = Migrate(app, db)
 
 # Route to test email configuration
@@ -66,7 +68,6 @@ def test_email():
 
 if __name__ == '__main__':
     try:
-        # Create all tables before running migrations
         with app.app_context():
             db.create_all()
 
