@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from database.models import Player, PlayerHistory, db
 from datetime import datetime
+from utils.type_converter import to_int, to_float
 
 def get_skill_metrics(position):
     """Get detailed skill metrics based on player position"""
@@ -57,7 +58,7 @@ def get_skill_metrics(position):
         }
         return goalie_metrics
 
-def get_age_appropriate_benchmarks(age, metric):
+def get_benchmark_for_age(age, metric):
     """Get age-appropriate benchmark values for metrics"""
     benchmarks = {
         'skating_speed': {
@@ -86,7 +87,11 @@ def display_skill_assessment(player_id):
         if 'slider_range_fixed' not in st.session_state:
             st.session_state.slider_range_fixed = True
 
-        player_id = int(player_id) if hasattr(player_id, 'item') else player_id
+        # Convert player_id to integer safely
+        player_id = to_int(player_id)
+        if player_id is None:
+            st.error("Invalid player ID")
+            return False
 
         # Use a fresh session for this query to avoid transaction issues
         try:
@@ -155,7 +160,8 @@ def display_current_skills(player):
     with col1:
         for metric, description in metrics_list[:section_size]:
             if hasattr(player, metric):
-                value = getattr(player, metric)
+                # Safely convert to float for display
+                value = to_float(getattr(player, metric, None))
                 if value is not None:
                     st.metric(
                         label=metric.replace('_', ' ').title(), 
@@ -167,7 +173,8 @@ def display_current_skills(player):
     with col2:
         for metric, description in metrics_list[section_size:section_size*2]:
             if hasattr(player, metric):
-                value = getattr(player, metric)
+                # Safely convert to float for display
+                value = to_float(getattr(player, metric, None))
                 if value is not None:
                     st.metric(
                         label=metric.replace('_', ' ').title(), 
@@ -179,7 +186,8 @@ def display_current_skills(player):
     with col3:
         for metric, description in metrics_list[section_size*2:]:
             if hasattr(player, metric):
-                value = getattr(player, metric)
+                # Safely convert to float for display
+                value = to_float(getattr(player, metric, None))
                 if value is not None:
                     st.metric(
                         label=metric.replace('_', ' ').title(), 
@@ -221,14 +229,20 @@ def add_new_assessment(player):
                 st.write(f"**{metric.replace('_', ' ').title()}**")
                 st.write(f"_{description}_")
 
-                # Get current value with safe default
+                # Get current value with safe default and proper type conversion
                 try:
+                    # Get the attribute value and safely convert to integer
                     current_value = getattr(player, metric, None)
-                    # Handle pandas Series correctly
-                    if hasattr(current_value, 'item'):
-                        current_value = current_value.item()
-                    current_value = min(max(current_value if current_value is not None else 3, 1), 5)
-                except (ValueError, TypeError):
+                    current_value = to_int(current_value)  # Use our custom converter
+                    
+                    # Use default of 3 if None
+                    if current_value is None:
+                        current_value = 3
+                    else:
+                        # Ensure value is in valid range 1-5
+                        current_value = min(max(current_value, 1), 5)
+                except Exception:
+                    # Default to middle value if any error occurs
                     current_value = 3
 
                 # Create a unique key for each slider to avoid state conflicts
@@ -249,14 +263,20 @@ def add_new_assessment(player):
                 st.write(f"**{metric.replace('_', ' ').title()}**")
                 st.write(f"_{description}_")
 
-                # Get current value with safe default
+                # Get current value with safe default and proper type conversion
                 try:
+                    # Get the attribute value and safely convert to integer
                     current_value = getattr(player, metric, None)
-                    # Handle pandas Series correctly
-                    if hasattr(current_value, 'item'):
-                        current_value = current_value.item()
-                    current_value = min(max(current_value if current_value is not None else 3, 1), 5)
-                except (ValueError, TypeError):
+                    current_value = to_int(current_value)  # Use our custom converter
+                    
+                    # Use default of 3 if None
+                    if current_value is None:
+                        current_value = 3
+                    else:
+                        # Ensure value is in valid range 1-5
+                        current_value = min(max(current_value, 1), 5)
+                except Exception:
+                    # Default to middle value if any error occurs
                     current_value = 3
 
                 # Create a unique key for each slider
@@ -292,8 +312,8 @@ def add_new_assessment(player):
 
                 # Update player metrics that exist in the Player model
                 for metric, value in all_ratings.items():
-                    # Ensure value is in the valid 1-5 range
-                    validated_value = min(max(value, 1), 5)
+                    # Ensure value is in the valid 1-5 range and is integer
+                    validated_value = min(max(to_int(value) or 3, 1), 5)
                     if hasattr(player, metric):
                         setattr(player, metric, validated_value)
 
@@ -303,7 +323,8 @@ def add_new_assessment(player):
 
                 for metric, value in all_ratings.items():
                     if metric in player_history_columns:
-                        valid_metrics[metric] = value
+                        # Ensure value is in the valid 1-5 range and is integer
+                        valid_metrics[metric] = min(max(to_int(value) or 3, 1), 5)
 
                 # Create historical record with notes field
                 history = PlayerHistory(
@@ -338,6 +359,14 @@ def add_new_assessment(player):
 def rate_skill(label, key, description="", default_value=3):
     """Create a standardized rating slider for skills"""
     st.write(f"_{description}_")
+    # Ensure default_value is an integer
+    try:
+        default_value = to_int(default_value)
+        if default_value is None or default_value < 1 or default_value > 5:
+            default_value = 3
+    except:
+        default_value = 3
+        
     return st.slider(
         label,
         min_value=1,
@@ -346,26 +375,3 @@ def rate_skill(label, key, description="", default_value=3):
         key=key,
         step=1
     )
-
-def get_age_appropriate_benchmarks(age, metric):
-    """Get age-appropriate benchmark values for metrics"""
-    benchmarks = {
-        'skating_speed': {
-            (6, 8): {'min': 2, 'target': 3, 'description': "Basic forward skating"},
-            (9, 11): {'min': 2.5, 'target': 3.5, 'description': "Developing speed"},
-            (12, 14): {'min': 3, 'target': 4, 'description': "Advanced speed"},
-            (15, 18): {'min': 3.5, 'target': 4.5, 'description': "Elite speed"}
-        },
-        'puck_control': {
-            (6, 8): {'min': 1.5, 'target': 2.5, 'description': "Basic puck handling"},
-            (9, 11): {'min': 2, 'target': 3, 'description': "Controlled movements"},
-            (12, 14): {'min': 2.5, 'target': 3.5, 'description': "Advanced control"},
-            (15, 18): {'min': 3, 'target': 4, 'description': "Elite puck handling"}
-        }
-    }
-
-    # Find appropriate age group
-    for (min_age, max_age), values in benchmarks.get(metric, {}).items():
-        if min_age <= age <= max_age:
-            return values
-    return {'min': 1, 'target': 3, 'description': "Standard performance"}

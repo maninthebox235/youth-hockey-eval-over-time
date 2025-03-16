@@ -2,8 +2,6 @@
 Data type conversion utilities to handle common conversion issues.
 This module helps standardize data type conversions throughout the application.
 """
-
-from datetime import datetime, date
 import numpy as np
 import pandas as pd
 
@@ -20,14 +18,17 @@ def to_int(value):
     if value is None:
         return None
     
-    try:
-        # Handle numpy types with item() method
-        if hasattr(value, 'item'):
+    # Handle numpy types that have .item() method
+    if hasattr(value, 'item'):
+        try:
             return int(value.item())
-        # Handle string or regular int
+        except (ValueError, TypeError, AttributeError):
+            pass
+    
+    # Try direct conversion
+    try:
         return int(value)
     except (ValueError, TypeError):
-        # Return None if conversion fails
         return None
 
 def to_float(value):
@@ -43,14 +44,17 @@ def to_float(value):
     if value is None:
         return None
     
-    try:
-        # Handle numpy types with item() method
-        if hasattr(value, 'item'):
+    # Handle numpy types that have .item() method
+    if hasattr(value, 'item'):
+        try:
             return float(value.item())
-        # Handle string or regular float
+        except (ValueError, TypeError, AttributeError):
+            pass
+    
+    # Try direct conversion
+    try:
         return float(value)
     except (ValueError, TypeError):
-        # Return None if conversion fails
         return None
 
 def to_datetime(value):
@@ -63,27 +67,36 @@ def to_datetime(value):
     Returns:
         Python datetime or None if conversion is not possible
     """
+    from datetime import datetime
+    
     if value is None:
         return None
     
-    try:
-        # Handle pandas Timestamp
-        if isinstance(value, pd.Timestamp):
+    # Already a datetime object
+    if isinstance(value, datetime):
+        return value
+    
+    # Handle pandas Timestamp
+    if hasattr(value, 'to_pydatetime'):
+        try:
             return value.to_pydatetime()
-        # Handle string
-        if isinstance(value, str):
-            return datetime.fromisoformat(value.replace('Z', '+00:00'))
-        # Handle date
-        if isinstance(value, date) and not isinstance(value, datetime):
-            return datetime.combine(value, datetime.min.time())
-        # Already datetime
-        if isinstance(value, datetime):
-            return value
-        # Try generic conversion for other types
-        return pd.to_datetime(value).to_pydatetime()
-    except (ValueError, TypeError):
-        # Return None if conversion fails
-        return None
+        except (ValueError, TypeError, AttributeError):
+            pass
+    
+    # Try parsing string
+    if isinstance(value, str):
+        try:
+            return datetime.fromisoformat(value)
+        except (ValueError, TypeError):
+            try:
+                return datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
+            except (ValueError, TypeError):
+                try:
+                    return datetime.strptime(value, "%Y-%m-%d")
+                except (ValueError, TypeError):
+                    return None
+    
+    return None
 
 def to_date(value):
     """
@@ -95,28 +108,39 @@ def to_date(value):
     Returns:
         Python date or None if conversion is not possible
     """
+    from datetime import date, datetime
+    
     if value is None:
         return None
     
-    try:
-        # Handle datetime
+    # Already a date object
+    if isinstance(value, date):
         if isinstance(value, datetime):
             return value.date()
-        # Handle pandas Timestamp
-        if isinstance(value, pd.Timestamp):
-            return value.date()
-        # Handle string
-        if isinstance(value, str):
-            dt = pd.to_datetime(value)
-            return dt.date()
-        # Already date
-        if isinstance(value, date):
-            return value
-        # Try generic conversion for other types
-        return pd.to_datetime(value).date()
-    except (ValueError, TypeError):
-        # Return None if conversion fails
-        return None
+        return value
+    
+    # Handle pandas Timestamp
+    if hasattr(value, 'to_pydatetime'):
+        try:
+            return value.to_pydatetime().date()
+        except (ValueError, TypeError, AttributeError):
+            pass
+    
+    # Convert from datetime
+    if isinstance(value, datetime):
+        return value.date()
+    
+    # Try parsing string
+    if isinstance(value, str):
+        try:
+            return datetime.fromisoformat(value).date()
+        except (ValueError, TypeError):
+            try:
+                return datetime.strptime(value, "%Y-%m-%d").date()
+            except (ValueError, TypeError):
+                return None
+    
+    return None
 
 def to_str(value):
     """
@@ -132,11 +156,6 @@ def to_str(value):
         return None
     
     try:
-        # Handle numpy types with item() method
-        if hasattr(value, 'item'):
-            return str(value.item())
-        # Handle everything else
         return str(value)
     except (ValueError, TypeError):
-        # Return None if conversion fails
         return None
