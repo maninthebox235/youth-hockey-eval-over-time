@@ -615,7 +615,8 @@ def display_training_schedule(player_data, plan):
                             st.write(f"**Description:** {drill['description']}")
                             
                             if 'video_url' in drill and drill['video_url']:
-                                st.video(drill['video_url'])
+                                # Use the fix_youtube_url function to ensure proper format
+                                st.video(fix_youtube_url(drill['video_url']))
                 else:
                     st.info("No specific drills scheduled for this day.")
     else:
@@ -817,7 +818,8 @@ def display_training_plan_interface(player_id, player_data):
                         
                         with col2:
                             if 'video_url' in drill and drill['video_url']:
-                                st.video(drill['video_url'])
+                                # Use the fix_youtube_url function to ensure proper format
+                                st.video(fix_youtube_url(drill['video_url']))
                                 
                         st.markdown("---")
         else:
