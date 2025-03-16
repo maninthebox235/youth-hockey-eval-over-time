@@ -26,11 +26,15 @@ def get_peer_group_data(player_age, position, attribute=None):
     if player_age is None:
         return pd.DataFrame()  # Return empty dataframe if age is invalid
     try:
-        # Calculate age range (1 year above and below)
-        min_age = player_age - 1
-        max_age = player_age + 1
+        # Calculate age range (1 year above and below) and convert to Python ints to avoid numpy types
+        min_age = int(player_age - 1)
+        max_age = int(player_age + 1)
         
-        # Query based on criteria
+        # Ensure position is a standard string, not a numpy string type
+        if position is not None:
+            position = str(position)
+            
+        # Query based on criteria with proper Python native types
         peer_query = Player.query.filter(
             Player.age.between(min_age, max_age),
             Player.position == position
