@@ -10,12 +10,15 @@ def get_templates_for_player(player_type):
 def submit_coach_feedback(player_id, coach_name, feedback_text, ratings, template_id=None):
     """Submit new coach feedback for a player"""
     try:
-        # Ensure player_id is a regular Python int
-        if hasattr(player_id, 'item'):  # Handle numpy int types
-            player_id = player_id.item()
-        else:
+        # Convert numpy int64 or any other numeric type to Python int
+        try:
             player_id = int(player_id)
-            
+        except (TypeError, ValueError):
+            if hasattr(player_id, 'item'):
+                player_id = int(player_id.item())
+            else:
+                raise ValueError("Invalid player ID type")
+
         # Ensure template_id is a regular Python int if provided
         if template_id is not None:
             if hasattr(template_id, 'item'):
@@ -62,11 +65,14 @@ def submit_coach_feedback(player_id, coach_name, feedback_text, ratings, templat
 def get_player_feedback(player_id):
     """Get all feedback for a specific player"""
     try:
-        # Ensure player_id is a regular Python int
-        if hasattr(player_id, 'item'):  # Handle numpy int types
-            player_id = player_id.item()
-        else:
+        # Convert numpy int64 or any other numeric type to Python int
+        try:
             player_id = int(player_id)
+        except (TypeError, ValueError):
+            if hasattr(player_id, 'item'):
+                player_id = int(player_id.item())
+            else:
+                raise ValueError("Invalid player ID type")
 
         feedback = CoachFeedback.query.filter_by(player_id=player_id).order_by(CoachFeedback.date.desc()).all()
         if not feedback:
