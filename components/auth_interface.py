@@ -27,27 +27,25 @@ def login_user():
                 db.session.commit()
 
                 # Generate authentication token
-                from app import app
-                with app.app_context():
-                    token = user.get_auth_token()
-
-                if token:
-                    # Store token in both session state and URL
-                    st.session_state.authentication_token = token
-                    st.query_params["auth_token"] = token
-
-                    # Set user info in session state
-                    st.session_state.user = {
-                        'id': user.id,
-                        'username': user.username,
-                        'name': user.name,
-                        'is_admin': user.is_admin
-                    }
-                    st.session_state.is_admin = user.is_admin
-                    st.success("Login successful!")
-                    st.rerun()
-                else:
+                token = user.get_auth_token()
+                if not token:
                     st.error("Authentication failed")
+                    return
+
+                # Store token in session state and URL
+                st.session_state.authentication_token = token
+                st.query_params["auth_token"] = token
+
+                # Set user info
+                st.session_state.user = {
+                    'id': user.id,
+                    'username': user.username,
+                    'name': user.name,
+                    'is_admin': user.is_admin
+                }
+                st.session_state.is_admin = user.is_admin
+                st.success("Login successful!")
+                st.rerun()
 
             except Exception as e:
                 print(f"Login error: {str(e)}")
@@ -64,7 +62,7 @@ def display_auth_interface():
         with st.sidebar:
             st.write(f"Welcome, {st.session_state.user['name']}")
             if st.button("Logout"):
-                # Clear all session state and URL parameters
+                # Clear session state and URL parameters
                 st.session_state.user = None
                 st.session_state.is_admin = None
                 st.session_state.authentication_token = None

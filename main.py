@@ -18,7 +18,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Initialize Flask app
+# Initialize Flask app and context
 app = init_app()
 app_ctx = app.app_context()
 app_ctx.push()
@@ -31,40 +31,29 @@ if 'is_admin' not in st.session_state:
 if 'authentication_token' not in st.session_state:
     st.session_state.authentication_token = None
 
-# Check for authentication token in URL parameters
-auth_token = st.query_params.get("auth_token", None)
-
-# Try to restore session from token
-if not st.session_state.user:
-    token_to_try = auth_token or st.session_state.authentication_token
-    if token_to_try:
-        try:
-            user = User.verify_auth_token(token_to_try)
-            if user:
-                # Store token in session state
-                st.session_state.authentication_token = token_to_try
-                # Ensure token is in URL parameters
-                if not auth_token:
-                    st.query_params["auth_token"] = token_to_try
-
-                # Set user info
-                st.session_state.user = {
-                    'id': user.id,
-                    'username': user.username,
-                    'name': user.name,
-                    'is_admin': user.is_admin
-                }
-                st.session_state.is_admin = user.is_admin
-        except Exception as e:
-            print(f"Session restoration error: {str(e)}")
-            st.session_state.authentication_token = None
-            st.query_params.clear()
+# Check for authentication token
+auth_token = st.query_params.get("auth_token")
+if auth_token and not st.session_state.user:
+    try:
+        user = User.verify_auth_token(auth_token)
+        if user:
+            st.session_state.authentication_token = auth_token
+            st.session_state.user = {
+                'id': user.id,
+                'username': user.username,
+                'name': user.name,
+                'is_admin': user.is_admin
+            }
+            st.session_state.is_admin = user.is_admin
+    except Exception as e:
+        print(f"Auth error: {str(e)}")
+        st.session_state.authentication_token = None
+        st.query_params.clear()
 
 # Display landing page or main content
 show_landing = display_landing_page()
 
 if not show_landing:
-    # Display authentication interface if not logged in
     if not st.session_state.user:
         display_auth_interface()
     else:
@@ -72,8 +61,8 @@ if not show_landing:
         st.sidebar.image("https://images.unsplash.com/photo-1547223431-cc59f141f389",
                         caption="Player Development Platform")
 
-        # Continue with the rest of your application logic...
         try:
+            # Initialize database if needed
             if 'db_initialized' not in st.session_state:
                 if not Player.query.first():
                     st.info("Initializing database with sample data...")
@@ -84,6 +73,7 @@ if not show_landing:
                 else:
                     st.session_state.db_initialized = True
 
+            # Display main content
             players_df = get_players_df()
             if not players_df.empty:
                 menu = st.sidebar.selectbox(
@@ -91,14 +81,12 @@ if not show_landing:
                     ["Player Profiles", "Development Analytics", "Team Statistics", "Team Management"]
                 )
 
-                # Your existing menu logic remains the same...
                 if menu == "Player Profiles":
                     st.subheader("Player Profiles")
                     selected_player = st.selectbox(
                         "Select Player",
                         players_df['name'].tolist()
                     )
-
                     if selected_player:
                         player_data = players_df[players_df['name'] == selected_player].iloc[0]
                         player_history = get_player_history(player_data['player_id'])
@@ -111,12 +99,10 @@ if not show_landing:
                     if age_groups:
                         age_group = st.selectbox("Select Age Group", age_groups)
                         filtered_df = players_df[players_df['age_group'] == age_group]
-
                         col1, col2 = st.columns(2)
                         with col1:
                             st.write("Player Distribution")
                             st.dataframe(filtered_df[['name', 'position', 'skating_speed', 'shooting_accuracy']])
-
                         with col2:
                             st.write("Performance Summary")
                             st.dataframe(filtered_df.describe())
@@ -128,9 +114,9 @@ if not show_landing:
                     st.subheader("Team Statistics")
                     display_age_group_stats(players_df)
                     display_player_rankings(players_df)
-
             else:
                 st.warning("No player data available.")
+
         except Exception as e:
             st.error(f"Error: {str(e)}")
 
