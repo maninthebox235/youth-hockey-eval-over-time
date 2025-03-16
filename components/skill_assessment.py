@@ -3,6 +3,84 @@ import pandas as pd
 from database.models import Player, PlayerHistory, db
 from datetime import datetime
 
+def get_skill_metrics(position):
+    """Get detailed skill metrics based on player position"""
+    skating_metrics = {
+        'skating_speed': "Straight-line skating speed",
+        'edge_control': "Control and balance on edges",
+        'agility': "Quick directional changes",
+        'backward_skating': "Backward skating ability"
+    }
+
+    stickhandling_metrics = {
+        'puck_control': "Puck control while moving",
+        'passing_accuracy': "Accuracy of passes",
+        'receiving': "Ability to receive passes",
+        'stick_protection': "Protecting puck under pressure"
+    }
+
+    game_iq_metrics = {
+        'positioning': "Proper positioning on ice",
+        'decision_making': "Quick and effective decisions",
+        'game_awareness': "Awareness of play development",
+        'hockey_sense': "Understanding of game situations"
+    }
+
+    if position == "Forward":
+        shooting_metrics = {
+            'wrist_shot': "Wrist shot technique",
+            'slap_shot': "Slap shot power and accuracy",
+            'one_timer': "One-timer execution",
+            'shot_accuracy': "Overall shooting accuracy"
+        }
+        return {**skating_metrics, **stickhandling_metrics, **shooting_metrics, **game_iq_metrics}
+
+    elif position == "Defense":
+        defense_metrics = {
+            'gap_control': "Maintaining proper defensive gaps",
+            'physicality': "Physical play effectiveness",
+            'shot_blocking': "Shot blocking technique",
+            'breakout_passes': "Breakout pass execution"
+        }
+        return {**skating_metrics, **stickhandling_metrics, **defense_metrics, **game_iq_metrics}
+
+    else:  # Goalie
+        goalie_metrics = {
+            'positioning': "Net positioning",
+            'save_technique': "Basic save techniques",
+            'rebound_control': "Control of rebounds",
+            'puck_handling': "Puck handling ability",
+            'recovery': "Recovery after initial save",
+            'glove_saves': "Glove save proficiency",
+            'blocker_saves': "Blocker save proficiency",
+            'post_integration': "Movement along posts"
+        }
+        return goalie_metrics
+
+def get_age_appropriate_benchmarks(age, metric):
+    """Get age-appropriate benchmark values for metrics"""
+    benchmarks = {
+        'skating_speed': {
+            (6, 8): {'min': 2, 'target': 3, 'description': "Basic forward skating"},
+            (9, 11): {'min': 2.5, 'target': 3.5, 'description': "Developing speed"},
+            (12, 14): {'min': 3, 'target': 4, 'description': "Advanced speed"},
+            (15, 18): {'min': 3.5, 'target': 4.5, 'description': "Elite speed"}
+        },
+        'puck_control': {
+            (6, 8): {'min': 1.5, 'target': 2.5, 'description': "Basic puck handling"},
+            (9, 11): {'min': 2, 'target': 3, 'description': "Controlled movements"},
+            (12, 14): {'min': 2.5, 'target': 3.5, 'description': "Advanced control"},
+            (15, 18): {'min': 3, 'target': 4, 'description': "Elite puck handling"}
+        }
+        # Additional metrics will be added here
+    }
+
+    # Find appropriate age group
+    for (min_age, max_age), values in benchmarks.get(metric, {}).items():
+        if min_age <= age <= max_age:
+            return values
+    return {'min': 1, 'target': 3, 'description': "Standard performance"}
+
 def rate_skill(label, key, help_text="", default_value=3):
     """Create a standardized rating slider for skills"""
     return st.slider(
@@ -15,157 +93,102 @@ def rate_skill(label, key, help_text="", default_value=3):
         step=1
     )
 
-def get_position_specific_metrics(position):
-    """Get position-specific metrics for assessment"""
-    common_metrics = {
-        'skating_speed': "Speed in straight-line skating",
-        'agility': "Ability to change direction quickly",
-        'puck_control': "Control over the puck while moving",
-        'game_intelligence': "Decision making and positioning",
-        'team_play': "Effectiveness in team situations"
-    }
-
-    if position == "Forward":
-        return {
-            **common_metrics,
-            'shooting_accuracy': "Accuracy in shot placement",
-            'shot_power': "Power behind shots",
-            'offensive_awareness': "Ability to create scoring chances",
-            'forechecking': "Effectiveness in offensive pressure"
-        }
-    elif position == "Defense":
-        return {
-            **common_metrics,
-            'defensive_awareness': "Ability to read plays and position",
-            'physicality': "Effectiveness in physical play",
-            'first_pass': "Quality of first pass out of zone",
-            'gap_control': "Maintaining proper defensive gaps"
-        }
-    else:  # Goalie
-        return {
-            'positioning': "Proper positioning relative to puck",
-            'reaction_time': "Speed of reaction to shots",
-            'rebound_control': "Control of rebounds",
-            'save_technique': "Technical proficiency in saves",
-            'puck_handling': "Ability to handle and move puck"
-        }
-
-def get_age_appropriate_benchmarks(age, metric):
-    """Get age-appropriate benchmark values for metrics"""
-    benchmarks = {
-        'skating_speed': {
-            (6, 8): 2.5,
-            (9, 11): 3.0,
-            (12, 14): 3.5,
-            (15, 18): 4.0
-        },
-        'shooting_accuracy': {
-            (6, 8): 2.0,
-            (9, 11): 2.8,
-            (12, 14): 3.3,
-            (15, 18): 3.8
-        },
-        # Add more metrics with age-appropriate values
-    }
-
-    # Find appropriate age group
-    for age_range, value in benchmarks.get(metric, {}).items():
-        if age_range[0] <= age <= age_range[1]:
-            return value
-    return 3.0  # Default benchmark
-
 def display_skill_assessment(player_id):
     """Display and handle comprehensive skill assessment form"""
     try:
-        # Convert numpy int64 or any other numeric type to Python int
-        try:
-            player_id = int(player_id)
-        except (TypeError, ValueError):
-            if hasattr(player_id, 'item'):
-                player_id = int(player_id.item())
-            else:
-                raise ValueError("Invalid player ID type")
-                
+        player_id = int(player_id) if hasattr(player_id, 'item') else player_id
         player = Player.query.get(player_id)
         if not player:
             st.error("Player not found")
             return False
-    except Exception as e:
-        st.error(f"Error loading player: {str(e)}")
-        return False
-        st.error("Player not found")
-        return False
 
-    st.write(f"### Skill Assessment for {player.name}")
-    st.write(f"Position: {player.position} | Age: {player.age}")
+        st.write(f"### Skill Assessment for {player.name}")
+        st.write(f"Position: {player.position} | Age: {player.age}")
 
-    metrics = get_position_specific_metrics(player.position)
+        metrics = get_skill_metrics(player.position)
 
-    with st.form("skill_assessment_form"):
-        all_ratings = {}
+        with st.form("skill_assessment_form"):
+            st.write("### Rate player's skills (1-5 scale)")
+            st.write("1 = Needs significant improvement")
+            st.write("3 = Meeting age-appropriate expectations")
+            st.write("5 = Exceeding expectations significantly")
 
-        # Create columns for metrics
-        for i in range(0, len(metrics), 2):
+            # Create sections for different skill categories
+            all_ratings = {}
             col1, col2 = st.columns(2)
 
-            # First metric in the pair
-            metric_name = list(metrics.keys())[i]
-            benchmark = get_age_appropriate_benchmarks(player.age, metric_name)
-            with col1:
-                st.write(f"**{metric_name.replace('_', ' ').title()}**")
-                st.write(f"_Benchmark for age {player.age}: {benchmark}_")
-                all_ratings[metric_name] = rate_skill(
-                    "Rating",
-                    f"rating_{metric_name}",
-                    metrics[metric_name],
-                    default_value=int(getattr(player, metric_name, 3))
-                )
+            # Split metrics into two columns for better layout
+            metrics_list = list(metrics.items())
+            mid_point = len(metrics_list) // 2
 
-            # Second metric in the pair (if exists)
-            if i + 1 < len(metrics):
-                metric_name = list(metrics.keys())[i + 1]
-                benchmark = get_age_appropriate_benchmarks(player.age, metric_name)
-                with col2:
-                    st.write(f"**{metric_name.replace('_', ' ').title()}**")
-                    st.write(f"_Benchmark for age {player.age}: {benchmark}_")
-                    all_ratings[metric_name] = rate_skill(
+            with col1:
+                for metric, description in metrics_list[:mid_point]:
+                    benchmark = get_age_appropriate_benchmarks(player.age, metric)
+                    st.write(f"**{metric.replace('_', ' ').title()}**")
+                    st.write(f"_{description}_")
+                    if benchmark:
+                        st.write(f"Age target: {benchmark['description']}")
+
+                    current_value = getattr(player, metric, 3)
+                    all_ratings[metric] = rate_skill(
                         "Rating",
-                        f"rating_{metric_name}",
-                        metrics[metric_name],
-                        default_value=int(getattr(player, metric_name, 3))
+                        f"rating_{metric}_1",
+                        help=f"Rate {metric.replace('_', ' ')} from 1-5",
+                        default_value=int(current_value)
                     )
 
-        # Additional notes
-        notes = st.text_area(
-            "Assessment Notes",
-            help="Add observations about player's performance, areas for improvement, or specific achievements"
-        )
+            with col2:
+                for metric, description in metrics_list[mid_point:]:
+                    benchmark = get_age_appropriate_benchmarks(player.age, metric)
+                    st.write(f"**{metric.replace('_', ' ').title()}**")
+                    st.write(f"_{description}_")
+                    if benchmark:
+                        st.write(f"Age target: {benchmark['description']}")
 
-        submitted = st.form_submit_button("Save Assessment")
+                    current_value = getattr(player, metric, 3)
+                    all_ratings[metric] = rate_skill(
+                        "Rating",
+                        f"rating_{metric}_2",
+                        help=f"Rate {metric.replace('_', ' ')} from 1-5",
+                        default_value=int(current_value)
+                    )
 
-        if submitted:
-            try:
-                # Update player metrics
-                for metric, value in all_ratings.items():
-                    setattr(player, metric, value)
+            # Additional notes and observations
+            st.write("### Assessment Notes")
+            notes = st.text_area(
+                "Observations and Development Goals",
+                help="Add specific observations, areas for improvement, and development goals"
+            )
 
-                # Create historical record
-                history = PlayerHistory(
-                    player_id=player.id,
-                    date=datetime.utcnow().date(),
-                    assessment_notes=notes,
-                    **all_ratings
-                )
+            submitted = st.form_submit_button("Save Assessment")
 
-                db.session.add(history)
-                db.session.commit()
+            if submitted:
+                try:
+                    # Update player metrics
+                    for metric, value in all_ratings.items():
+                        setattr(player, metric, value)
 
-                st.success("Assessment saved successfully!")
-                return True
+                    # Create historical record
+                    history = PlayerHistory(
+                        player_id=player.id,
+                        date=datetime.utcnow().date(),
+                        assessment_notes=notes,
+                        **all_ratings
+                    )
 
-            except Exception as e:
-                st.error(f"Error saving assessment: {str(e)}")
-                db.session.rollback()
-                return False
+                    db.session.add(history)
+                    db.session.commit()
 
-    return False
+                    st.success("Assessment saved successfully!")
+                    return True
+
+                except Exception as e:
+                    st.error(f"Error saving assessment: {str(e)}")
+                    db.session.rollback()
+                    return False
+
+        return False
+
+    except Exception as e:
+        st.error(f"Error in skill assessment: {str(e)}")
+        return False
