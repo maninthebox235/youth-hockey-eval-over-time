@@ -52,11 +52,9 @@ if not st.session_state.user and token_to_verify:
     print(f"Attempting to restore session with token...")
     try:
         with app.app_context():
-            # Only proceed if token_to_verify is not None
-            if token_to_verify:
-                try:
-                    user = User.verify_auth_token(token_to_verify)
-                    if user:
+            try:
+                user = User.verify_auth_token(token_to_verify)
+                if user:
                         # If the token came from URL and not session, store it in session
                         if url_token and not st.session_state.authentication_token:
                             st.session_state.authentication_token = url_token

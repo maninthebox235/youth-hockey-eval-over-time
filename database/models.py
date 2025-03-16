@@ -53,21 +53,19 @@ class User(UserMixin, db.Model):
         try:
             print(f"Attempting to verify token: {token[:10]}...") # Print first part of token for debugging
             data = s.loads(token)
-            
-            # Verify that data is a dictionary before accessing keys
+
+            #Improved type checking and error handling
             if not isinstance(data, dict):
-                print(f"Token data has unexpected type: {type(data)}")
+                print(f"Error: Invalid token data type: {type(data)}. Token: {token}")
                 return None
-                
+
             print(f"Token data loaded successfully: {list(data.keys())}")
 
-            # Get user ID from token
             user_id = data.get('user_id')
-            if not user_id:
-                print("No user_id found in token data")
+            if user_id is None:
+                print("Error: 'user_id' not found in token data. Token: {token}")
                 return None
 
-            # Return user if found
             user = User.query.get(user_id)
             if user:
                 print(f"User found with ID {user_id}: {user.username}")
