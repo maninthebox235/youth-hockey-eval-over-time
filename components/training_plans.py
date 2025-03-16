@@ -490,7 +490,9 @@ def display_drill_details(drill):
     with col2:
         # Show video if available
         if 'video_url' in drill and drill['video_url']:
-            st.video(drill['video_url'])
+            # Convert embed URL to watch URL if needed
+            video_url = fix_youtube_url(drill['video_url'])
+            st.video(video_url)
     
     st.write("**Description:**")
     st.write(drill['description'])
