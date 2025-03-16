@@ -1,6 +1,12 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta
+import os
+import time
+import logging
+import base64
+from pathlib import Path
+
 from database import db, init_app
 from database.models import Player, User
 from utils.data_generator import get_players_df, get_player_history, seed_database
@@ -18,15 +24,27 @@ from components.training_plans import display_training_plan_interface
 from components.video_analysis import display_video_analysis_interface
 from components.onboarding import display_onboarding
 from components.admin_dashboard import display_admin_dashboard
-import time
-import logging
 
-# Page configuration
+# Function to load and inject custom CSS
+def load_css(css_file):
+    with open(css_file, "r") as f:
+        css_content = f.read()
+        
+    # Inject CSS with Streamlit
+    st.markdown(f"<style>{css_content}</style>", unsafe_allow_html=True)
+
+# Page configuration with improved styling
 st.set_page_config(
     page_title="Youth Hockey Development Tracker",
     page_icon="🏒",
     layout="wide"
 )
+
+# Load custom CSS
+try:
+    load_css("styles/custom.css")
+except Exception as e:
+    st.warning(f"Could not load custom styles: {str(e)}")
 
 # Initialize Flask app and context
 app = init_app()

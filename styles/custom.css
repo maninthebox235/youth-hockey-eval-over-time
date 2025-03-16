@@ -1,30 +1,260 @@
+/* Global Styles */
+:root {
+    --primary-color: #1e3a8a;        /* Dark blue (hockey color) */
+    --secondary-color: #0ea5e9;      /* Light blue (accent) */
+    --accent-color: #db2777;         /* Pink accent for highlights */
+    --success-color: #10b981;        /* Green for positive indicators */
+    --warning-color: #f59e0b;        /* Amber for warnings/alerts */
+    --danger-color: #ef4444;         /* Red for negative indicators */
+    --light-bg: #f8fafc;             /* Light background color */
+    --dark-text: #1e293b;            /* Dark text color */
+    --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Body and main container styles */
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--dark-text);
+    background-color: #f1f5f9;
+}
+
+/* Header styles */
+h1, h2, h3, h4, h5 {
+    color: var(--primary-color);
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+}
+
+/* Main dashboard panels */
+.main-panel {
+    background-color: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--card-shadow);
+    border-top: 4px solid var(--primary-color);
+}
+
+/* Player card styling with enhanced visuals */
 .player-card {
-    border: 1px solid #e6e6e6;
-    border-radius: 10px;
-    padding: 20px;
-    margin: 10px;
+    border: none;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    background-color: white;
+    box-shadow: var(--card-shadow);
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    position: relative;
+    overflow: hidden;
+}
+
+.player-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.player-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+}
+
+/* Stat box with improved styling */
+.stat-box {
+    background-color: var(--light-bg);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 0.5rem 0;
+    text-align: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+}
+
+.stat-box:hover {
     background-color: white;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.stat-box {
-    background-color: #f8f9fa;
-    border-radius: 5px;
-    padding: 10px;
-    margin: 5px;
-    text-align: center;
+.stat-box h4 {
+    margin-top: 0;
+    font-size: 0.9rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
+.stat-box p.value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0.5rem 0;
+    color: var(--primary-color);
+}
+
+/* Progress indicators with enhanced styling */
 .progress-indicator {
-    height: 10px;
-    background-color: #e9ecef;
-    border-radius: 5px;
-    margin: 5px 0;
+    height: 8px;
+    background-color: #e2e8f0;
+    border-radius: 4px;
+    margin: 0.5rem 0 1rem 0;
+    overflow: hidden;
+    position: relative;
 }
 
+.progress-indicator .progress-bar {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));
+    transition: width 0.5s ease;
+}
+
+/* Age group sections */
 .age-group-section {
-    margin: 20px 0;
-    padding: 15px;
-    border-radius: 8px;
-    background-color: #f8f9fa;
+    margin: 1.5rem 0;
+    padding: 1.5rem;
+    border-radius: 12px;
+    background-color: white;
+    border-left: 4px solid var(--secondary-color);
+    box-shadow: var(--card-shadow);
+}
+
+/* Rating scales with colorized indicators */
+.rating-scale {
+    display: flex;
+    align-items: center;
+    margin: 0.5rem 0;
+}
+
+.rating-scale .rating-label {
+    min-width: 120px;
+    font-weight: 500;
+}
+
+.rating-scale .rating-value {
+    min-width: 30px;
+    text-align: center;
+    font-weight: 700;
+}
+
+.rating-scale .rating-bar {
+    flex-grow: 1;
+    height: 8px;
+    background-color: #e2e8f0;
+    border-radius: 4px;
+    margin: 0 0.5rem;
+}
+
+.rating-scale .rating-bar .fill {
+    height: 100%;
+    border-radius: 4px;
+}
+
+/* Rating colors based on value */
+.rating-level-1 .fill { width: 20%; background-color: #ef4444; }
+.rating-level-2 .fill { width: 40%; background-color: #f97316; }
+.rating-level-3 .fill { width: 60%; background-color: #f59e0b; }
+.rating-level-4 .fill { width: 80%; background-color: #84cc16; }
+.rating-level-5 .fill { width: 100%; background-color: #10b981; }
+
+/* Button styling */
+.stButton>button {
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    border: none;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+}
+
+.stButton>button:hover {
+    background-color: var(--secondary-color);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Navigation styling */
+div[data-testid="stSidebar"] {
+    background-color: #1e293b;
+    border-right: 1px solid #334155;
+}
+
+div[data-testid="stSidebar"] .sidebar-content {
+    padding: 2rem 1rem;
+}
+
+div[data-testid="stSidebar"] h3 {
+    color: white;
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+div[data-testid="stSidebar"] .sidebar-section {
+    margin-bottom: 2rem;
+}
+
+/* Tabs styling */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 2px;
+}
+
+.stTabs [data-baseweb="tab"] {
+    height: 50px;
+    white-space: pre-wrap;
+    border-radius: 4px 4px 0 0;
+    gap: 1px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.stTabs [aria-selected="true"] {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* Charts and data visualization improvements */
+.chart-container {
+    background-color: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--card-shadow);
+}
+
+/* Helper clases */
+.text-success { color: var(--success-color); }
+.text-warning { color: var(--warning-color); }
+.text-danger { color: var(--danger-color); }
+.text-primary { color: var(--primary-color); }
+.text-secondary { color: var(--secondary-color); }
+
+.badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.badge-success { background-color: #dcfce7; color: #166534; }
+.badge-warning { background-color: #fef3c7; color: #92400e; }
+.badge-danger { background-color: #fee2e2; color: #b91c1c; }
+.badge-primary { background-color: #dbeafe; color: #1e40af; }
+.badge-secondary { background-color: #e0f2fe; color: #075985; }
+
+/* Media query for smaller screens */
+@media (max-width: 768px) {
+    .player-card, .age-group-section, .main-panel {
+        padding: 1rem;
+        margin: 0.75rem 0;
+    }
+    
+    .stat-box p.value {
+        font-size: 1.2rem;
+    }
 }

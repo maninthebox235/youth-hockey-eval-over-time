@@ -45,12 +45,23 @@ def get_age_benchmark(age, skill_type):
 def display_player_profile(player_data, player_history):
     """Display comprehensive player profile with skill assessments"""
 
-    # Profile Header
+    # Styled header with player name
+    st.markdown(f"""
+    <div style="background: linear-gradient(90deg, var(--primary-color), var(--secondary-color)); 
+         padding: 1.5rem; border-radius: 10px; color: white; margin-bottom: 1.5rem; box-shadow: var(--card-shadow);">
+        <h2 style="margin:0; color: white; font-weight: 700;">{player_data['name']} Profile</h2>
+        <p style="margin:0; opacity: 0.9;">Player Development Dashboard</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Profile Header with modern styling
+    st.markdown('<div class="player-card">', unsafe_allow_html=True)
     col1, col2 = st.columns([1, 2])
 
     with col1:
         st.image("https://images.unsplash.com/photo-1517177646641-83fe10f14633", 
-                caption=player_data['name'])
+                caption=player_data['name'],
+                use_column_width=True)
                 
         # Safe handling of join_date format
         join_date_str = ""
@@ -59,15 +70,52 @@ def display_player_profile(player_data, player_history):
                 join_date_str = player_data['join_date'].strftime('%Y-%m-%d')
             except (AttributeError, ValueError):
                 join_date_str = str(player_data['join_date'])
-                
-        # Display player details with safe type handling
+    
+    with col2:
+        # Display player details with safe type handling and styled badges
         st.markdown(f"""
-        ### Player Details
-        - **Age:** {to_int(player_data.get('age', 0)) or 'N/A'}
-        - **Age Group:** {player_data.get('age_group', 'N/A')}
-        - **Position:** {player_data.get('position', 'N/A')}
-        - **Join Date:** {join_date_str or 'N/A'}
-        """)
+        <h3 style="color: var(--primary-color); margin-bottom: 1rem;">Player Details</h3>
+        
+        <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+            <span class="badge badge-primary">Age: {to_int(player_data.get('age', 0)) or 'N/A'}</span>
+            <span class="badge badge-secondary">Age Group: {player_data.get('age_group', 'N/A')}</span>
+            <span class="badge badge-primary">Position: {player_data.get('position', 'N/A')}</span>
+        </div>
+        
+        <p><strong>Join Date:</strong> {join_date_str or 'N/A'}</p>
+        """, unsafe_allow_html=True)
+        
+        # Add player stats preview
+        position = to_str(player_data.get('position', ''))
+        if position and position.lower() == 'goalie':
+            metrics = [
+                {"name": "Save %", "value": f"{to_float(player_data.get('save_percentage', 0)) or 0:.1f}"},
+                {"name": "Games", "value": f"{to_int(player_data.get('games_played', 0)) or 0}"}
+            ]
+        else:
+            metrics = [
+                {"name": "Goals", "value": f"{to_int(player_data.get('goals', 0)) or 0}"},
+                {"name": "Assists", "value": f"{to_int(player_data.get('assists', 0)) or 0}"},
+                {"name": "Games", "value": f"{to_int(player_data.get('games_played', 0)) or 0}"}
+            ]
+            
+        st.markdown("""
+        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+        """, unsafe_allow_html=True)
+        
+        for metric in metrics:
+            st.markdown(f"""
+            <div class="stat-box">
+                <h4>{metric["name"]}</h4>
+                <p class="value">{metric["value"]}</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+        st.markdown("""
+        </div>
+        """, unsafe_allow_html=True)
+            
+    st.markdown('</div>', unsafe_allow_html=True)
 
     # Create tabs for different sections
     tabs = st.tabs(["Current Stats", "Skill Assessment", "Development Charts", "Feedback", "Export Report"])
@@ -128,50 +176,109 @@ def _display_skater_stats(player_data):
     """Display statistics for skater players"""
     from utils.type_converter import to_float, to_int
     
-    metrics_col1, metrics_col2, metrics_col3 = st.columns(3)
-
+    # Add a styled container for stats
+    st.markdown('<div class="main-panel">', unsafe_allow_html=True)
+    
     # Get benchmarks
     skating_benchmark = get_age_benchmark(player_data['age'], 'skating_speed')
     shooting_benchmark = get_age_benchmark(player_data['age'], 'shooting_accuracy')
-
-    with metrics_col1:
-        # Use type converter to handle various numeric types consistently
-        current = to_float(player_data.get('skating_speed', 0)) or 0
-        # Ensure value is in 1-5 range
-        current = min(max(current, 1), 5) if current else 0
-        st.metric(
-            "Skating Speed",
-            f"{current:.1f}/5",
-            f"{(current - skating_benchmark):.1f} vs benchmark"
-        )
-
-    with metrics_col2:
-        # Use type converter to handle various numeric types consistently
-        current = to_float(player_data.get('shooting_accuracy', 0)) or 0
-        # Ensure value is in 1-5 range
-        current = min(max(current, 1), 5) if current else 0
-        st.metric(
-            "Shooting Accuracy",
-            f"{current:.1f}/5",
-            f"{(current - shooting_benchmark):.1f} vs benchmark"
-        )
-
-    with metrics_col3:
-        st.metric("Games Played", to_int(player_data.get('games_played', 0)) or 0)
-
-    # Additional stats
-    stats_col1, stats_col2 = st.columns(2)
-    with stats_col1:
-        st.metric("Goals", to_int(player_data.get('goals', 0)) or 0)
-    with stats_col2:
-        st.metric("Assists", to_int(player_data.get('assists', 0)) or 0)
+    
+    # Display primary stats with improved styling
+    st.markdown("""
+    <h3 style="color: var(--primary-color); margin-bottom: 1rem;">Key Performance Metrics</h3>
+    <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+    """, unsafe_allow_html=True)
+    
+    # Skating Speed
+    current_skating = to_float(player_data.get('skating_speed', 0)) or 0
+    current_skating = min(max(current_skating, 1), 5) if current_skating else 0
+    skating_diff = current_skating - skating_benchmark
+    skating_diff_class = "text-success" if skating_diff >= 0 else "text-danger"
+    
+    st.markdown(f"""
+    <div class="stat-box" style="flex: 1;">
+        <h4>Skating Speed</h4>
+        <p class="value">{current_skating:.1f}<span style="font-size: 0.8rem;">/5</span></p>
+        <div class="rating-scale rating-level-{int(current_skating)}">
+            <div class="rating-bar">
+                <div class="fill"></div>
+            </div>
+        </div>
+        <p class="{skating_diff_class}" style="font-size: 0.8rem; margin: 0;">
+            {skating_diff:.1f} vs benchmark
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Shooting Accuracy
+    current_shooting = to_float(player_data.get('shooting_accuracy', 0)) or 0
+    current_shooting = min(max(current_shooting, 1), 5) if current_shooting else 0
+    shooting_diff = current_shooting - shooting_benchmark
+    shooting_diff_class = "text-success" if shooting_diff >= 0 else "text-danger"
+    
+    st.markdown(f"""
+    <div class="stat-box" style="flex: 1;">
+        <h4>Shooting Accuracy</h4>
+        <p class="value">{current_shooting:.1f}<span style="font-size: 0.8rem;">/5</span></p>
+        <div class="rating-scale rating-level-{int(current_shooting)}">
+            <div class="rating-bar">
+                <div class="fill"></div>
+            </div>
+        </div>
+        <p class="{shooting_diff_class}" style="font-size: 0.8rem; margin: 0;">
+            {shooting_diff:.1f} vs benchmark
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Games Played
+    games = to_int(player_data.get('games_played', 0)) or 0
+    
+    st.markdown(f"""
+    <div class="stat-box" style="flex: 1;">
+        <h4>Games Played</h4>
+        <p class="value">{games}</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("</div>", unsafe_allow_html=True)
+    
+    # Game stats section
+    goals = to_int(player_data.get('goals', 0)) or 0
+    assists = to_int(player_data.get('assists', 0)) or 0
+    
+    st.markdown("""
+    <h3 style="color: var(--primary-color); margin: 1rem 0;">Game Performance</h3>
+    <div style="display: flex; gap: 1rem;">
+    """, unsafe_allow_html=True)
+    
+    st.markdown(f"""
+    <div class="stat-box" style="flex: 1;">
+        <h4>Goals</h4>
+        <p class="value">{goals}</p>
+    </div>
+    
+    <div class="stat-box" style="flex: 1;">
+        <h4>Assists</h4>
+        <p class="value">{assists}</p>
+    </div>
+    
+    <div class="stat-box" style="flex: 1;">
+        <h4>Points</h4>
+        <p class="value">{goals + assists}</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)  # Close main-panel
 
 def _display_goalie_stats(player_data):
     """Display statistics for goalie players"""
     from utils.type_converter import to_float, to_int
     
-    metrics_col1, metrics_col2, metrics_col3 = st.columns(3)
-
+    # Add a styled container for stats
+    st.markdown('<div class="main-panel">', unsafe_allow_html=True)
+    
     # Use type conversion functions for consistent data handling
     save_pct = to_float(player_data.get('save_percentage', 0)) or 0
     reaction = to_float(player_data.get('reaction_time', 0)) or 0
@@ -180,32 +287,89 @@ def _display_goalie_stats(player_data):
     # Ensure values are in 1-5 range
     reaction = min(max(reaction, 1), 5) if reaction else 0
     positioning = min(max(positioning, 1), 5) if positioning else 0
-
-    with metrics_col1:
-        st.metric("Save Percentage", f"{save_pct:.1f}%")
-    with metrics_col2:
-        st.metric("Reaction Time", f"{reaction:.1f}/5")
-    with metrics_col3:
-        st.metric("Positioning", f"{positioning:.1f}/5")
-
-    # Additional goalie stats
-    stats_col1, stats_col2 = st.columns(2)
+    
+    # Display primary stats with improved styling
+    st.markdown("""
+    <h3 style="color: var(--primary-color); margin-bottom: 1rem;">Goalie Performance Metrics</h3>
+    <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+    """, unsafe_allow_html=True)
+    
+    # Save Percentage
+    st.markdown(f"""
+    <div class="stat-box" style="flex: 1;">
+        <h4>Save Percentage</h4>
+        <p class="value">{save_pct:.1f}<span style="font-size: 0.8rem;">%</span></p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Reaction Time
+    st.markdown(f"""
+    <div class="stat-box" style="flex: 1;">
+        <h4>Reaction Time</h4>
+        <p class="value">{reaction:.1f}<span style="font-size: 0.8rem;">/5</span></p>
+        <div class="rating-scale rating-level-{int(reaction)}">
+            <div class="rating-bar">
+                <div class="fill"></div>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Positioning
+    st.markdown(f"""
+    <div class="stat-box" style="flex: 1;">
+        <h4>Positioning</h4>
+        <p class="value">{positioning:.1f}<span style="font-size: 0.8rem;">/5</span></p>
+        <div class="rating-scale rating-level-{int(positioning)}">
+            <div class="rating-bar">
+                <div class="fill"></div>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Close flex container
+    st.markdown("</div>", unsafe_allow_html=True)
     
     # Get integer metrics with proper conversion
     games_played = to_int(player_data.get('games_played', 0)) or 0
     saves = to_int(player_data.get('saves', 0)) or 0
     goals_against = to_int(player_data.get('goals_against', 0)) or 0
     
-    with stats_col1:
-        st.metric("Games Played", games_played)
-        st.metric("Saves", saves)
-    with stats_col2:
-        st.metric("Goals Against", goals_against)
-
-        # Calculate save percentage
-        total_shots = saves + goals_against
-        save_percentage = (saves / total_shots * 100) if total_shots > 0 else 0
-        st.metric("Game Save Percentage", f"{save_percentage:.1f}%")
+    # Calculate save percentage
+    total_shots = saves + goals_against
+    save_percentage = (saves / total_shots * 100) if total_shots > 0 else 0
+    
+    # Game stats section
+    st.markdown("""
+    <h3 style="color: var(--primary-color); margin: 1rem 0;">Game Statistics</h3>
+    <div style="display: flex; gap: 1rem;">
+    """, unsafe_allow_html=True)
+    
+    st.markdown(f"""
+    <div class="stat-box" style="flex: 1;">
+        <h4>Games Played</h4>
+        <p class="value">{games_played}</p>
+    </div>
+    
+    <div class="stat-box" style="flex: 1;">
+        <h4>Saves</h4>
+        <p class="value">{saves}</p>
+    </div>
+    
+    <div class="stat-box" style="flex: 1;">
+        <h4>Goals Against</h4>
+        <p class="value">{goals_against}</p>
+    </div>
+    
+    <div class="stat-box" style="flex: 1;">
+        <h4>Game Save %</h4>
+        <p class="value">{save_percentage:.1f}%</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)  # Close main-panel
 
 def _display_development_charts(player_data, player_history):
     """Display development progress charts"""
