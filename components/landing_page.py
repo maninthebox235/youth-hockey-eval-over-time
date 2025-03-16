@@ -5,39 +5,117 @@ from datetime import datetime
 
 def display_auth_buttons():
     """Display authentication buttons in the top-right corner"""
-    # Create container with border styling
+    # Apply CSS for the auth container and buttons
     st.markdown("""
     <style>
-    .auth-buttons {
+    /* Hide default Streamlit container padding at the top to make room for our header */
+    .main .block-container {
+        padding-top: 0rem;
+    }
+    
+    /* Style for auth buttons header */
+    .auth-header {
+        background-color: #f8f9fa;
+        width: 100%;
+        padding: 8px 20px;
         display: flex;
         justify-content: flex-end;
-        padding: 10px 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        margin-bottom: 1rem;
+    }
+    
+    /* Style for the button container */
+    .auth-buttons {
+        display: flex;
         gap: 10px;
+        align-items: center;
+    }
+    
+    /* Custom styling for the logo */
+    .logo {
+        font-weight: bold;
+        font-size: 18px;
+        color: #C8102E; /* Hockey red */
+        margin-right: auto;
+        display: flex;
+        align-items: center;
+    }
+    
+    /* Button container - to make sure hidden buttons are properly aligned */
+    .stbutton-container {
+        display: flex;
+        justify-content: flex-end;
+    }
+    
+    /* Make the default Streamlit buttons smaller */
+    .stButton button {
+        font-size: 13px !important;
+        padding: 2px 12px !important;
+        border-radius: 20px !important;
+    }
+    
+    /* Login button style */
+    .login-btn button {
+        background-color: transparent !important;
+        color: #333 !important;
+        border: 1px solid #ddd !important;
+    }
+    
+    /* Sign up button style */
+    .signup-btn button {
+        background-color: #C8102E !important; /* Hockey red */
+        color: white !important;
+        border: none !important;
+    }
+    
+    /* Forgot password link style */
+    .forgot-btn button {
+        background-color: transparent !important;
+        color: #666 !important;
+        border: none !important;
+        font-size: 12px !important;
+        text-decoration: underline !important;
+        padding: 2px 5px !important;
     }
     </style>
-    <div class="auth-buttons">
-        <div id="auth-login-btn"></div>
-        <div id="auth-signup-btn"></div>
-        <div id="auth-forgot-btn"></div>
+    
+    <div class="auth-header">
+        <div class="logo">🏒 IceTracker</div>
+        <div class="auth-buttons">
+            <!-- The actual buttons will be injected by Streamlit -->
+        </div>
     </div>
     """, unsafe_allow_html=True)
     
-    col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
+    # Create a clean horizontal container for buttons at the top
+    cols = st.columns([6, 1, 1.2, 1.3])
     
-    with col2:
+    # Empty column to push buttons to the right
+    cols[0].empty()
+    
+    # Login button
+    with cols[1]:
+        st.markdown('<div class="login-btn">', unsafe_allow_html=True)
         if st.button("Login", key="top_login_button"):
             st.session_state.show_login = True
             st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
     
-    with col3:
-        if st.button("Sign Up", key="top_signup_button", type="primary"):
+    # Sign Up button
+    with cols[2]:
+        st.markdown('<div class="signup-btn">', unsafe_allow_html=True)
+        if st.button("Sign Up", key="top_signup_button"):
             st.session_state.show_signup = True
             st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
     
-    with col4:
-        if st.button("Forgot Password?", key="top_forgot_pw_button", type="secondary"):
+    # Forgot Password
+    with cols[3]:
+        st.markdown('<div class="forgot-btn">', unsafe_allow_html=True)
+        if st.button("Forgot Password?", key="top_forgot_pw_button"):
             st.session_state.show_forgot_password = True
             st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
 
 def display_feature_preview():
     """Display feature preview on landing page"""
