@@ -4,36 +4,227 @@ from datetime import datetime
 
 def display_feature_preview():
     """Display feature preview on landing page"""
-    st.title("Hockey Player Tracking System")
-    st.markdown("##### Track player development, manage teams, and provide structured feedback")
-
-    col1, col2, col3 = st.columns([1,2,1])
-
-    with col2:
-        st.markdown("### Start Your Free Trial Today!")
+    st.title("🏒 IceTracker: Youth Hockey Player Development Platform")
+    st.markdown("##### Comprehensive skill tracking, personalized training, and advanced analytics for young players")
+    
+    # Use a custom CSS style
+    st.markdown("""
+    <style>
+    .feature-card {
+        border-radius: 10px;
+        border: 1px solid #ddd;
+        padding: 20px;
+        margin: 10px 0;
+        background-color: white;
+    }
+    .feature-icon {
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+    .feature-title {
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    .premium-badge {
+        background-color: #FFD700;
+        color: #000;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 12px;
+        margin-left: 5px;
+    }
+    .team-badge {
+        background-color: #4169E1;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 12px;
+        margin-left: 5px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Hero banner section
+    st.markdown("""
+    <div style="background-image: linear-gradient(to right, #1A2980, #26D0CE); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+        <h2>Track, Analyze, Improve</h2>
+        <p style="font-size: 18px;">The complete solution for youth hockey player development, trusted by coaches and parents nationwide.</p>
+        <p>Designed for players age 6-18 • Position-specific metrics • Data-driven improvement</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Core Features Section
+    st.subheader("Core Features")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
         st.markdown("""
-        ✅ No credit card required\n
-        ✅ Full access to all features\n
-        ✅ Unlimited player profiles\n
-        ✅ Expert support
-        """)
-
+        <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <div class="feature-title">Skill Assessment & Tracking</div>
+            <p>Comprehensive skill evaluations with position-specific metrics for skating, stickhandling, shooting, and hockey IQ.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div class="feature-card">
+            <div class="feature-icon">📈</div>
+            <div class="feature-title">Progress Visualization</div>
+            <p>Dynamic charts showing player development over time with detailed historical data and trend analysis.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("""
+        <div class="feature-card">
+            <div class="feature-icon">🏆</div>
+            <div class="feature-title">Age-Appropriate Benchmarks</div>
+            <p>Compare performance to age-specific benchmarks to identify strengths and areas for improvement.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div class="feature-card">
+            <div class="feature-icon">👥</div>
+            <div class="feature-title">Multi-Player Profiles</div>
+            <p>Track multiple players under one account, perfect for families with siblings or coaches managing teams.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Premium Features Section
+    st.subheader("Premium Features")
+    
+    premium_cols = st.columns(3)
+    
+    with premium_cols[0]:
+        st.markdown("""
+        <div class="feature-card">
+            <div class="feature-icon">🎬</div>
+            <div class="feature-title">Video Analysis <span class="premium-badge">PREMIUM</span></div>
+            <p>Upload practice or game footage for detailed technique analysis with actionable feedback.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with premium_cols[1]:
+        st.markdown("""
+        <div class="feature-card">
+            <div class="feature-icon">🏋️</div>
+            <div class="feature-title">Training Plans <span class="premium-badge">PREMIUM</span></div>
+            <p>Personalized development plans based on player metrics with targeted drills and exercises.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with premium_cols[2]:
+        st.markdown("""
+        <div class="feature-card">
+            <div class="feature-icon">🔍</div>
+            <div class="feature-title">Peer Comparison <span class="premium-badge">PREMIUM</span></div>
+            <p>Anonymous benchmarking against other players in the same age group and position.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Team Features Section
+    st.subheader("Team & Organization Features")
+    
+    team_cols = st.columns(3)
+    
+    with team_cols[0]:
+        st.markdown("""
+        <div class="feature-card">
+            <div class="feature-icon">📋</div>
+            <div class="feature-title">Team Dashboard <span class="team-badge">TEAM</span></div>
+            <p>Comprehensive team overview with skill heatmaps, performance metrics, and development tracking.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with team_cols[1]:
+        st.markdown("""
+        <div class="feature-card">
+            <div class="feature-icon">🏁</div>
+            <div class="feature-title">Tryout Evaluation <span class="team-badge">TEAM</span></div>
+            <p>Streamlined assessment system for player tryouts with customizable evaluation criteria.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with team_cols[2]:
+        st.markdown("""
+        <div class="feature-card">
+            <div class="feature-icon">📝</div>
+            <div class="feature-title">Custom Reports <span class="team-badge">TEAM</span></div>
+            <p>Generate detailed team and player reports for season reviews and development planning.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Pricing Banner
+    st.markdown("""
+    <div style="background-color: #f5f5f5; padding: 20px; border-radius: 10px; margin: 20px 0; text-align: center;">
+        <h3>Simple, Flexible Pricing</h3>
+        <div style="display: flex; justify-content: center; text-align: center; margin-top: 15px;">
+            <div style="margin: 0 15px; background-color: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                <h4>Free</h4>
+                <h2>$0</h2>
+                <p>Core features<br>Up to 3 players<br>Basic statistics</p>
+            </div>
+            <div style="margin: 0 15px; background-color: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 2px solid #FFD700;">
+                <h4>Premium</h4>
+                <h2>$4.99<small>/month</small></h2>
+                <p>All core features<br>Unlimited players<br>All premium features</p>
+            </div>
+            <div style="margin: 0 15px; background-color: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                <h4>Team</h4>
+                <h2>$99<small>/year</small></h2>
+                <p>Everything in Premium<br>Team features<br>Custom branding</p>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Testimonials
+    st.markdown("""
+    <div style="margin: 20px 0;">
+        <h3 style="text-align: center;">What Coaches & Parents Are Saying</h3>
+        <div style="display: flex; justify-content: space-between; margin-top: 15px;">
+            <div style="flex: 1; padding: 15px; margin: 0 10px; background-color: #f9f9f9; border-radius: 8px;">
+                <p style="font-style: italic;">"This platform has transformed how we track player development. The personalized training plans have been a game-changer for our team."</p>
+                <p style="text-align: right;"><strong>- Coach Michael, Minnesota Youth Hockey</strong></p>
+            </div>
+            <div style="flex: 1; padding: 15px; margin: 0 10px; background-color: #f9f9f9; border-radius: 8px;">
+                <p style="font-style: italic;">"As a hockey parent, I finally have a clear picture of my child's progress. The age benchmarks give us realistic goals to work toward."</p>
+                <p style="text-align: right;"><strong>- Sarah P., Hockey Parent</strong></p>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Call to action
+    st.markdown("""
+    <div style="text-align: center; margin: 30px 0;">
+        <h2>Ready to elevate your hockey development?</h2>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    col1, col2, col3 = st.columns([1,2,1])
+    
+    with col2:
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("Sign Up Now", type="primary", key="signup_button"):
+            if st.button("Sign Up Now", type="primary", key="signup_button", use_container_width=True):
                 st.session_state.show_signup = True
                 st.rerun()
         with col2:
-            if st.button("Login", key="login_button", type="secondary"):
+            if st.button("Login", key="login_button", type="secondary", use_container_width=True):
                 st.session_state.show_login = True
                 st.rerun()
         
         # Reset password option
-        if st.button("Forgot Password?", key="forgot_pw_button", type="secondary"):
-            st.session_state.show_login = False
-            st.session_state.show_signup = False
-            st.session_state.show_forgot_password = True
-            st.rerun()
+        forgot_col1, forgot_col2, forgot_col3 = st.columns([1,2,1])
+        with forgot_col2:
+            if st.button("Forgot Password?", key="forgot_pw_button"):
+                st.session_state.show_login = False
+                st.session_state.show_signup = False
+                st.session_state.show_forgot_password = True
+                st.rerun()
 
 def display_signup_form():
     """Display the signup form for new users"""
