@@ -111,9 +111,22 @@ if not show_landing:
                         st.rerun()
                 else:
                     # Enhanced navigation menu
-                    menu = st.sidebar.selectbox(
-                        "Navigation",
-                        [
+                    # Check if user is admin
+                    is_admin = st.session_state.user.get('is_admin', False)
+                    
+                    # Admin users get access to the admin dashboard
+                    if is_admin:
+                        menu_options = [
+                            "Team Dashboard",
+                            "Player Profiles", 
+                            "Training & Development",
+                            "Skill Analysis",
+                            "Benchmarks & References",
+                            "Team Management",
+                            "Admin Dashboard"  # Added Admin Dashboard for admins
+                        ]
+                    else:
+                        menu_options = [
                             "Team Dashboard",
                             "Player Profiles", 
                             "Training & Development",
@@ -121,7 +134,15 @@ if not show_landing:
                             "Benchmarks & References",
                             "Team Management"
                         ]
+                    
+                    menu = st.sidebar.selectbox(
+                        "Navigation",
+                        menu_options
                     )
+                    
+                    # Display admin badge for admin users
+                    if is_admin:
+                        st.sidebar.success("Admin Access Enabled")
 
                     if menu == "Player Profiles":
                         st.subheader("Player Profiles")
@@ -276,6 +297,10 @@ if not show_landing:
                                 display_tryout_evaluation_mode(team_id)
                             else:
                                 st.info("No teams available. Please create a team first.")
+                    
+                    elif menu == "Admin Dashboard":
+                        # Show the admin dashboard
+                        display_admin_dashboard()
             except Exception as e:
                 st.error(f"Error: {str(e)}")
 
