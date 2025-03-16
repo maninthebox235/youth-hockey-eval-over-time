@@ -28,12 +28,16 @@ def create_player_form():
 
         if submitted and name:
             try:
+                # Get current user ID from session state
+                user_id = st.session_state.user['id'] if 'user' in st.session_state else None
+                
                 player = Player(
                     name=name,
                     age=age,
                     age_group=age_group,
                     position=position,
-                    join_date=datetime.utcnow()
+                    join_date=datetime.utcnow(),
+                    user_id=user_id
                 )
 
                 if position == "Goalie":
@@ -95,8 +99,15 @@ def assign_players_to_team(team_id):
             st.error("Team not found")
             return
 
-        # Get available players in the same age group
-        available_players = Player.query.filter_by(age_group=team.age_group).all()
+        # Get user ID from session
+        user_id = st.session_state.user['id'] if 'user' in st.session_state else None
+        
+        # Get available players in the same age group that belong to the current user
+        if user_id:
+            available_players = Player.query.filter_by(age_group=team.age_group, user_id=user_id).all()
+        else:
+            available_players = Player.query.filter_by(age_group=team.age_group).all()
+            
         current_members = [m.player_id for m in team.memberships.filter_by(is_active=True).all()]
 
         # Filter out players already in the team
@@ -158,7 +169,29 @@ def assign_players_to_team(team_id):
 def display_team_list():
     """Display list of teams and their details"""
     try:
-        teams = Team.query.all()
+        # Get user ID from session
+        user_id = st.session_state.user['id'] if 'user' in st.session_state else None
+        
+        if user_id:
+            # Find teams containing players that belong to this user
+            # Get the player IDs for this user
+            user_players = Player.query.filter_by(user_id=user_id).all()
+            player_ids = [p.id for p in user_players]
+            
+            # Get team memberships for these players
+            team_ids = []
+            if player_ids:
+                memberships = TeamMembership.query.filter(TeamMembership.player_id.in_(player_ids)).all()
+                team_ids = [m.team_id for m in memberships]
+            
+            # Get teams that contain these players
+            if team_ids:
+                teams = Team.query.filter(Team.id.in_(team_ids)).all()
+            else:
+                teams = []
+        else:
+            # If no user ID, show all teams (fallback for testing)
+            teams = Team.query.all()
 
         if not teams:
             st.info("No teams created yet")
@@ -179,12 +212,16 @@ def display_team_list():
 
                 # Get active memberships
                 memberships = team.memberships.filter_by(is_active=True).all()
+                
+                # Get user ID from session
+                user_id = st.session_state.user['id'] if 'user' in st.session_state else None
 
                 if memberships:
                     roster_data = []
                     for membership in memberships:
                         player = membership.player
-                        if player:
+                        # Only show players belonging to the current user
+                        if player and (not user_id or player.user_id == user_id):
                             roster_data.append({
                                 'Name': player.name,
                                 'Position': membership.position_in_team,
