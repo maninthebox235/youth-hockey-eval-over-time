@@ -85,9 +85,9 @@ def display_skill_assessment(player_id):
         # Initialize session state for this player if not exists
         if 'slider_range_fixed' not in st.session_state:
             st.session_state.slider_range_fixed = True
-            
+
         player_id = int(player_id) if hasattr(player_id, 'item') else player_id
-        
+
         # Use a fresh session for this query to avoid transaction issues
         try:
             player = Player.query.get(player_id)
@@ -97,7 +97,7 @@ def display_skill_assessment(player_id):
             db.session.rollback()
             # Try again
             player = Player.query.get(player_id)
-            
+
         if not player:
             st.error("Player not found")
             return False
@@ -114,17 +114,17 @@ def display_skill_assessment(player_id):
         # Create tabs for current skills and adding new assessment
         tab_names = ["Current Skills", "Add New Assessment"]
         current_tab, new_tab = st.tabs(tab_names)
-        
+
         with current_tab:
             display_current_skills(player)
-            
+
         with new_tab:
             assessment_saved = add_new_assessment(player)
             if assessment_saved:
                 # This will be handled on the next rerun
                 st.session_state.assessment_saved = True
                 return True
-                
+
         return False
 
     except Exception as e:
@@ -134,10 +134,10 @@ def display_skill_assessment(player_id):
 def display_current_skills(player):
     """Display the current skills of a player"""
     metrics = get_skill_metrics(player.position)
-    
+
     st.subheader("Current Skill Ratings")
     st.write("These are the player's current skill ratings. To update them, use the 'Add New Assessment' tab.")
-    
+
     # Get recent assessments
     try:
         player_history = PlayerHistory.query.filter_by(player_id=player.id).order_by(PlayerHistory.date.desc()).first()
@@ -145,12 +145,12 @@ def display_current_skills(player):
         st.error(f"Error retrieving player history: {str(e)}")
         db.session.rollback()
         player_history = None
-    
+
     # Create a 3-column layout for better display of more metrics
     col1, col2, col3 = st.columns(3)
     metrics_list = list(metrics.items())
     section_size = len(metrics_list) // 3
-    
+
     # First column
     with col1:
         for metric, description in metrics_list[:section_size]:
@@ -162,7 +162,7 @@ def display_current_skills(player):
                         value=f"{value:.1f}",
                         help=description
                     )
-    
+
     # Second column
     with col2:
         for metric, description in metrics_list[section_size:section_size*2]:
@@ -174,7 +174,7 @@ def display_current_skills(player):
                         value=f"{value:.1f}",
                         help=description
                     )
-    
+
     # Third column
     with col3:
         for metric, description in metrics_list[section_size*2:]:
@@ -186,7 +186,7 @@ def display_current_skills(player):
                         value=f"{value:.1f}",
                         help=description
                     )
-    
+
     # Show recent assessment notes if available
     if player_history and player_history.notes:
         st.subheader("Latest Assessment Notes")
@@ -196,12 +196,12 @@ def display_current_skills(player):
 def add_new_assessment(player):
     """Add a new skill assessment for a player"""
     metrics = get_skill_metrics(player.position)
-    
+
     st.subheader("Add New Assessment")
-    
+
     # Create a unique form key with a timestamp to ensure fresh rendering
     form_key = f"skill_assessment_form_{int(datetime.utcnow().timestamp())}"
-    
+
     with st.form(key=form_key):
         st.write("### Rate player's skills (1-5 scale)")
         st.write("1 = Needs significant improvement")
@@ -224,13 +224,16 @@ def add_new_assessment(player):
                 # Get current value with safe default
                 try:
                     current_value = getattr(player, metric, None)
-                    current_value = min(max(int(current_value) if current_value is not None else 3, 1), 5)
+                    # Handle pandas Series correctly
+                    if hasattr(current_value, 'item'):
+                        current_value = current_value.item()
+                    current_value = min(max(current_value if current_value is not None else 3, 1), 5)
                 except (ValueError, TypeError):
                     current_value = 3
 
                 # Create a unique key for each slider to avoid state conflicts
                 slider_key = f"rating_{metric}_1_{form_key}"
-                
+
                 all_ratings[metric] = st.slider(
                     f"{metric.replace('_', ' ').title()} Rating",
                     min_value=1,
@@ -249,13 +252,16 @@ def add_new_assessment(player):
                 # Get current value with safe default
                 try:
                     current_value = getattr(player, metric, None)
-                    current_value = min(max(int(current_value) if current_value is not None else 3, 1), 5)
+                    # Handle pandas Series correctly
+                    if hasattr(current_value, 'item'):
+                        current_value = current_value.item()
+                    current_value = min(max(current_value if current_value is not None else 3, 1), 5)
                 except (ValueError, TypeError):
                     current_value = 3
 
                 # Create a unique key for each slider
                 slider_key = f"rating_{metric}_2_{form_key}"
-                
+
                 all_ratings[metric] = st.slider(
                     f"{metric.replace('_', ' ').title()} Rating",
                     min_value=1,
@@ -283,29 +289,29 @@ def add_new_assessment(player):
             try:
                 # Make sure we're not in a failed transaction state
                 db.session.rollback()
-                
+
                 # Update player metrics that exist in the Player model
                 for metric, value in all_ratings.items():
                     # Ensure value is in the valid 1-5 range
                     validated_value = min(max(value, 1), 5)
                     if hasattr(player, metric):
                         setattr(player, metric, validated_value)
-                    
+
                 # Filter metrics to only include those that exist in PlayerHistory model
                 valid_metrics = {}
                 player_history_columns = [column.key for column in PlayerHistory.__table__.columns]
-                
+
                 for metric, value in all_ratings.items():
                     if metric in player_history_columns:
                         valid_metrics[metric] = value
-                
+
                 # Create historical record with notes field
                 history = PlayerHistory(
                     player_id=player.id,
                     date=datetime.utcnow().date(),
                     notes=notes
                 )
-                
+
                 # Set the valid metrics individually
                 for metric, value in valid_metrics.items():
                     setattr(history, metric, value)
@@ -315,10 +321,10 @@ def add_new_assessment(player):
 
                 # Clear the form by rerunning
                 st.success("Assessment saved successfully!")
-                
+
                 # Set a session state flag to indicate we should switch tabs
                 st.session_state.assessment_saved = True
-                
+
                 # Return True to trigger tab switch in the parent function
                 return True
 
