@@ -17,9 +17,10 @@ def login_user():
                 return
 
             try:
-                user = User.query.filter_by(username=username).first()
+                # Try both username and email login
+                user = User.query.filter((User.username == username) | (User.email == username)).first()
                 if not user or not user.check_password(password):
-                    st.error("Invalid username or password")
+                    st.error("Invalid username/email or password")
                     return
 
                 # Update last login time
@@ -39,7 +40,7 @@ def login_user():
                 # Set user info
                 st.session_state.user = {
                     'id': user.id,
-                    'username': user.username,
+                    'username': user.username or '',
                     'name': user.name,
                     'is_admin': user.is_admin
                 }
