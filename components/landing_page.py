@@ -178,7 +178,7 @@ def display_feature_preview():
         video_col1, video_col2 = st.columns([1, 1])
         
         with video_col1:
-            st.image("https://images.unsplash.com/photo-1515703407324-5f753afd8be8", caption="Video Analysis Interface")
+            st.image("https://images.unsplash.com/photo-1508004685479-ba7109026b86", caption="Video Analysis Interface")
             st.markdown("""
             <div style="margin-top: 10px;">
                 <h4>Technique Assessment</h4>
@@ -224,7 +224,7 @@ def display_feature_preview():
         plan_col1, plan_col2 = st.columns([1, 1])
         
         with plan_col1:
-            st.image("https://images.unsplash.com/photo-1471295253337-3ceaaedca402", caption="Personalized Training Interface")
+            st.image("https://images.unsplash.com/photo-1580813116707-63e986645116", caption="Personalized Hockey Training")
             st.markdown("""
             <div style="margin-top: 10px;">
                 <h4>Personalized Development</h4>
@@ -480,7 +480,7 @@ def display_feature_preview():
         tryout_col1, tryout_col2 = st.columns([1, 1])
         
         with tryout_col1:
-            st.image("https://images.unsplash.com/photo-1580692475446-c2fabbbbf835", caption="Tryout Evaluation Interface")
+            st.image("https://images.unsplash.com/photo-1515647771017-b5bf9195ae9f", caption="Hockey Tryout Evaluation")
             
             st.markdown("""
             <div style="margin-top: 15px;">
@@ -556,7 +556,7 @@ def display_feature_preview():
                 st.success("Sample report generated! See preview on the right.")
             
         with reports_col2:
-            st.image("https://images.unsplash.com/photo-1517842645767-c639042777db", caption="Sample Team Report")
+            st.image("https://images.unsplash.com/photo-1486128105845-91daff43f404", caption="Hockey Team Performance Report")
             
             # Sample report sections
             st.markdown("""
