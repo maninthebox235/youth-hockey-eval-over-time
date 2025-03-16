@@ -60,10 +60,16 @@ if token and not st.session_state.user:
         # Token is valid, set session state
         st.session_state.authentication_token = token
 
-        # Update query params for current session
-        # If Remember Me is enabled, we keep token in the URL
-        if st.session_state.get('remember_me', False):
-            st.query_params["auth_token"] = token
+        # ALWAYS update query params for current session - this is the key change
+        # This makes the token persist in the URL across refreshes
+        st.query_params["auth_token"] = token
+        
+        # Set remember_me flag if it's not in session state
+        # (This happens if the page is refreshed and we only have the token)
+        if 'remember_me' not in st.session_state:
+            # Assume remember_me is true if token came from URL params
+            # This ensures the proper UI indicator shows
+            st.session_state.remember_me = True
 
         # Set user info in session
         st.session_state.user = {
