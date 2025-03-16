@@ -112,6 +112,8 @@ def _display_skater_stats(player_data):
 
     with metrics_col1:
         current = player_data.get('skating_speed', 0) or 0
+        # Ensure value is in 1-5 range
+        current = min(max(current, 1), 5) if current else 0
         st.metric(
             "Skating Speed",
             f"{current:.1f}/5",
@@ -120,6 +122,8 @@ def _display_skater_stats(player_data):
 
     with metrics_col2:
         current = player_data.get('shooting_accuracy', 0) or 0
+        # Ensure value is in 1-5 range
+        current = min(max(current, 1), 5) if current else 0
         st.metric(
             "Shooting Accuracy",
             f"{current:.1f}/5",
@@ -143,6 +147,10 @@ def _display_goalie_stats(player_data):
     save_pct = player_data.get('save_percentage', 0) or 0
     reaction = player_data.get('reaction_time', 0) or 0
     positioning = player_data.get('positioning', 0) or 0
+    
+    # Ensure values are in 1-5 range
+    reaction = min(max(reaction, 1), 5) if reaction else 0
+    positioning = min(max(positioning, 1), 5) if positioning else 0
 
     with metrics_col1:
         st.metric("Save Percentage", f"{save_pct:.1f}%")

@@ -82,6 +82,10 @@ def get_age_appropriate_benchmarks(age, metric):
 def display_skill_assessment(player_id):
     """Display a tabbed view with current skills and add assessment form"""
     try:
+        # Initialize session state for this player if not exists
+        if 'slider_range_fixed' not in st.session_state:
+            st.session_state.slider_range_fixed = True
+            
         player_id = int(player_id) if hasattr(player_id, 'item') else player_id
         
         # Use a fresh session for this query to avoid transaction issues
@@ -195,7 +199,10 @@ def add_new_assessment(player):
     
     st.subheader("Add New Assessment")
     
-    with st.form(key="skill_assessment_form"):
+    # Create a unique form key with a timestamp to ensure fresh rendering
+    form_key = f"skill_assessment_form_{int(datetime.utcnow().timestamp())}"
+    
+    with st.form(key=form_key):
         st.write("### Rate player's skills (1-5 scale)")
         st.write("1 = Needs significant improvement")
         st.write("3 = Meeting age-appropriate expectations")
@@ -217,17 +224,19 @@ def add_new_assessment(player):
                 # Get current value with safe default
                 try:
                     current_value = getattr(player, metric, None)
-                    current_value = int(current_value) if current_value is not None else 3
+                    current_value = min(max(int(current_value) if current_value is not None else 3, 1), 5)
                 except (ValueError, TypeError):
                     current_value = 3
 
-                # Make sure all sliders use the 1-5 scale
+                # Create a unique key for each slider to avoid state conflicts
+                slider_key = f"rating_{metric}_1_{form_key}"
+                
                 all_ratings[metric] = st.slider(
                     f"{metric.replace('_', ' ').title()} Rating",
                     min_value=1,
-                    max_value=5,  # Ensure this is always 5
+                    max_value=5,  # Ensure max is always 5
                     value=current_value,
-                    key=f"rating_{metric}_1",
+                    key=slider_key,
                     step=1
                 )
 
@@ -240,16 +249,19 @@ def add_new_assessment(player):
                 # Get current value with safe default
                 try:
                     current_value = getattr(player, metric, None)
-                    current_value = int(current_value) if current_value is not None else 3
+                    current_value = min(max(int(current_value) if current_value is not None else 3, 1), 5)
                 except (ValueError, TypeError):
                     current_value = 3
 
+                # Create a unique key for each slider
+                slider_key = f"rating_{metric}_2_{form_key}"
+                
                 all_ratings[metric] = st.slider(
                     f"{metric.replace('_', ' ').title()} Rating",
                     min_value=1,
-                    max_value=5,  # Ensure this is always 5
+                    max_value=5,  # Ensure max is always 5
                     value=current_value,
-                    key=f"rating_{metric}_2",
+                    key=slider_key,
                     step=1
                 )
 

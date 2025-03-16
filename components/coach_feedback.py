@@ -178,17 +178,41 @@ def display_feedback_form(player_id, player_name, position):
                         category = categories[i + j]
                         category_name = category.replace('_rating', '').replace('_', ' ').title()
                         with col:
-                            ratings[category] = st.slider(category_name, 1, 5, 3)
+                            ratings[category] = st.slider(
+                                category_name, 
+                                min_value=1, 
+                                max_value=5,  # Explicitly set max to 5
+                                value=3,
+                                step=1
+                            )
         else:
             # Default rating fields based on position
             if position == "Goalie":
                 col1, col2, col3 = st.columns(3)
                 with col1:
-                    ratings['save_technique_rating'] = st.slider("Save Technique", 1, 5, 3)
+                    ratings['save_technique_rating'] = st.slider(
+                        "Save Technique", 
+                        min_value=1, 
+                        max_value=5,  # Explicitly set max to 5
+                        value=3,
+                        step=1
+                    )
                 with col2:
-                    ratings['positioning_rating'] = st.slider("Positioning", 1, 5, 3)
+                    ratings['positioning_rating'] = st.slider(
+                        "Positioning", 
+                        min_value=1, 
+                        max_value=5,  # Explicitly set max to 5
+                        value=3,
+                        step=1
+                    )
                 with col3:
-                    ratings['rebound_control_rating'] = st.slider("Rebound Control", 1, 5, 3)
+                    ratings['rebound_control_rating'] = st.slider(
+                        "Rebound Control", 
+                        min_value=1, 
+                        max_value=5,  # Explicitly set max to 5
+                        value=3,
+                        step=1
+                    )
 
                 col1, col2 = st.columns(2)
                 with col1:
