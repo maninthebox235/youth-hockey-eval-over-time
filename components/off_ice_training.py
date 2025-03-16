@@ -4,6 +4,7 @@ from database.models import db, Player, PlayerHistory
 from datetime import datetime, timedelta
 import plotly.express as px
 import plotly.graph_objects as go
+from utils.type_converter import to_int, to_float, to_date
 
 class OffIceTraining:
     def __init__(self):
@@ -78,22 +79,25 @@ class OffIceTraining:
             bool: Success or failure of recording
         """
         try:
+            # Convert player_id to Python native int using our converter
+            player_id = to_int(player_id)
+            
             # Find the player
             player = Player.query.get(player_id)
             if not player:
                 return False
             
-            # Convert NumPy types to Python native types
-            if hasattr(player_id, 'item'):
-                player_id = player_id.item()
-            if hasattr(duration, 'item'):
-                duration = duration.item()
+            # Convert duration to Python native int
+            duration = to_int(duration)
+            
+            # Convert date to Python native date
+            training_date = to_date(training_date)
                 
             # Record as a player history entry
             history = PlayerHistory(
-                player_id=int(player_id),
+                player_id=player_id,
                 date=training_date,
-                notes=f"OFF-ICE TRAINING: {training_type}\n\nActivities: {', '.join(activities)}\n\nDuration: {int(duration)} minutes\n\n{notes}"
+                notes=f"OFF-ICE TRAINING: {training_type}\n\nActivities: {', '.join(activities)}\n\nDuration: {duration} minutes\n\n{notes}"
             )
             
             db.session.add(history)
@@ -108,12 +112,12 @@ class OffIceTraining:
     def display_training_log(self, player_id):
         """Display a log of past off-ice training sessions"""
         try:
-            # Convert NumPy types to Python native types
-            if hasattr(player_id, 'item'):
-                player_id = player_id.item()
+            # Convert player_id to Python native int using our converter
+            player_id = to_int(player_id)
             
-            # Ensure player_id is an integer for database query
-            player_id = int(player_id)
+            if player_id is None:
+                st.error("Invalid player ID")
+                return False
                 
             # Fetch player history entries that contain off-ice training
             history_entries = PlayerHistory.query.filter_by(player_id=player_id)\
@@ -310,18 +314,16 @@ def display_off_ice_interface(player_id, player_data):
     """Main interface for off-ice training tracking"""
     off_ice = OffIceTraining()
     
-    # Convert NumPy types to Python native types
-    if hasattr(player_id, 'item'):
-        player_id = int(player_id.item())
-    else:
-        player_id = int(player_id)
+    # Convert player_id to Python native int using our converter
+    player_id = to_int(player_id)
+    if player_id is None:
+        st.error("Invalid player ID")
+        return
     
     # Convert other NumPy types in player_data if needed
-    player_age = player_data['age']
-    if hasattr(player_age, 'item'):
-        player_age = int(player_age.item())
-    else:
-        player_age = int(player_age)
+    player_age = to_int(player_data['age'])
+    if player_age is None:
+        player_age = 12  # Default to a reasonable age if conversion fails
         
     player_name = player_data['name']
     player_position = player_data['position']

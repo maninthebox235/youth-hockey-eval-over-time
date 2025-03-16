@@ -36,7 +36,14 @@ def create_app():
     @login_manager.user_loader
     def load_user(user_id):
         from database.models import User
-        return User.query.get(int(user_id))
+        from utils.type_converter import to_int
+        
+        # Convert user_id to Python native int
+        user_id = to_int(user_id)
+        if user_id is None:
+            return None
+            
+        return User.query.get(user_id)
 
     # Route to test email configuration
     @app.route('/test-email', methods=['GET'])
