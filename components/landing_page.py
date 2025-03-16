@@ -259,7 +259,7 @@ def display_feature_preview():
         video_card = st.container()
         with video_card:
             st.markdown(card_html, unsafe_allow_html=True)
-            button_clicked = st.button("Video Analysis", key="video-analysis-button", help="Video Analysis")
+            button_clicked = st.button("", key="video-analysis-button", help="Video Analysis")
             # Add CSS to hide the button
             st.markdown("""
             <style>
@@ -299,7 +299,7 @@ def display_feature_preview():
         training_card = st.container()
         with training_card:
             st.markdown(card_html, unsafe_allow_html=True)
-            button_clicked = st.button("Training Plans", key="training-plans-button", help="Training Plans")
+            button_clicked = st.button("", key="training-plans-button", help="Training Plans")
         
         # Handle button click
         if button_clicked:
@@ -323,7 +323,7 @@ def display_feature_preview():
         peer_card = st.container()
         with peer_card:
             st.markdown(card_html, unsafe_allow_html=True)
-            button_clicked = st.button("Peer Comparison", key="peer-comparison-button", help="Peer Comparison")
+            button_clicked = st.button("", key="peer-comparison-button", help="Peer Comparison")
         
         # Handle button click
         if button_clicked:
@@ -651,7 +651,7 @@ def display_feature_preview():
         """, unsafe_allow_html=True)
         
         # Handle container click
-        if team_dashboard_container.button("Team Dashboard", key="team-dashboard-button", label_visibility="collapsed"):
+        if team_dashboard_container.button("", key="team-dashboard-button", help="Team Dashboard"):
             st.session_state.show_team_preview = "team_dashboard"
             st.rerun()
     
@@ -672,7 +672,7 @@ def display_feature_preview():
         """, unsafe_allow_html=True)
         
         # Handle container click
-        if tryout_evaluation_container.button("Tryout Evaluation", key="tryout-evaluation-button", label_visibility="collapsed"):
+        if tryout_evaluation_container.button("", key="tryout-evaluation-button", help="Tryout Evaluation"):
             st.session_state.show_team_preview = "tryout_evaluation"
             st.rerun()
     
@@ -693,7 +693,7 @@ def display_feature_preview():
         """, unsafe_allow_html=True)
         
         # Handle container click
-        if custom_reports_container.button("Custom Reports", key="custom-reports-button", label_visibility="collapsed"):
+        if custom_reports_container.button("", key="custom-reports-button", help="Custom Reports"):
             st.session_state.show_team_preview = "custom_reports"
             st.rerun()
     
