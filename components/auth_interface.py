@@ -32,6 +32,11 @@ def login_user():
                     st.session_state.authentication_token = token
                     st.query_params["auth_token"] = token
 
+                    if 'user' not in st.session_state:
+                        st.session_state.user = None
+                    if 'is_admin' not in st.session_state:
+                        st.session_state.is_admin = False
+
                     st.session_state.user = {
                         'id': user.id,
                         'username': user.username,
