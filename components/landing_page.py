@@ -244,7 +244,7 @@ def display_feature_preview():
         video_col1, video_col2 = st.columns([1, 1])
         
         with video_col1:
-            st.image("https://cdn.pixabay.com/photo/2014/10/22/18/04/man-498473_1280.jpg", caption="Video Analysis Interface")
+            st.image("https://cdn.pixabay.com/photo/2019/08/26/22/05/ice-hockey-4432867_1280.jpg", caption="Video Analysis Interface")
             st.markdown("""
             <div style="margin-top: 10px;">
                 <h4>Technique Assessment</h4>
@@ -275,10 +275,30 @@ def display_feature_preview():
             for metric, value in metrics.items():
                 st.metric(metric, f"{value}/100")
         
-        # Close button
-        if st.button("Close Preview", key="close_video_preview", use_container_width=True):
-            st.session_state.show_premium_preview = None
-            st.rerun()
+        # Add custom styling for close button
+        st.markdown("""
+        <style>
+        div[data-testid="stButton"] > button[kind="secondaryFormSubmit"] {
+            background-color: #f0f0f0;
+            color: #505050;
+            border: 1px solid #d0d0d0;
+            padding: 0.25rem 1rem;
+            font-size: 0.8em;
+            margin-top: 10px;
+        }
+        div[data-testid="stButton"] > button[kind="secondaryFormSubmit"]:hover {
+            background-color: #e0e0e0;
+            border-color: #a0a0a0;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        
+        # Smaller centered close button
+        col1, col2, col3 = st.columns([3, 2, 3])
+        with col2:
+            if st.button("Close Preview", key="close_video_preview", type="secondary"):
+                st.session_state.show_premium_preview = None
+                st.rerun()
             
     elif st.session_state.show_premium_preview == "training_plans":
         st.markdown("""
@@ -326,10 +346,12 @@ def display_feature_preview():
             st.success("**Edge Control Drill**: Figure 8s around cones focusing on inside and outside edges")
             st.success("**Quick Release**: Rapid fire shooting from different angles with minimal setup time")
         
-        # Close button
-        if st.button("Close Preview", key="close_plan_preview", use_container_width=True):
-            st.session_state.show_premium_preview = None
-            st.rerun()
+        # Smaller centered close button
+        col1, col2, col3 = st.columns([3, 2, 3])
+        with col2:
+            if st.button("Close Preview", key="close_plan_preview", type="secondary"):
+                st.session_state.show_premium_preview = None
+                st.rerun()
             
     elif st.session_state.show_premium_preview == "peer_comparison":
         st.markdown("""
@@ -408,10 +430,12 @@ def display_feature_preview():
             st.info("**Above average** in shooting accuracy (65th percentile)")
             st.warning("**Development needed** in puck control (32nd percentile)")
         
-        # Close button
-        if st.button("Close Preview", key="close_peer_preview", use_container_width=True):
-            st.session_state.show_premium_preview = None
-            st.rerun()
+        # Smaller centered close button
+        col1, col2, col3 = st.columns([3, 2, 3])
+        with col2:
+            if st.button("Close Preview", key="close_peer_preview", type="secondary"):
+                st.session_state.show_premium_preview = None
+                st.rerun()
     
     # Team Features Section
     st.subheader("Team & Organization Features")
@@ -534,10 +558,12 @@ def display_feature_preview():
         </div>
         """, unsafe_allow_html=True)
         
-        # Close button
-        if st.button("Close Preview", key="close_team_dashboard", use_container_width=True):
-            st.session_state.show_team_preview = None
-            st.rerun()
+        # Smaller centered close button
+        col1, col2, col3 = st.columns([3, 2, 3])
+        with col2:
+            if st.button("Close Preview", key="close_team_dashboard", type="secondary"):
+                st.session_state.show_team_preview = None
+                st.rerun()
             
     elif st.session_state.show_team_preview == "tryout_evaluation":
         st.markdown("""
@@ -581,10 +607,12 @@ def display_feature_preview():
             
             st.button("Submit Evaluation (Demo)", key="demo_submit", type="primary", use_container_width=True)
             
-        # Close button
-        if st.button("Close Preview", key="close_tryout_preview", use_container_width=True):
-            st.session_state.show_team_preview = None
-            st.rerun()
+        # Smaller centered close button
+        col1, col2, col3 = st.columns([3, 2, 3])
+        with col2:
+            if st.button("Close Preview", key="close_tryout_preview", type="secondary"):
+                st.session_state.show_team_preview = None
+                st.rerun()
             
     elif st.session_state.show_team_preview == "custom_reports":
         st.markdown("""
@@ -637,10 +665,12 @@ def display_feature_preview():
             - **Development Recommendations**: Focus areas for team improvement
             """)
         
-        # Close button
-        if st.button("Close Preview", key="close_reports_preview", use_container_width=True):
-            st.session_state.show_team_preview = None
-            st.rerun()
+        # Smaller centered close button
+        col1, col2, col3 = st.columns([3, 2, 3])
+        with col2:
+            if st.button("Close Preview", key="close_reports_preview", type="secondary"):
+                st.session_state.show_team_preview = None
+                st.rerun()
     
     # Pricing Banner
     st.markdown("""
