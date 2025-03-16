@@ -10,7 +10,13 @@ def init_session_state():
         # Try to load from existing token first
         if 'authentication_token' in st.session_state and st.session_state.authentication_token:
             try:
-                user = User.verify_auth_token(st.session_state.authentication_token)
+                # Import current app
+                from app import app
+                
+                # Verify token with explicit app context
+                with app.app_context():
+                    user = User.verify_auth_token(st.session_state.authentication_token)
+                    
                 if user and user.id:
                     st.session_state.user = {
                         'id': user.id,
@@ -82,8 +88,13 @@ def login_user():
                 db.session.commit()
 
                 try:
-                    # Generate and store authentication token
-                    token = user.get_auth_token()
+                    # Import current app
+                    from app import app
+                    
+                    # Generate token with explicit app context
+                    with app.app_context():
+                        token = user.get_auth_token()
+                        
                     if token:
                         # Store token before user info
                         st.session_state.authentication_token = token
@@ -354,7 +365,13 @@ def display_auth_interface():
         st.session_state.authentication_token and 
         (not st.session_state.user or not st.session_state.user.get('id'))):
         try:
-            user = User.verify_auth_token(st.session_state.authentication_token)
+            # Import current app
+            from app import app
+            
+            # Verify token with explicit app context
+            with app.app_context():
+                user = User.verify_auth_token(st.session_state.authentication_token)
+                
             if user and user.id:
                 st.session_state.user = {
                     'id': user.id,
