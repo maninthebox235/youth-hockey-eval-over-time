@@ -45,8 +45,8 @@ if 'authentication_token' not in st.session_state:
 query_params = st.query_params
 url_token = query_params.get("auth_token", None)
 
-# Use URL token if available, otherwise use session token
-token_to_verify = url_token or st.session_state.authentication_token
+# Use URL token if available, otherwise use session token if it exists
+token_to_verify = url_token or st.session_state.get("authentication_token")
 
 if not st.session_state.user and token_to_verify:
     print(f"Attempting to restore session with token...")
