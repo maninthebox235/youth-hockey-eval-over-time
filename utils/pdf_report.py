@@ -117,14 +117,22 @@ class PDFReportGenerator:
             report_elements.append(Paragraph(section_name, self.custom_styles['Heading2']))
             
             # Create a table for each skill section
-            skill_data = [['Skill', 'Rating', 'Description']]
+            # Check if this is a stats section
+            is_stats_section = section_name.lower() == 'stats'
+            header_cols = ['Skill', 'Value' if is_stats_section else 'Rating', 'Description']
+            skill_data = [header_cols]
             
             for metric_name, metric_value in metrics.items():
                 if metric_value is not None:
-                    rating = f"{metric_value:.1f}" if isinstance(metric_value, (int, float)) else str(metric_value)
+                    # Format value based on if it's a stat or rating
+                    if is_stats_section and isinstance(metric_value, (int, float)):
+                        value_text = str(int(metric_value))
+                    else:
+                        value_text = f"{metric_value:.1f}" if isinstance(metric_value, (int, float)) else str(metric_value)
+                    
                     skill_data.append([
                         metric_name.replace('_', ' ').title(), 
-                        rating,
+                        value_text,
                         self._get_rating_description(metric_name, metric_value)
                     ])
             
