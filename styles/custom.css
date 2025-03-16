@@ -1,27 +1,48 @@
 /* Global Styles */
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+Pro:wght@300;400;600;700&display=swap');
+
 :root {
-    --primary-color: #1e3a8a;        /* Dark blue (hockey color) */
-    --secondary-color: #0ea5e9;      /* Light blue (accent) */
-    --accent-color: #db2777;         /* Pink accent for highlights */
+    /* Hybrid Ice Rink + Family-Friendly Colors */
+    --primary-color: #A3CFF2;        /* Ice Blue (main brand color) */
+    --secondary-color: #FF7043;      /* Orange (playful accent) */
+    --accent-color: #C8102E;         /* Deep Red (hockey tradition) */
     --success-color: #10b981;        /* Green for positive indicators */
     --warning-color: #f59e0b;        /* Amber for warnings/alerts */
     --danger-color: #ef4444;         /* Red for negative indicators */
-    --light-bg: #f8fafc;             /* Light background color */
-    --dark-text: #1e293b;            /* Dark text color */
+    --light-bg: #FFFFFF;             /* White background color */
+    --dark-text: #333333;            /* Dark text color */
     --card-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    
+    /* Typography Scale */
+    --font-heading: 'Oswald', sans-serif;
+    --font-body: 'Source Sans Pro', sans-serif;
 }
 
-/* Body and main container styles */
+/* Body and main container styles with ice rink texture */
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: var(--font-body);
     color: var(--dark-text);
-    background-color: #f1f5f9;
+    background-color: var(--light-bg);
+    background-image: linear-gradient(to right, rgba(220, 240, 255, 0.5) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(220, 240, 255, 0.5) 1px, transparent 1px);
+    background-size: 20px 20px;
+    background-attachment: fixed;
 }
 
-/* Header styles */
-h1, h2, h3, h4, h5 {
-    color: var(--primary-color);
+/* Header styles with hockey font */
+h1, h2, h3 {
+    font-family: var(--font-heading);
+    color: var(--dark-text);
     font-weight: 700;
+    margin-bottom: 0.75rem;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+h4, h5, h6 {
+    font-family: var(--font-heading);
+    color: var(--dark-text);
+    font-weight: 600;
     margin-bottom: 0.75rem;
 }
 
@@ -33,6 +54,22 @@ h1, h2, h3, h4, h5 {
     margin-bottom: 1.5rem;
     box-shadow: var(--card-shadow);
     border-top: 4px solid var(--primary-color);
+    position: relative;
+}
+
+/* Add subtle hockey puck decorations to some panels */
+.main-panel.with-puck::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    right: -10px;
+    width: 50px;
+    height: 50px;
+    background-color: black;
+    border-radius: 50%;
+    opacity: 0.05;
+    z-index: -1;
+    transform: scale(0.7);
 }
 
 /* Player card styling with enhanced visuals */
@@ -43,9 +80,10 @@ h1, h2, h3, h4, h5 {
     margin: 1rem 0;
     background-color: white;
     box-shadow: var(--card-shadow);
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    background-image: radial-gradient(circle at 90% 10%, rgba(163, 207, 242, 0.1) 0%, transparent 80%);
 }
 
 .player-card:hover {
@@ -59,39 +97,63 @@ h1, h2, h3, h4, h5 {
     top: 0;
     left: 0;
     width: 100%;
-    height: 4px;
+    height: 5px;
     background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
 }
 
-/* Stat box with improved styling */
+/* Stat box with improved styling and hockey-inspired design */
 .stat-box {
     background-color: var(--light-bg);
-    border-radius: 8px;
-    padding: 1rem;
+    border-radius: 10px;
+    padding: 1.2rem 1rem;
     margin: 0.5rem 0;
     text-align: center;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px rgba(0, 30, 60, 0.06);
+    transition: all 0.3s ease;
+    position: relative;
+    border: 2px solid rgba(163, 207, 242, 0.2);
+    overflow: hidden;
+}
+
+/* Create a subtle hockey net pattern in the background */
+.stat-box::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.8) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.8) 1px, transparent 1px);
+    background-size: 15px 15px;
+    z-index: -1;
+    opacity: 0.07;
 }
 
 .stat-box:hover {
-    background-color: white;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 15px rgba(0, 30, 60, 0.1);
+    border-color: var(--primary-color);
 }
 
 .stat-box h4 {
     margin-top: 0;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: #64748b;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    font-family: var(--font-heading);
+    font-weight: 600;
 }
 
 .stat-box p.value {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     font-weight: 700;
     margin: 0.5rem 0;
-    color: var(--primary-color);
+    color: var(--accent-color);
+    font-family: var(--font-heading);
+    text-shadow: 0 1px 1px rgba(0,0,0,0.05);
 }
 
 /* Progress indicators with enhanced styling */
@@ -121,65 +183,113 @@ h1, h2, h3, h4, h5 {
     box-shadow: var(--card-shadow);
 }
 
-/* Rating scales with colorized indicators */
+/* Rating scales with hockey-themed indicators */
 .rating-scale {
     display: flex;
     align-items: center;
-    margin: 0.5rem 0;
+    margin: 0.8rem 0;
+    position: relative;
 }
 
 .rating-scale .rating-label {
-    min-width: 120px;
+    min-width: 140px;
     font-weight: 500;
+    font-family: var(--font-body);
+    color: var(--dark-text);
 }
 
 .rating-scale .rating-value {
     min-width: 30px;
     text-align: center;
     font-weight: 700;
+    font-family: var(--font-heading);
 }
 
 .rating-scale .rating-bar {
     flex-grow: 1;
-    height: 8px;
+    height: 12px;
     background-color: #e2e8f0;
-    border-radius: 4px;
-    margin: 0 0.5rem;
+    border-radius: 6px;
+    margin: 0 0.8rem;
+    border: 1px solid rgba(0,0,0,0.05);
+    position: relative;
+    overflow: hidden;
 }
 
+/* Hockey puck slider effect */
 .rating-scale .rating-bar .fill {
     height: 100%;
-    border-radius: 4px;
+    border-radius: 6px;
+    position: relative;
 }
 
-/* Rating colors based on value */
-.rating-level-1 .fill { width: 20%; background-color: #ef4444; }
-.rating-level-2 .fill { width: 40%; background-color: #f97316; }
-.rating-level-3 .fill { width: 60%; background-color: #f59e0b; }
-.rating-level-4 .fill { width: 80%; background-color: #84cc16; }
-.rating-level-5 .fill { width: 100%; background-color: #10b981; }
+.rating-scale .rating-bar .fill::after {
+    content: '';
+    position: absolute;
+    right: -6px;
+    top: -3px;
+    width: 16px;
+    height: 16px;
+    background-color: black;
+    border: 1px solid rgba(255,255,255,0.6);
+    border-radius: 50%;
+    box-shadow: 0 0 5px rgba(0,0,0,0.3);
+}
 
-/* Button styling */
+/* Rating colors based on hockey theme */
+.rating-level-1 .fill { width: 20%; background-color: #C8102E; } /* Red - needs improvement */
+.rating-level-2 .fill { width: 40%; background-color: #FF7043; } /* Orange - developing */
+.rating-level-3 .fill { width: 60%; background-color: #A3CFF2; } /* Ice Blue - average */
+.rating-level-4 .fill { width: 80%; background-color: #4285F4; } /* Blue - above average */
+.rating-level-5 .fill { width: 100%; background-color: #10b981; } /* Green - excellent */
+
+/* Button styling with hockey puck appearance */
 .stButton>button {
-    background-color: var(--primary-color);
+    background-color: var(--accent-color);
     color: white;
-    border-radius: 6px;
-    padding: 0.5rem 1rem;
-    font-weight: 500;
+    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    font-weight: 600;
+    font-family: var(--font-heading);
     border: none;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    position: relative;
+    overflow: hidden;
+}
+
+.stButton>button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: all 0.5s ease;
 }
 
 .stButton>button:hover {
     background-color: var(--secondary-color);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
 }
 
-/* Navigation styling */
+.stButton>button:hover::before {
+    left: 100%;
+}
+
+/* Navigation styling with hockey theme */
 div[data-testid="stSidebar"] {
-    background-color: #1e293b;
-    border-right: 1px solid #334155;
+    background-color: #0A1929;
+    background-image: 
+        linear-gradient(rgba(163, 207, 242, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(163, 207, 242, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
+    border-right: 1px solid rgba(163, 207, 242, 0.2);
+    box-shadow: 3px 0 10px rgba(0,0,0,0.1);
 }
 
 div[data-testid="stSidebar"] .sidebar-content {
@@ -190,62 +300,201 @@ div[data-testid="stSidebar"] h3 {
     color: white;
     font-size: 1.25rem;
     margin-bottom: 1.5rem;
+    font-family: var(--font-heading);
+    position: relative;
+    padding-left: 15px;
+    border-left: 4px solid var(--secondary-color);
 }
 
 div[data-testid="stSidebar"] .sidebar-section {
     margin-bottom: 2rem;
 }
 
-/* Tabs styling */
+/* Navigation links with puck hover effect */
+div[data-testid="stSidebar"] a {
+    color: white !important;
+    font-family: var(--font-body);
+    position: relative;
+    transition: all 0.3s ease;
+    padding-left: 10px;
+}
+
+div[data-testid="stSidebar"] a:hover {
+    color: var(--secondary-color) !important;
+    padding-left: 20px;
+}
+
+div[data-testid="stSidebar"] a:hover::before {
+    content: '•';
+    position: absolute;
+    left: 5px;
+    color: var(--secondary-color);
+}
+
+/* Tabs styling with hockey stick design */
 .stTabs [data-baseweb="tab-list"] {
-    gap: 2px;
+    gap: 4px;
+    background: #F5F8FB;
+    padding: 8px 8px 0;
+    border-radius: 10px 10px 0 0;
+    border-bottom: 3px solid var(--primary-color);
 }
 
 .stTabs [data-baseweb="tab"] {
-    height: 50px;
+    height: 45px;
     white-space: pre-wrap;
-    border-radius: 4px 4px 0 0;
-    gap: 1px;
-    padding-top: 10px;
-    padding-bottom: 10px;
+    border-radius: 8px 8px 0 0;
+    gap: 2px;
+    padding: 8px 16px;
+    font-family: var(--font-heading);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.05);
+    border-bottom: none;
+}
+
+.stTabs [data-baseweb="tab"]:hover {
+    background-color: rgba(163, 207, 242, 0.1);
 }
 
 .stTabs [aria-selected="true"] {
-    background-color: var(--primary-color);
-    color: white;
+    background-color: var(--primary-color) !important;
+    color: #0A1929 !important;
+    font-weight: 600;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
 }
 
-/* Charts and data visualization improvements */
+/* Hockey stick indicator on active tab */
+.stTabs [aria-selected="true"]::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: var(--accent-color);
+}
+
+/* Charts and data visualization with hockey theme */
 .chart-container {
     background-color: white;
     border-radius: 12px;
     padding: 1.5rem;
     margin-bottom: 1.5rem;
     box-shadow: var(--card-shadow);
+    border: 1px solid rgba(163, 207, 242, 0.3);
+    position: relative;
+    overflow: hidden;
 }
 
-/* Helper clases */
+/* Add subtle hockey rink corners to chart containers */
+.chart-container::before,
+.chart-container::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--primary-color);
+    opacity: 0.3;
+}
+
+.chart-container::before {
+    top: 5px;
+    left: 5px;
+    border-right: none;
+    border-bottom: none;
+    border-radius: 4px 0 0 0;
+}
+
+.chart-container::after {
+    bottom: 5px;
+    right: 5px;
+    border-left: none;
+    border-top: none;
+    border-radius: 0 0 4px 0;
+}
+
+/* Default plotly chart tweaks */
+.js-plotly-plot .plotly .main-svg {
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* Helper classes */
 .text-success { color: var(--success-color); }
 .text-warning { color: var(--warning-color); }
-.text-danger { color: var(--danger-color); }
+.text-danger { color: var(--accent-color); } /* Changed to match our hockey red */
 .text-primary { color: var(--primary-color); }
 .text-secondary { color: var(--secondary-color); }
 
+/* Hockey-themed badges (jersey-like) */
 .badge {
     display: inline-block;
-    padding: 0.25rem 0.5rem;
-    border-radius: 9999px;
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    font-family: var(--font-heading);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border: 1px solid rgba(0,0,0,0.05);
+    position: relative;
 }
 
-.badge-success { background-color: #dcfce7; color: #166534; }
-.badge-warning { background-color: #fef3c7; color: #92400e; }
-.badge-danger { background-color: #fee2e2; color: #b91c1c; }
-.badge-primary { background-color: #dbeafe; color: #1e40af; }
-.badge-secondary { background-color: #e0f2fe; color: #075985; }
+/* Create a subtle jersey texture */
+.badge::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: linear-gradient(45deg, 
+        rgba(255,255,255,0.1) 25%, 
+        transparent 25%, 
+        transparent 50%, 
+        rgba(255,255,255,0.1) 50%, 
+        rgba(255,255,255,0.1) 75%, 
+        transparent 75%, 
+        transparent);
+    background-size: 4px 4px;
+    opacity: 0.3;
+    z-index: 0;
+}
+
+.badge-success { 
+    background-color: #dcfce7; 
+    color: #166534; 
+    border-color: #166534; 
+}
+
+.badge-warning { 
+    background-color: #fef3c7; 
+    color: #92400e; 
+    border-color: rgba(146, 64, 14, 0.3); 
+}
+
+.badge-danger { 
+    background-color: #fee2e2; 
+    color: var(--accent-color); 
+    border-color: rgba(200, 16, 46, 0.3); 
+}
+
+.badge-primary { 
+    background-color: #e0f2fe; 
+    color: #0A1929; 
+    border-color: rgba(163, 207, 242, 0.5);
+}
+
+.badge-secondary { 
+    background-color: #fff4f0; 
+    color: #9A3412; 
+    border-color: rgba(255, 112, 67, 0.3);
+}
 
 /* Media query for smaller screens */
 @media (max-width: 768px) {
