@@ -56,7 +56,7 @@ if not st.session_state.user and token_to_verify:
             if user:
                 # If the token came from URL and not session, store it in session
                 if url_token and not st.session_state.authentication_token:
-                    st.session_state.authentication_token = url_tokenken
+                    st.session_state.authentication_token = url_token
 
                 st.session_state.user = {
                     'id': user.id,
