@@ -399,7 +399,7 @@ def display_video_analysis_results():
         st.image(
             "https://images.unsplash.com/photo-1562797807-aa9baed9a414",
             caption="Frame Analysis: Skating Technique",
-            use_column_width=True
+            use_container_width=True
         )
         st.markdown("""
         **Frame Analysis:**
@@ -412,7 +412,7 @@ def display_video_analysis_results():
         st.image(
             "https://images.unsplash.com/photo-1580668095823-ac452f5db744",
             caption="Frame Analysis: Shooting Technique",
-            use_column_width=True
+            use_container_width=True
         )
         st.markdown("""
         **Frame Analysis:**
@@ -425,7 +425,7 @@ def display_video_analysis_results():
         st.image(
             "https://images.unsplash.com/photo-1515703407324-5f753afd8be8",
             caption="Frame Analysis: Goalie Positioning",
-            use_column_width=True
+            use_container_width=True
         )
         st.markdown("""
         **Frame Analysis:**
@@ -438,7 +438,7 @@ def display_video_analysis_results():
         st.image(
             "https://images.unsplash.com/photo-1564807387624-c6efad530083",
             caption="Frame Analysis",
-            use_column_width=True
+            use_container_width=True
         )
     
     # Recommended drills based on analysis
