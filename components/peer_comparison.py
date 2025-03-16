@@ -5,6 +5,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from database.models import db, Player, PlayerHistory
 from sqlalchemy import func
+from utils.type_converter import to_int, to_float
 from datetime import datetime, timedelta
 from components.age_benchmarks import get_age_appropriate_benchmark
 
@@ -20,6 +21,10 @@ def get_peer_group_data(player_age, position, attribute=None):
     Returns:
         DataFrame with peer data
     """
+    # Ensure player_age is properly converted to int
+    player_age = to_int(player_age)
+    if player_age is None:
+        return pd.DataFrame()  # Return empty dataframe if age is invalid
     try:
         # Calculate age range (1 year above and below)
         min_age = player_age - 1
@@ -92,12 +97,13 @@ def display_peer_comparison(player_data):
     st.title("Peer Comparison Analytics")
     st.write("See how the player compares to peers in the same age group and position")
     
-    player_id = player_data.get('player_id')
-    player_age = player_data.get('age')
+    # Get player information and safely convert types
+    player_id = to_int(player_data.get('player_id'))
+    player_age = to_int(player_data.get('age'))
     player_position = player_data.get('position')
     player_name = player_data.get('name')
     
-    if not all([player_id, player_age, player_position, player_name]):
+    if not all([player_id is not None, player_age is not None, player_position, player_name]):
         st.error("Missing required player information")
         return
         
@@ -110,7 +116,10 @@ def display_peer_comparison(player_data):
         
     # Number of peers for context
     num_peers = len(peer_df)
-    st.write(f"Comparing against {num_peers} peers in age group {player_age-1}-{player_age+1}, position: {player_position}")
+    # Safe calculation of age range with null checking
+    min_age = f"{player_age-1}" if player_age is not None else "?"
+    max_age = f"{player_age+1}" if player_age is not None else "?"
+    st.write(f"Comparing against {num_peers} peers in age group {min_age}-{max_age}, position: {player_position}")
     
     # Select metrics for comparison
     position_metrics = {
@@ -376,9 +385,15 @@ def display_historical_comparison(player_id, player_data):
     """Show how player compares to peers over time"""
     st.subheader("Historical Performance Trends")
     
+    # Convert player_id to integer using our utility
+    player_id_int = to_int(player_id)
+    if player_id_int is None:
+        st.error("Invalid player ID for historical comparison")
+        return
+    
     # Get player history
     try:
-        player_history = PlayerHistory.query.filter_by(player_id=player_id)\
+        player_history = PlayerHistory.query.filter_by(player_id=player_id_int)\
                                          .order_by(PlayerHistory.date).all()
                                          
         if not player_history:
@@ -390,7 +405,7 @@ def display_historical_comparison(player_id, player_data):
         for entry in player_history:
             data_point = {
                 'date': entry.date,
-                'player_id': player_id
+                'player_id': player_id_int
             }
             
             # Add all numeric attributes
@@ -515,6 +530,12 @@ def display_historical_comparison(player_id, player_data):
 
 def display_peer_comparison_interface(player_id, player_data):
     """Main interface for peer comparison analytics"""
+    # Ensure player_id is properly converted for database operations
+    player_id_int = to_int(player_id)
+    if player_id_int is None:
+        st.error("Invalid player ID for peer comparison")
+        return
+        
     # Create tabs for different views
     tabs = st.tabs(["Current Comparison", "Historical Trends"])
     
@@ -522,4 +543,4 @@ def display_peer_comparison_interface(player_id, player_data):
         display_peer_comparison(player_data)
         
     with tabs[1]:
-        display_historical_comparison(player_id, player_data)
+        display_historical_comparison(player_id_int, player_data)
