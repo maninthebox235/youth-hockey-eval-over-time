@@ -64,25 +64,34 @@ def login_user():
                 user.last_login = datetime.utcnow()
                 db.session.commit()
 
-                # Store user info in session state
-                st.session_state.user = {
-                    'id': user.id,
-                    'username': user.username,
-                    'name': user.name,
-                    'is_admin': user.is_admin
-                }
-                st.session_state.is_admin = user.is_admin
+                try:
+                    # Store user info in session state
+                    st.session_state.user = {
+                        'id': user.id,
+                        'username': user.username,
+                        'name': user.name,
+                        'is_admin': user.is_admin
+                    }
+                    st.session_state.is_admin = user.is_admin
 
-                # Always generate authentication token for persistence
-                st.session_state.authentication_token = user.get_auth_token()
+                    # Generate and store authentication token
+                    token = user.get_auth_token()
+                    if token:
+                        st.session_state.authentication_token = token
+                        st.success(f"Welcome back, {user.name}!")
+                        time.sleep(0.5)
+                        st.rerun()
+                    else:
+                        raise Exception("Failed to generate auth token")
 
-                st.success(f"Welcome back, {user.name}!")
-                time.sleep(1)  # Brief pause to show success message
-                st.rerun()
+                except Exception as e:
+                    print(f"Session error: {str(e)}")
+                    st.error("Session initialization failed. Please try again.")
+                    db.session.rollback()
 
             except Exception as e:
-                print(f"Login error: {str(e)}")  # Log the error
-                st.error("Login failed. Please try again.")
+                print(f"Login error: {str(e)}")
+                st.error("Invalid login credentials. Please try again.")
                 db.session.rollback()
 
 def create_admin():
@@ -321,10 +330,12 @@ def display_auth_interface():
     init_session_state()
 
     # Try to authenticate using stored token
-    if not st.session_state.user and 'authentication_token' in st.session_state and st.session_state.authentication_token:
+    if ('authentication_token' in st.session_state and 
+        st.session_state.authentication_token and 
+        (not st.session_state.user or not st.session_state.user.get('id'))):
         try:
             user = User.verify_auth_token(st.session_state.authentication_token)
-            if user:
+            if user and user.id:
                 st.session_state.user = {
                     'id': user.id,
                     'username': user.username,
@@ -332,9 +343,15 @@ def display_auth_interface():
                     'is_admin': user.is_admin
                 }
                 st.session_state.is_admin = user.is_admin
-        except:
-            # Clear invalid token
+            else:
+                st.session_state.authentication_token = None
+                st.session_state.user = None
+                st.session_state.is_admin = False
+        except Exception as e:
+            print(f"Token verification error: {str(e)}")
             st.session_state.authentication_token = None
+            st.session_state.user = None
+            st.session_state.is_admin = False
 
     if not st.session_state.user:
         if not User.query.filter_by(is_admin=True).first():
