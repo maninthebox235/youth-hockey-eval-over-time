@@ -177,12 +177,18 @@ def identify_team_strengths_weaknesses(players_df):
     if players_df.empty:
         return [], []
 
-    # Get all skill columns
+    # Define columns to exclude from skill metrics
+    excluded_columns = [
+        'player_id', 'user_id', 'id', 'name', 'age', 'position', 'team_position', 
+        'games_played', 'goals', 'assists', 'goals_against', 'saves',
+        'join_date', 'created_at', 'last_login'
+    ]
+    
+    # Get all skill columns (only numeric columns that aren't in excluded list)
     skill_cols = []
     for col in players_df.columns:
-        if col not in ['player_id', 'name', 'age', 'position', 'team_position', 
-                     'games_played', 'goals', 'assists', 'goals_against', 'saves']:
-            if players_df[col].dtype in [np.float64, np.int64] and not players_df[col].isnull().all():
+        if col not in excluded_columns:
+            if players_df[col].dtype in [np.float64, np.int64, float, int] and not players_df[col].isnull().all():
                 skill_cols.append(col)
 
     if not skill_cols:
@@ -198,9 +204,10 @@ def identify_team_strengths_weaknesses(players_df):
     # Sort skills by average
     sorted_skills = sorted(skill_averages.items(), key=lambda x: x[1], reverse=True)
 
-    # Identify top 3 strengths and weaknesses
-    strengths = sorted_skills[:3] 
-    weaknesses = sorted_skills[-3:]
+    # Identify top 3 strengths and weaknesses if we have enough skills
+    top_count = min(3, len(sorted_skills))
+    strengths = sorted_skills[:top_count] 
+    weaknesses = sorted_skills[-top_count:] if len(sorted_skills) >= top_count else []
 
     return strengths, weaknesses
 
@@ -313,10 +320,14 @@ def display_player_comparison_tool(players_df):
     compare_df = players_df[players_df['name'].isin(selected_players)]
 
     # Get common skill metrics
+    excluded_columns = [
+        'player_id', 'user_id', 'id', 'name', 'age', 'position', 'team_position', 
+        'games_played', 'goals', 'assists', 'goals_against', 'saves',
+        'join_date', 'created_at', 'last_login'
+    ]
     skill_metrics = [col for col in compare_df.columns 
-                    if col not in ['player_id', 'name', 'age', 'position', 'team_position',
-                                  'games_played', 'goals', 'assists', 'goals_against', 'saves'] 
-                    and compare_df[col].dtype in [np.float64, np.int64]
+                    if col not in excluded_columns
+                    and compare_df[col].dtype in [np.float64, np.int64, float, int]
                     and not compare_df[col].isnull().all()]
 
     if not skill_metrics:
