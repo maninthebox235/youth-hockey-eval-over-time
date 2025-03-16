@@ -498,11 +498,11 @@ def display_feature_showcase():
         # Show example data table
         st.markdown("#### Advanced Statistics")
         
-        # Create a sample advanced stats dataframe
+        # Create a sample advanced stats dataframe - using all strings to avoid PyArrow conversion issues
         advanced_stats = pd.DataFrame([
-            {'Metric': 'Goals per Game', 'Forward': 0.75, 'Defense': 0.35, 'Goalie': 'N/A'},
+            {'Metric': 'Goals per Game', 'Forward': '0.75', 'Defense': '0.35', 'Goalie': 'N/A'},
             {'Metric': 'Save Percentage', 'Forward': 'N/A', 'Defense': 'N/A', 'Goalie': '91.5%'},
-            {'Metric': 'Shot Generation', 'Forward': 3.2, 'Defense': 1.8, 'Goalie': 'N/A'},
+            {'Metric': 'Shot Generation', 'Forward': '3.2', 'Defense': '1.8', 'Goalie': 'N/A'},
             {'Metric': 'Time on Ice', 'Forward': '18:45', 'Defense': '22:30', 'Goalie': '60:00'},
             {'Metric': 'Defensive Zone Starts', 'Forward': '42%', 'Defense': '65%', 'Goalie': 'N/A'}
         ])
