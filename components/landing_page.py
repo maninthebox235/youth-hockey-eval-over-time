@@ -212,19 +212,29 @@ def display_feature_preview():
     
     # Video Analysis Card
     with premium_cols[0]:
-        st.markdown("""
+        video_card_html = """
         <div class="premium-card premium-card-1">
             <div class="premium-badge">PREMIUM</div>
             <div class="premium-card-title">Video Analysis</div>
             <div class="premium-card-text">
                 Upload practice or game footage for detailed technique analysis with actionable feedback.
             </div>
-            <div class="premium-link">Click to preview</div>
         </div>
-        """, unsafe_allow_html=True)
+        """
         
-        # The actual button that will be transparent
-        if st.button("Video Analysis", key="video-analysis-card", help="Click to preview Video Analysis"):
+        # Make the entire card clickable using an HTML button
+        video_card_html = f"""
+        <button onclick="this.closest('div').querySelector('button[kind=\"secondary\"]').click();" 
+                style="background: none; border: none; width: 100%; padding: 0; cursor: pointer; text-align: left;">
+            {video_card_html}
+        </button>
+        """
+        
+        st.markdown(video_card_html, unsafe_allow_html=True)
+        
+        # Hidden button that will be triggered by the HTML button
+        if st.button("", key="video-analysis-card", help="Click to preview Video Analysis", type="secondary", 
+                   style="display: none;"):
             st.session_state.show_premium_preview = "video_analysis"
             st.rerun()
     
@@ -237,7 +247,6 @@ def display_feature_preview():
             <div class="premium-card-text">
                 Personalized development plans based on player metrics with targeted drills and exercises.
             </div>
-            <div class="premium-link">Click to preview</div>
         </div>
         """, unsafe_allow_html=True)
         
