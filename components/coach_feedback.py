@@ -103,12 +103,25 @@ def get_player_feedback(player_id):
         print(f"Error getting feedback: {e}")
         return pd.DataFrame()
 
-def display_feedback_form(player_id, player_name, player_position):
-    """Display the coach feedback submission form"""
+def display_feedback_form(player_id, player_name, position):
+    """Display feedback form for a player"""
+    try:
+        # Convert numpy int64 or any other numeric type to Python int
+        try:
+            player_id = int(player_id)
+        except (TypeError, ValueError):
+            if hasattr(player_id, 'item'):
+                player_id = int(player_id.item())
+            else:
+                raise ValueError("Invalid player ID type")
+    except ValueError as e:
+        st.error(f"Invalid player ID: {e}")
+        return
+
     st.subheader("Submit Coach Feedback")
 
     # Get available templates for this player type
-    player_type = "Goalie" if player_position == "Goalie" else "Skater"
+    player_type = "Goalie" if position == "Goalie" else "Skater"
     templates = get_templates_for_player(player_type)
 
     # Template selection
@@ -146,7 +159,7 @@ def display_feedback_form(player_id, player_name, player_position):
                             ratings[category] = st.slider(category_name, 1, 5, 3)
         else:
             # Default rating fields based on position
-            if player_position == "Goalie":
+            if position == "Goalie":
                 col1, col2, col3 = st.columns(3)
                 with col1:
                     ratings['save_technique_rating'] = st.slider("Save Technique", 1, 5, 3)
@@ -190,6 +203,19 @@ def display_feedback_form(player_id, player_name, player_position):
 
 def display_feedback_history(player_id):
     """Display the feedback history for a player"""
+    try:
+        # Convert numpy int64 or any other numeric type to Python int
+        try:
+            player_id = int(player_id)
+        except (TypeError, ValueError):
+            if hasattr(player_id, 'item'):
+                player_id = int(player_id.item())
+            else:
+                raise ValueError("Invalid player ID type")
+    except ValueError as e:
+        st.error(f"Invalid player ID: {e}")
+        return
+
     feedback_df = get_player_feedback(player_id)
 
     if not feedback_df.empty:

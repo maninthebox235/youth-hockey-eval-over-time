@@ -75,7 +75,17 @@ def get_age_appropriate_benchmarks(age, metric):
 
 def display_skill_assessment(player_id):
     """Display and handle comprehensive skill assessment form"""
-    player = Player.query.get(player_id)
+    try:
+        # Convert numpy int64 or any other numeric type to Python int
+        try:
+            player_id = int(player_id)
+        except (TypeError, ValueError):
+            if hasattr(player_id, 'item'):
+                player_id = int(player_id.item())
+            else:
+                raise ValueError("Invalid player ID type")
+                
+        player = Player.query.get(player_id)
     if not player:
         st.error("Player not found")
         return False
