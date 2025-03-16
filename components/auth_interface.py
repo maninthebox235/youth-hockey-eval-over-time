@@ -21,7 +21,8 @@ def login_user():
         password = st.text_input("Password", type="password")
         col1, col2 = st.columns([1, 2])
         with col1:
-            remember_me = st.checkbox("Remember Me", value=True)
+            remember_me = st.checkbox("Remember Me", value=True, 
+                                     help="Keep me logged in for 30 days")
         with col2:
             submitted = st.form_submit_button("Login", use_container_width=True)
         
@@ -127,11 +128,21 @@ def display_auth_interface():
                 col1, col2 = st.columns([3, 1])
                 with col1:
                     st.write(f"👤 Welcome, **{user_name}**")
+                    
+                    # Display status icons
+                    status_icons = []
                     if is_admin:
-                        st.write("🔑 **Admin Access**")
-                    # Show when the session will expire if remember me was used
+                        status_icons.append("🔑 **Admin Access**")
+                    
+                    # Show session type
                     if 'remember_me' in st.session_state and st.session_state.remember_me:
-                        st.write("📌 Extended session active")
+                        status_icons.append("📌 **Extended Session** (30 days)")
+                    else:
+                        status_icons.append("⏱️ **Standard Session** (24 hours)")
+                    
+                    # Display all status icons
+                    for icon in status_icons:
+                        st.write(icon)
                 
                 with col2:
                     if st.button("Logout", use_container_width=True):

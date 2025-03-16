@@ -44,22 +44,25 @@ if 'is_admin' not in st.session_state:
 if 'authentication_token' not in st.session_state:
     st.session_state.authentication_token = None
 
-# Skip token verification for testing
-# Comment out when you need real authentication again
-# token = st.query_params.get("auth_token") or st.session_state.authentication_token
-# 
-# if token and not st.session_state.user:
-#     user = User.verify_auth_token(token)
-#     if user:
-#         st.session_state.authentication_token = token
-#         st.query_params["auth_token"] = token  # Ensure token is in URL
-#         st.session_state.user = {
-#             'id': user.id,
-#             'username': user.username,
-#             'name': user.name,
-#             'is_admin': user.is_admin
-#         }
-#         st.session_state.is_admin = user.is_admin
+# Check for authentication token in URL params
+token = st.query_params.get("auth_token") or st.session_state.get('authentication_token')
+
+# Try to verify token and log in user if token is valid
+if token and not st.session_state.user:
+    user = User.verify_auth_token(token)
+    if user:
+        # Token is valid, set session state
+        st.session_state.authentication_token = token
+        st.query_params["auth_token"] = token  # Ensure token is in URL
+        st.session_state.user = {
+            'id': user.id,
+            'username': user.username,
+            'name': user.name,
+            'is_admin': user.is_admin
+        }
+        st.session_state.is_admin = user.is_admin
+        # Set remember_me flag if token has long expiration
+        st.session_state.remember_me = True
 
 # Display content
 show_landing = display_landing_page()
