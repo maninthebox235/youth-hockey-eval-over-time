@@ -7,29 +7,7 @@ import time
 def init_session_state():
     """Initialize session state variables"""
     if 'user' not in st.session_state:
-        # Try to load from existing token first
-        if 'authentication_token' in st.session_state and st.session_state.authentication_token:
-            try:
-                # Import current app
-                from app import app
-
-                # Verify token with explicit app context
-                with app.app_context():
-                    user = User.verify_auth_token(st.session_state.authentication_token)
-
-                if user and user.id:
-                    st.session_state.user = {
-                        'id': user.id,
-                        'username': user.username,
-                        'name': user.name,
-                        'is_admin': user.is_admin
-                    }
-                    st.session_state.is_admin = user.is_admin
-                    return
-            except Exception as e:
-                print(f"Session token verification error: {str(e)}")
         st.session_state.user = None
-
     if 'is_admin' not in st.session_state:
         st.session_state.is_admin = False
     if 'show_forgot_password' not in st.session_state:
@@ -44,23 +22,6 @@ def init_session_state():
 def login_user():
     """Handle user login"""
     st.header("Login")
-
-    # Check for existing auth token first
-    if 'authentication_token' in st.session_state and st.session_state.authentication_token:
-        try:
-            user = User.verify_auth_token(st.session_state.authentication_token)
-            if user:
-                st.session_state.user = {
-                    'id': user.id,
-                    'username': user.username,
-                    'name': user.name,
-                    'is_admin': user.is_admin
-                }
-                st.session_state.is_admin = user.is_admin
-                st.success(f"Welcome back, {user.name}!")
-                return
-        except Exception:
-            st.session_state.authentication_token = None
 
     with st.form("login_form"):
         username = st.text_input("Username")
@@ -101,8 +62,8 @@ def login_user():
                         # Store token before user info
                         st.session_state.authentication_token = token
 
-                        # Set cookie for persistent login across contexts
-                        st.query_params.update(auth_token=token)
+                        # Set query parameters for persistent login
+                        st.query_params["auth_token"] = token
 
                         # Store user info in session state
                         st.session_state.user = {
@@ -126,7 +87,7 @@ def login_user():
 
             except Exception as e:
                 print(f"Login error: {str(e)}")
-                st.error("Invalid login credentials. Please try again.")
+                st.error("Login failed. Please try again.")
                 db.session.rollback()
 
 def create_admin():
@@ -363,21 +324,42 @@ def display_auth_interface():
     """Main authentication interface"""
     init_session_state()
 
-    # Try to authenticate using stored token
-    if not st.session_state.user and 'authentication_token' in st.session_state and st.session_state.authentication_token:
-        try:
-            user = User.verify_auth_token(st.session_state.authentication_token)
-            if user:
-                st.session_state.user = {
-                    'id': user.id,
-                    'username': user.username,
-                    'name': user.name,
-                    'is_admin': user.is_admin
-                }
-                st.session_state.is_admin = user.is_admin
-        except:
-            # Clear invalid token
-            st.session_state.authentication_token = None
+    # Check URL parameters first for auth token
+    query_params = st.query_params
+    url_token = query_params.get("auth_token", None)
+
+    # Verify token from URL or session state
+    if not st.session_state.user:
+        token_to_verify = url_token or st.session_state.authentication_token
+        if token_to_verify:
+            try:
+                # Import current app
+                from app import app
+
+                # Verify token with explicit app context
+                with app.app_context():
+                    user = User.verify_auth_token(token_to_verify)
+
+                if user:
+                    # If token was from URL, store it in session state
+                    if url_token:
+                        st.session_state.authentication_token = url_token
+
+                    st.session_state.user = {
+                        'id': user.id,
+                        'username': user.username,
+                        'name': user.name,
+                        'is_admin': user.is_admin
+                    }
+                    st.session_state.is_admin = user.is_admin
+                else:
+                    # Clear invalid token
+                    st.session_state.authentication_token = None
+                    st.query_params.clear()
+            except Exception as e:
+                print(f"Token verification error: {str(e)}")
+                st.session_state.authentication_token = None
+                st.query_params.clear()
 
     if not st.session_state.user:
         if not User.query.filter_by(is_admin=True).first():
@@ -399,12 +381,12 @@ def display_auth_interface():
             if st.session_state.is_admin and st.button("Admin Controls"):
                 st.session_state.current_page = "admin"
             if st.button("Logout"):
-                # Clear session state
+                # Clear session state and URL parameters
                 st.session_state.user = None
                 st.session_state.is_admin = False
                 st.session_state.authentication_token = None
                 st.session_state.current_page = None
-                st.query_params.clear()  # Clear URL parameters as well
+                st.query_params.clear()
                 st.rerun()
 
         # Display current page content
