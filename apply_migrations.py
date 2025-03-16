@@ -57,6 +57,18 @@ def check_columns_exist():
 if __name__ == "__main__":
     with app.app_context():
         try:
+            # Get user input for recovery mode
+            import sys
+            reset_db = False
+            if len(sys.argv) > 1 and sys.argv[1] == '--reset':
+                response = input("WARNING: This will reset ALL data. Continue? (y/n): ")
+                if response.lower() == 'y':
+                    reset_db = True
+                    print("Resetting database...")
+                    # Drop all tables
+                    db.drop_all()
+                    print("All tables dropped.")
+            
             print("Rolling back any failed transactions...")
             db.session.rollback()
             
@@ -74,9 +86,13 @@ if __name__ == "__main__":
                 print("Migration successful! All required columns exist.")
             else:
                 print("WARNING: Some required columns are missing. Check migration files.")
+                print("You may need to run with --reset flag to completely rebuild the database.")
                 
         except Exception as e:
             print(f"\nERROR: Migration failed: {str(e)}")
             db.session.rollback()
             import traceback
             print(traceback.format_exc())
+            print("\nTry running with --reset flag to completely rebuild the database.")
+            print("WARNING: This will delete all existing data.")
+            print("Command: python apply_migrations.py --reset")
