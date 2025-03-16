@@ -35,7 +35,7 @@ class User(UserMixin, db.Model):
 
     def get_auth_token(self, expiration=2592000):  # 30 days default
         s = Serializer(current_app.config['SECRET_KEY'])
-        return s.dumps({'user_id': self.id}).decode('utf-8')
+        return s.dumps({'user_id': self.id})
 
     @staticmethod
     def verify_auth_token(token):
@@ -96,7 +96,7 @@ class Team(db.Model):
                             secondary='team_membership',
                             back_populates='teams',
                             lazy='dynamic',
-                            overlaps="memberships,team")
+                            overlaps="memberships,team,player")
 
 class Player(db.Model):
     __tablename__ = 'players'
@@ -132,7 +132,7 @@ class Player(db.Model):
                           secondary='team_membership',
                           back_populates='players',
                           lazy='dynamic',
-                          overlaps="memberships,player")
+                          overlaps="memberships,player,team")
     history = db.relationship('PlayerHistory', backref='player', lazy=True)
     feedback = db.relationship('CoachFeedback', backref='player', lazy=True)
 
