@@ -720,6 +720,29 @@ def display_progress_tracking(player_id, focus_skills):
 
 def display_training_plan_interface(player_id, player_data):
     """Main interface for personalized training plans"""
+    # Check for premium membership
+    is_premium = st.session_state.get('is_premium', False)
+    
+    if not is_premium:
+        st.title("Personalized Training Plans")
+        st.warning("⭐ Training Plans is a premium feature")
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            st.markdown("""
+            Unlock personalized training plans with a premium membership.
+            This feature provides:
+            - Custom practice plans based on player assessment
+            - Position-specific training recommendations
+            - Age-appropriate drills and exercises
+            - Weekly practice schedules
+            """)
+        with col2:
+            st.button("Upgrade to Premium", type="primary", use_container_width=True)
+            
+            # Add a sample image to show what they're missing
+            st.image("static/images/hockey/players/player-stance.jpg", caption="Training Plans Preview", use_container_width=True)
+        return
+    
     st.title("Personalized Training Plans")
     
     # Initialize training plans system

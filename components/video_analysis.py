@@ -518,6 +518,29 @@ def display_analysis_history():
 
 def display_video_analysis_interface(player_id, player_data):
     """Main interface for video analysis feature"""
+    # Check for premium membership
+    is_premium = st.session_state.get('is_premium', False)
+    
+    if not is_premium:
+        st.title("Video Analysis")
+        st.warning("⭐ Video Analysis is a premium feature")
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            st.markdown("""
+            Unlock video analysis with a premium membership.
+            This feature allows you to:
+            - Upload practice and game footage for AI analysis
+            - Get detailed technique feedback on key skills
+            - Track technical skill development over time
+            - Receive customized training recommendations
+            """)
+        with col2:
+            st.button("Upgrade to Premium", type="primary", use_container_width=True)
+            
+            # Add a sample image to show what they're missing
+            st.image("static/images/hockey/players/shooting.jpg", caption="Video Analysis Preview", use_container_width=True)
+        return
+    
     st.title("Video Analysis")
     st.write("Upload videos of your hockey skills for AI-assisted analysis and feedback")
     
