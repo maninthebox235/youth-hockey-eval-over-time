@@ -11,6 +11,9 @@ from components.age_benchmarks import get_age_appropriate_benchmark
 def get_team_data(team_id):
     """Get comprehensive team data including player metrics"""
     try:
+        # Get user ID from session
+        user_id = st.session_state.user['id'] if 'user' in st.session_state else None
+        
         team = Team.query.get(team_id)
         if not team:
             return None, pd.DataFrame()
@@ -25,7 +28,11 @@ def get_team_data(team_id):
         players_data = []
         player_ids = [m.player_id for m in memberships]
         
-        players = Player.query.filter(Player.id.in_(player_ids)).all()
+        # Filter players by user_id if available
+        if user_id:
+            players = Player.query.filter(Player.id.in_(player_ids), Player.user_id == user_id).all()
+        else:
+            players = Player.query.filter(Player.id.in_(player_ids)).all()
         
         for player in players:
             # Find matching membership
@@ -756,8 +763,29 @@ def display_team_dashboard(team_id=None):
     st.title("Team Dashboard")
     st.write("Comprehensive team management and analysis tools")
     
-    # Get list of teams
-    teams = Team.query.all()
+    # Get user ID from session
+    user_id = st.session_state.user['id'] if 'user' in st.session_state else None
+    
+    # Get list of teams with players added by current user
+    if user_id:
+        # First get players associated with the current user
+        user_players = Player.query.filter_by(user_id=user_id).all()
+        player_ids = [p.id for p in user_players]
+        
+        # Get team memberships for these players
+        team_ids = []
+        if player_ids:
+            memberships = TeamMembership.query.filter(TeamMembership.player_id.in_(player_ids)).all()
+            team_ids = [m.team_id for m in memberships]
+        
+        # Get teams that these players are part of
+        if team_ids:
+            teams = Team.query.filter(Team.id.in_(team_ids)).all()
+        else:
+            teams = []
+    else:
+        # If no user ID, show all teams (fallback for testing)
+        teams = Team.query.all()
     
     if not teams:
         st.info("No teams available. Please create a team first.")
