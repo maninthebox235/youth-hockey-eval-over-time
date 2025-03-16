@@ -118,54 +118,54 @@ def display_feature_preview():
     
     # Video Analysis Card
     with premium_cols[0]:
-        st.markdown("""
-        <div class="feature-card" style="cursor: pointer;" onclick="this.style.backgroundColor='#f0f8ff'; setTimeout(function(){
-            document.querySelector('button[kind=secondary][data-testid*=video-analysis-preview]').click();
-        }, 100);">
-            <div class="feature-icon">🎬</div>
-            <div class="feature-title">Video Analysis <span class="premium-badge">PREMIUM</span></div>
-            <p>Upload practice or game footage for detailed technique analysis with actionable feedback.</p>
-            <div style="text-align: center; color: #1E88E5; margin-top: 10px;">Click to preview ↓</div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Hidden button that will be clicked by JavaScript
-        if st.button("Preview Video Analysis", key="video-analysis-preview", type="secondary", use_container_width=True, help="Click to see a preview of video analysis features"):
-            st.session_state.show_premium_preview = "video_analysis"
+        video_card = st.container()
+        with video_card:
+            st.markdown("""
+            <div class="feature-card">
+                <div class="feature-icon">🎬</div>
+                <div class="feature-title">Video Analysis <span class="premium-badge">PREMIUM</span></div>
+                <p>Upload practice or game footage for detailed technique analysis with actionable feedback.</p>
+                <div style="text-align: center; color: #1E88E5; margin-top: 10px;">Click to preview</div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            if st.button("Video Analysis", key="video-analysis-card", label_visibility="collapsed"):
+                st.session_state.show_premium_preview = "video_analysis"
+                st.rerun()
     
     # Training Plans Card
     with premium_cols[1]:
-        st.markdown("""
-        <div class="feature-card" style="cursor: pointer;" onclick="this.style.backgroundColor='#f0f8ff'; setTimeout(function(){
-            document.querySelector('button[kind=secondary][data-testid*=training-plans-preview]').click();
-        }, 100);">
-            <div class="feature-icon">🏋️</div>
-            <div class="feature-title">Training Plans <span class="premium-badge">PREMIUM</span></div>
-            <p>Personalized development plans based on player metrics with targeted drills and exercises.</p>
-            <div style="text-align: center; color: #1E88E5; margin-top: 10px;">Click to preview ↓</div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Hidden button that will be clicked by JavaScript
-        if st.button("Preview Training Plans", key="training-plans-preview", type="secondary", use_container_width=True, help="Click to see a preview of training plan features"):
-            st.session_state.show_premium_preview = "training_plans"
+        training_card = st.container()
+        with training_card:
+            st.markdown("""
+            <div class="feature-card">
+                <div class="feature-icon">🏋️</div>
+                <div class="feature-title">Training Plans <span class="premium-badge">PREMIUM</span></div>
+                <p>Personalized development plans based on player metrics with targeted drills and exercises.</p>
+                <div style="text-align: center; color: #1E88E5; margin-top: 10px;">Click to preview</div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            if st.button("Training Plans", key="training-plans-card", label_visibility="collapsed"):
+                st.session_state.show_premium_preview = "training_plans"
+                st.rerun()
     
     # Peer Comparison Card
     with premium_cols[2]:
-        st.markdown("""
-        <div class="feature-card" style="cursor: pointer;" onclick="this.style.backgroundColor='#f0f8ff'; setTimeout(function(){
-            document.querySelector('button[kind=secondary][data-testid*=peer-comparison-preview]').click();
-        }, 100);">
-            <div class="feature-icon">🔍</div>
-            <div class="feature-title">Peer Comparison <span class="premium-badge">PREMIUM</span></div>
-            <p>Anonymous benchmarking against other players in the same age group and position.</p>
-            <div style="text-align: center; color: #1E88E5; margin-top: 10px;">Click to preview ↓</div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Hidden button that will be clicked by JavaScript
-        if st.button("Preview Peer Comparison", key="peer-comparison-preview", type="secondary", use_container_width=True, help="Click to see a preview of peer comparison features"):
-            st.session_state.show_premium_preview = "peer_comparison"
+        peer_card = st.container()
+        with peer_card:
+            st.markdown("""
+            <div class="feature-card">
+                <div class="feature-icon">🔍</div>
+                <div class="feature-title">Peer Comparison <span class="premium-badge">PREMIUM</span></div>
+                <p>Anonymous benchmarking against other players in the same age group and position.</p>
+                <div style="text-align: center; color: #1E88E5; margin-top: 10px;">Click to preview</div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            if st.button("Peer Comparison", key="peer-comparison-card", label_visibility="collapsed"):
+                st.session_state.show_premium_preview = "peer_comparison"
+                st.rerun()
     
     # Show premium feature preview if one is selected
     if st.session_state.show_premium_preview == "video_analysis":
@@ -358,54 +358,54 @@ def display_feature_preview():
     
     # Team Dashboard Card
     with team_cols[0]:
-        st.markdown("""
-        <div class="feature-card" style="cursor: pointer;" onclick="this.style.backgroundColor='#f0f8ff'; setTimeout(function(){
-            document.querySelector('button[kind=secondary][data-testid*=team-dashboard-preview]').click();
-        }, 100);">
-            <div class="feature-icon">📋</div>
-            <div class="feature-title">Team Dashboard <span class="team-badge">TEAM</span></div>
-            <p>Comprehensive team overview with skill heatmaps, performance metrics, and development tracking.</p>
-            <div style="text-align: center; color: #1E88E5; margin-top: 10px;">Click to preview ↓</div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Hidden button that will be clicked by JavaScript
-        if st.button("Preview Team Dashboard", key="team-dashboard-preview", type="secondary", use_container_width=True, help="Click to see a preview of team dashboard features"):
-            st.session_state.show_team_preview = "team_dashboard"
+        team_dashboard_card = st.container()
+        with team_dashboard_card:
+            st.markdown("""
+            <div class="feature-card">
+                <div class="feature-icon">📋</div>
+                <div class="feature-title">Team Dashboard <span class="team-badge">TEAM</span></div>
+                <p>Comprehensive team overview with skill heatmaps, performance metrics, and development tracking.</p>
+                <div style="text-align: center; color: #1E88E5; margin-top: 10px;">Click to preview</div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            if st.button("Team Dashboard", key="team-dashboard-card", label_visibility="collapsed"):
+                st.session_state.show_team_preview = "team_dashboard"
+                st.rerun()
     
     # Tryout Evaluation Card
     with team_cols[1]:
-        st.markdown("""
-        <div class="feature-card" style="cursor: pointer;" onclick="this.style.backgroundColor='#f0f8ff'; setTimeout(function(){
-            document.querySelector('button[kind=secondary][data-testid*=tryout-evaluation-preview]').click();
-        }, 100);">
-            <div class="feature-icon">🏁</div>
-            <div class="feature-title">Tryout Evaluation <span class="team-badge">TEAM</span></div>
-            <p>Streamlined assessment system for player tryouts with customizable evaluation criteria.</p>
-            <div style="text-align: center; color: #1E88E5; margin-top: 10px;">Click to preview ↓</div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Hidden button that will be clicked by JavaScript
-        if st.button("Preview Tryout Evaluation", key="tryout-evaluation-preview", type="secondary", use_container_width=True, help="Click to see a preview of tryout evaluation features"):
-            st.session_state.show_team_preview = "tryout_evaluation"
+        tryout_card = st.container()
+        with tryout_card:
+            st.markdown("""
+            <div class="feature-card">
+                <div class="feature-icon">🏁</div>
+                <div class="feature-title">Tryout Evaluation <span class="team-badge">TEAM</span></div>
+                <p>Streamlined assessment system for player tryouts with customizable evaluation criteria.</p>
+                <div style="text-align: center; color: #1E88E5; margin-top: 10px;">Click to preview</div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            if st.button("Tryout Evaluation", key="tryout-evaluation-card", label_visibility="collapsed"):
+                st.session_state.show_team_preview = "tryout_evaluation"
+                st.rerun()
     
     # Custom Reports Card
     with team_cols[2]:
-        st.markdown("""
-        <div class="feature-card" style="cursor: pointer;" onclick="this.style.backgroundColor='#f0f8ff'; setTimeout(function(){
-            document.querySelector('button[kind=secondary][data-testid*=custom-reports-preview]').click();
-        }, 100);">
-            <div class="feature-icon">📝</div>
-            <div class="feature-title">Custom Reports <span class="team-badge">TEAM</span></div>
-            <p>Generate detailed team and player reports for season reviews and development planning.</p>
-            <div style="text-align: center; color: #1E88E5; margin-top: 10px;">Click to preview ↓</div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Hidden button that will be clicked by JavaScript
-        if st.button("Preview Custom Reports", key="custom-reports-preview", type="secondary", use_container_width=True, help="Click to see a preview of custom reports features"):
-            st.session_state.show_team_preview = "custom_reports"
+        reports_card = st.container()
+        with reports_card:
+            st.markdown("""
+            <div class="feature-card">
+                <div class="feature-icon">📝</div>
+                <div class="feature-title">Custom Reports <span class="team-badge">TEAM</span></div>
+                <p>Generate detailed team and player reports for season reviews and development planning.</p>
+                <div style="text-align: center; color: #1E88E5; margin-top: 10px;">Click to preview</div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            if st.button("Custom Reports", key="custom-reports-card", label_visibility="collapsed"):
+                st.session_state.show_team_preview = "custom_reports"
+                st.rerun()
     
     # Show team feature preview if one is selected
     if st.session_state.show_team_preview == "team_dashboard":
