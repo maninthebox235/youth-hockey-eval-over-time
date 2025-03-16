@@ -64,7 +64,9 @@ def display_player_profile(player_data, player_history):
 
     with tabs[1]:  # Skill Assessment
         st.subheader("Skill Assessment")
-        if display_skill_assessment(player_data['player_id']):
+        assessment_saved = display_skill_assessment(player_data['player_id'])
+        if assessment_saved:
+            # Switch back to Current Stats tab after saving an assessment
             st.rerun()  # Refresh after new assessment
 
     with tabs[2]:  # Development Charts
