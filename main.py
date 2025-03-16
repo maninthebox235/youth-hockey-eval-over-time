@@ -11,7 +11,7 @@ from components.auth_interface import display_auth_interface
 from components.landing_page import display_landing_page
 import time
 
-# Page configuration must be the first Streamlit command
+# Page configuration
 st.set_page_config(
     page_title="Youth Hockey Development Tracker",
     page_icon="🏒",
@@ -23,7 +23,7 @@ app = init_app()
 app_ctx = app.app_context()
 app_ctx.push()
 
-# Initialize session state
+# Initialize basic session state
 if 'user' not in st.session_state:
     st.session_state.user = None
 if 'is_admin' not in st.session_state:
@@ -31,33 +31,29 @@ if 'is_admin' not in st.session_state:
 if 'authentication_token' not in st.session_state:
     st.session_state.authentication_token = None
 
-# Check for authentication token
-auth_token = st.query_params.get("auth_token")
-if auth_token and not st.session_state.user:
-    try:
-        user = User.verify_auth_token(auth_token)
-        if user:
-            st.session_state.authentication_token = auth_token
-            st.session_state.user = {
-                'id': user.id,
-                'username': user.username,
-                'name': user.name,
-                'is_admin': user.is_admin
-            }
-            st.session_state.is_admin = user.is_admin
-    except Exception as e:
-        print(f"Auth error: {str(e)}")
-        st.session_state.authentication_token = None
-        st.query_params.clear()
+# Verify authentication from URL or session
+token = st.query_params.get("auth_token") or st.session_state.authentication_token
 
-# Display landing page or main content
+if token and not st.session_state.user:
+    user = User.verify_auth_token(token)
+    if user:
+        st.session_state.authentication_token = token
+        st.query_params["auth_token"] = token  # Ensure token is in URL
+        st.session_state.user = {
+            'id': user.id,
+            'username': user.username,
+            'name': user.name,
+            'is_admin': user.is_admin
+        }
+        st.session_state.is_admin = user.is_admin
+
+# Display content
 show_landing = display_landing_page()
 
 if not show_landing:
     if not st.session_state.user:
         display_auth_interface()
     else:
-        # Main application content
         st.sidebar.image("https://images.unsplash.com/photo-1547223431-cc59f141f389",
                         caption="Player Development Platform")
 
@@ -75,7 +71,9 @@ if not show_landing:
 
             # Display main content
             players_df = get_players_df()
-            if not players_df.empty:
+            if players_df.empty:
+                st.warning("No player data available.")
+            else:
                 menu = st.sidebar.selectbox(
                     "Navigation",
                     ["Player Profiles", "Development Analytics", "Team Statistics", "Team Management"]
@@ -114,8 +112,6 @@ if not show_landing:
                     st.subheader("Team Statistics")
                     display_age_group_stats(players_df)
                     display_player_rankings(players_df)
-            else:
-                st.warning("No player data available.")
 
         except Exception as e:
             st.error(f"Error: {str(e)}")

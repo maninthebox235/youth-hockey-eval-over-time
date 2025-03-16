@@ -17,42 +17,32 @@ def login_user():
                 return
 
             try:
-                # Check username login
                 user = User.query.filter_by(username=username).first()
                 if not user or not user.check_password(password):
-                    st.error("Invalid username/email or password")
+                    st.error("Invalid username or password")
                     return
 
                 # Update last login time
                 user.last_login = datetime.utcnow()
                 db.session.commit()
 
-                # Generate authentication token
+                # Generate and store authentication token
                 token = user.get_auth_token()
-                if not token:
+                if token:
+                    st.session_state.authentication_token = token
+                    st.query_params["auth_token"] = token
+
+                    st.session_state.user = {
+                        'id': user.id,
+                        'username': user.username,
+                        'name': user.name,
+                        'is_admin': user.is_admin
+                    }
+                    st.session_state.is_admin = user.is_admin
+                    st.success("Login successful!")
+                    st.rerun()
+                else:
                     st.error("Authentication failed")
-                    return
-
-                # Store token in session state and URL
-                st.session_state.authentication_token = token
-                st.query_params["auth_token"] = token
-
-                # Initialize session state
-                if 'user' not in st.session_state:
-                    st.session_state.user = None
-                if 'is_admin' not in st.session_state:
-                    st.session_state.is_admin = False
-
-                # Set user info
-                st.session_state.user = {
-                    'id': user.id,
-                    'username': user.username,
-                    'name': user.name,
-                    'is_admin': user.is_admin
-                }
-                st.session_state.is_admin = user.is_admin
-                st.success("Login successful!")
-                st.rerun()
 
             except Exception as e:
                 print(f"Login error: {str(e)}")
@@ -61,17 +51,12 @@ def login_user():
 
 def display_auth_interface():
     """Main authentication interface"""
-    # Display login form if not authenticated
     if not st.session_state.user:
         login_user()
     else:
-        # Show user info and logout button in sidebar
         with st.sidebar:
             st.write(f"Welcome, {st.session_state.user['name']}")
             if st.button("Logout"):
-                # Clear session state and URL parameters
-                st.session_state.user = None
-                st.session_state.is_admin = None
-                st.session_state.authentication_token = None
+                st.session_state.clear()
                 st.query_params.clear()
                 st.rerun()

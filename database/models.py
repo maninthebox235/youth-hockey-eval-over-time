@@ -19,8 +19,6 @@ class User(UserMixin, db.Model):
     is_admin = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_login = db.Column(db.DateTime)
-
-    # Password reset fields
     reset_token = db.Column(db.String(256), nullable=True)
     reset_token_expiry = db.Column(db.DateTime, nullable=True)
 
@@ -34,47 +32,30 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    def get_auth_token(self, expiration=2592000):  # 30 days default
+    def get_auth_token(self, expiration=86400):  # 24 hours
         s = Serializer(current_app.config['SECRET_KEY'])
-        token = s.dumps({'user_id': self.id, 'exp': int(time.time()) + expiration})
-        # Handle both string and bytes return types from dumps()
-        if isinstance(token, bytes):
-            return token.decode('utf-8')
-        return token
+        return s.dumps({
+            'id': self.id,
+            'exp': time.time() + expiration
+        }).decode('utf-8')
 
     @staticmethod
     def verify_auth_token(token):
-        """Verify the authentication token"""
         if not token:
-            print("No token provided for verification")
             return None
 
         s = Serializer(current_app.config['SECRET_KEY'])
+
         try:
             data = s.loads(token)
-            if not isinstance(data, dict):
-                print(f"Invalid token data type: {type(data)}")
-                return None
-
-            user_id = data.get('user_id')
-            if not user_id:
-                print("No user_id found in token data")
-                return None
-
-            # Verify expiration
+            user_id = data.get('id')
             exp = data.get('exp')
-            if not exp or int(time.time()) > exp:
-                print("Token has expired")
+
+            if not user_id or time.time() > exp:
                 return None
 
-            user = User.query.get(user_id)
-            if user:
-                print(f"Successfully verified token for user: {user.username}")
-                return user
-            print(f"No user found with ID: {user_id}")
-            return None
-        except Exception as e:
-            print(f"Token verification error: {str(e)}")
+            return User.query.get(user_id)
+        except:
             return None
 
 class CoachFeedback(db.Model):
