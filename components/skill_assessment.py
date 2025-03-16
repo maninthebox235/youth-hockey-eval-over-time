@@ -72,7 +72,6 @@ def get_age_appropriate_benchmarks(age, metric):
             (12, 14): {'min': 2.5, 'target': 3.5, 'description': "Advanced control"},
             (15, 18): {'min': 3, 'target': 4, 'description': "Elite puck handling"}
         }
-        # Additional metrics will be added here
     }
 
     # Find appropriate age group
@@ -81,14 +80,14 @@ def get_age_appropriate_benchmarks(age, metric):
             return values
     return {'min': 1, 'target': 3, 'description': "Standard performance"}
 
-def rate_skill(label, key, help_text="", default_value=3):
+def rate_skill(label, key, description="", default_value=3):
     """Create a standardized rating slider for skills"""
+    st.write(f"_{description}_")
     return st.slider(
         label,
         min_value=1,
         max_value=5,
-        value=min(max(default_value, 1), 5),
-        help=help_text,
+        value=default_value,
         key=key,
         step=1
     )
@@ -125,7 +124,6 @@ def display_skill_assessment(player_id):
                 for metric, description in metrics_list[:mid_point]:
                     benchmark = get_age_appropriate_benchmarks(player.age, metric)
                     st.write(f"**{metric.replace('_', ' ').title()}**")
-                    st.write(f"_{description}_")
                     if benchmark:
                         st.write(f"Age target: {benchmark['description']}")
 
@@ -133,7 +131,7 @@ def display_skill_assessment(player_id):
                     all_ratings[metric] = rate_skill(
                         "Rating",
                         f"rating_{metric}_1",
-                        help=f"Rate {metric.replace('_', ' ')} from 1-5",
+                        description=description,
                         default_value=int(current_value)
                     )
 
@@ -141,7 +139,6 @@ def display_skill_assessment(player_id):
                 for metric, description in metrics_list[mid_point:]:
                     benchmark = get_age_appropriate_benchmarks(player.age, metric)
                     st.write(f"**{metric.replace('_', ' ').title()}**")
-                    st.write(f"_{description}_")
                     if benchmark:
                         st.write(f"Age target: {benchmark['description']}")
 
@@ -149,7 +146,7 @@ def display_skill_assessment(player_id):
                     all_ratings[metric] = rate_skill(
                         "Rating",
                         f"rating_{metric}_2",
-                        help=f"Rate {metric.replace('_', ' ')} from 1-5",
+                        description=description,
                         default_value=int(current_value)
                     )
 
@@ -157,12 +154,17 @@ def display_skill_assessment(player_id):
             st.write("### Assessment Notes")
             notes = st.text_area(
                 "Observations and Development Goals",
-                help="Add specific observations, areas for improvement, and development goals"
+                placeholder="Add specific observations, areas for improvement, and development goals"
             )
 
+            # Submit button at the bottom of the form
             submitted = st.form_submit_button("Save Assessment")
 
             if submitted:
+                if not notes:
+                    st.error("Please add assessment notes")
+                    return False
+
                 try:
                     # Update player metrics
                     for metric, value in all_ratings.items():
