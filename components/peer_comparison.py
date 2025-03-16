@@ -87,10 +87,11 @@ def get_peer_group_data(player_age, position, attribute=None):
                     if hasattr(value, 'item'):
                         try:
                             # Extract native Python type from numpy type
+                            # Use our utility functions for consistent conversion
                             if isinstance(value, (np.integer, int)):
-                                player_data[attr] = int(value.item())
+                                player_data[attr] = to_int(value)
                             elif isinstance(value, (np.floating, float)):
-                                player_data[attr] = float(value.item())
+                                player_data[attr] = to_float(value)
                             else:
                                 player_data[attr] = value
                         except (TypeError, ValueError, AttributeError):

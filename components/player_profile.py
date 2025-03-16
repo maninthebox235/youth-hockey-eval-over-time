@@ -61,7 +61,7 @@ def display_player_profile(player_data, player_history):
     with col1:
         st.image("https://images.unsplash.com/photo-1517177646641-83fe10f14633", 
                 caption=player_data['name'],
-                use_column_width=True)
+                use_container_width=True)
                 
         # Safe handling of join_date format
         join_date_str = ""
