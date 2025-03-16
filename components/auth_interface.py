@@ -8,10 +8,10 @@ def init_session_state():
     """Initialize session state variables"""
     if 'user' not in st.session_state:
         # Try to load from existing token first
-        if 'authentication_token' in st.session_state:
+        if 'authentication_token' in st.session_state and st.session_state.authentication_token:
             try:
                 user = User.verify_auth_token(st.session_state.authentication_token)
-                if user:
+                if user and user.id:
                     st.session_state.user = {
                         'id': user.id,
                         'username': user.username,
@@ -20,8 +20,8 @@ def init_session_state():
                     }
                     st.session_state.is_admin = user.is_admin
                     return
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"Session token verification error: {str(e)}")
         st.session_state.user = None
         
     if 'is_admin' not in st.session_state:
@@ -81,28 +81,32 @@ def login_user():
                 user.last_login = datetime.utcnow()
                 db.session.commit()
 
-                # Generate and store authentication token first
-                token = user.get_auth_token()
-                if not token:
-                    st.error("Failed to generate auth token")
+                try:
+                    # Generate and store authentication token
+                    token = user.get_auth_token()
+                    if token:
+                        # Store token before user info
+                        st.session_state.authentication_token = token
+                        
+                        # Store user info in session state
+                        st.session_state.user = {
+                            'id': user.id,
+                            'username': user.username,
+                            'name': user.name,
+                            'is_admin': user.is_admin
+                        }
+                        st.session_state.is_admin = user.is_admin
+                        
+                        st.success(f"Welcome back, {user.name}!")
+                        time.sleep(0.5)
+                        st.experimental_rerun()
+                    else:
+                        st.error("Failed to generate auth token")
+                        db.session.rollback()
+                except Exception as e:
+                    print(f"Token generation error: {str(e)}")
+                    st.error("Authentication error, please try again")
                     db.session.rollback()
-                    return
-
-                # Store token before user info
-                st.session_state.authentication_token = token
-                
-                # Store user info in session state
-                st.session_state.user = {
-                    'id': user.id,
-                    'username': user.username,
-                    'name': user.name,
-                    'is_admin': user.is_admin
-                }
-                st.session_state.is_admin = user.is_admin
-                
-                st.success(f"Welcome back, {user.name}!")
-                time.sleep(0.5)
-                st.experimental_rerun()
 
             except Exception as e:
                 print(f"Login error: {str(e)}")
