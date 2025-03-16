@@ -44,14 +44,19 @@ def login_user():
                 db.session.commit()
                 
                 # Generate auth token
-                token = user.get_auth_token()
-                if not token:
-                    st.error("Failed to generate authentication token")
-                    return
-                
-                # Set session state
-                st.session_state.authentication_token = token
-                st.query_params["auth_token"] = token
+                try:
+                    token = user.get_auth_token()
+                    if not token:
+                        st.error("Failed to generate authentication token")
+                        return
+                    
+                    # Set session state
+                    st.session_state.authentication_token = token
+                    st.query_params["auth_token"] = token
+                except Exception as e:
+                    logging.error(f"Token generation error: {str(e)}")
+                    # Continue without token - at least allow session-based auth
+                    token = None
                 st.session_state.user = {
                     'id': user.id,
                     'username': user.username,
@@ -106,7 +111,9 @@ def display_auth_interface():
         login_user()
     else:
         with st.sidebar:
-            st.write(f"Welcome, {st.session_state.user.get('name', 'User')}")
+            # Check if user is a dictionary (expected) or use safe access
+            user_name = st.session_state.user.get('name', 'User') if isinstance(st.session_state.user, dict) else 'User'
+            st.write(f"Welcome, {user_name}")
             if st.button("Logout"):
                 st.session_state.clear()
                 st.query_params.clear()

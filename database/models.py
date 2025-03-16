@@ -33,11 +33,17 @@ class User(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
     def get_auth_token(self, expiration=86400):  # 24 hours
-        s = Serializer(current_app.config['SECRET_KEY'])
-        return s.dumps({
-            'id': self.id,
-            'exp': time.time() + expiration
-        }).decode('utf-8')
+        try:
+            secret_key = current_app.config.get('SECRET_KEY', 'default-secret-key')
+            s = Serializer(secret_key)
+            return s.dumps({
+                'id': self.id,
+                'exp': time.time() + expiration
+            }).decode('utf-8')
+        except Exception as e:
+            import logging
+            logging.error(f"Error generating auth token: {str(e)}")
+            return None
 
     @staticmethod
     def verify_auth_token(token):
