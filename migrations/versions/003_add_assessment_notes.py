@@ -15,7 +15,9 @@ branch_labels = None
 depends_on = None
 
 def upgrade():
+    # Add notes column to player_history table
     op.add_column('player_history', sa.Column('notes', sa.Text(), nullable=True))
 
 def downgrade():
+    # Remove notes column from player_history table
     op.drop_column('player_history', 'notes')

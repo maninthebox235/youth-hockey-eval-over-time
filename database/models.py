@@ -179,6 +179,7 @@ class PlayerHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     player_id = db.Column(db.Integer, db.ForeignKey('players.id'), nullable=False)
     date = db.Column(db.Date, nullable=False)
+    notes = db.Column(db.Text, nullable=True)  # Added notes field
 
     # Skater metrics
     skating_speed = db.Column(db.Float, nullable=True)
