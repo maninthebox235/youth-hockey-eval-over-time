@@ -87,7 +87,7 @@ def display_team_overview(team, players_df):
         
         fig = px.pie(position_counts, values='Count', names='Position', 
                      title='Team Composition by Position')
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, key="team_composition_pie")
         
         # Add age distribution
         age_counts = players_df['age'].value_counts().reset_index()
@@ -97,7 +97,7 @@ def display_team_overview(team, players_df):
         fig2 = px.bar(age_counts, x='Age', y='Count', 
                       title='Age Distribution',
                       labels={'Count': 'Number of Players', 'Age': 'Age (years)'})
-        st.plotly_chart(fig2, use_container_width=True)
+        st.plotly_chart(fig2, use_container_width=True, key="age_distribution_bar")
 
 def create_team_skill_heatmap(players_df):
     """Create a team skills heatmap to identify strengths and weaknesses"""
@@ -225,7 +225,7 @@ def display_team_analysis(team, players_df):
     # Team Skills Heatmap
     heatmap = create_team_skill_heatmap(players_df)
     if heatmap:
-        st.plotly_chart(heatmap, use_container_width=True)
+        st.plotly_chart(heatmap, use_container_width=True, key="team_skills_heatmap")
     
     # Performance by position
     if 'goals' in players_df.columns and not players_df['goals'].isnull().all():
@@ -256,7 +256,7 @@ def display_team_analysis(team, players_df):
                     'position': 'Position'
                 }
             )
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width=True, key="offensive_production_scatter")
     
     # Goalie performance if we have goalies
     goalies_df = players_df[players_df['position'] == 'Goalie']
@@ -348,7 +348,7 @@ def display_player_comparison_tool(players_df):
         showlegend=True
     )
     
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True, key="player_skills_radar")
     
     # Show side-by-side metric comparison
     st.subheader("Detailed Comparison")
@@ -655,7 +655,7 @@ def create_custom_report(team, players_df):
         
         fig = px.pie(position_counts, values='Count', names='Position', 
                     title='Team Composition by Position')
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True, key="report_team_composition_pie")
     
     if "Player Performance" in report_options:
         st.markdown("### Player Performance")
@@ -724,7 +724,7 @@ def create_custom_report(team, players_df):
         # Team Skills Heatmap
         heatmap = create_team_skill_heatmap(players_df)
         if heatmap:
-            st.plotly_chart(heatmap, use_container_width=True)
+            st.plotly_chart(heatmap, use_container_width=True, key="report_skills_heatmap")
             
         # Team strengths and weaknesses
         strengths, weaknesses = identify_team_strengths_weaknesses(players_df)
