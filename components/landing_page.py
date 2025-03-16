@@ -72,7 +72,7 @@ def display_signup_form():
 
     with st.form("signup_form"):
         name = st.text_input("Full Name")
-        email = st.text_input("Email")
+        username = st.text_input("Username")
         password = st.text_input("Password", type="password")
         confirm_password = st.text_input("Confirm Password", type="password")
 
@@ -85,7 +85,7 @@ def display_signup_form():
         submitted = st.form_submit_button("Create Account")
 
         if submitted:
-            if not all([name, email, password, organization]):
+            if not all([name, username, password, organization]):
                 st.error("Please fill in all required fields")
                 return
 
@@ -93,13 +93,13 @@ def display_signup_form():
                 st.error("Passwords do not match")
                 return
 
-            if User.query.filter_by(email=email).first():
-                st.error("Email already registered")
+            if User.query.filter_by(username=username).first():
+                st.error("Username already taken")
                 return
 
             try:
                 new_user = User(
-                    email=email,
+                    username=username,
                     name=name,
                     is_admin=False
                 )

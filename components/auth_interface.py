@@ -14,12 +14,16 @@ def login_user():
     """Handle user login"""
     st.header("Login")
     with st.form("login_form"):
-        email = st.text_input("Email")
+        username = st.text_input("Username")
         password = st.text_input("Password", type="password")
         submitted = st.form_submit_button("Login")
 
         if submitted:
-            user = User.query.filter_by(email=email).first()
+            if not username or not password:
+                st.error("Please enter both username and password")
+                return
+
+            user = User.query.filter_by(username=username).first()
             if user and user.check_password(password):
                 user.last_login = datetime.utcnow()
                 db.session.commit()
@@ -28,21 +32,21 @@ def login_user():
                 st.success(f"Welcome back, {user.name}!")
                 st.rerun()
             else:
-                st.error("Invalid email or password")
+                st.error("Invalid username or password")
 
 def create_admin():
     """Create initial admin user"""
     st.header("Create Admin Account")
     with st.form("admin_form"):
-        name = st.text_input("Name")
-        email = st.text_input("Email")
+        name = st.text_input("Full Name")
+        username = st.text_input("Username")
         password = st.text_input("Password", type="password")
         confirm_password = st.text_input("Confirm Password", type="password")
 
         submitted = st.form_submit_button("Create Admin")
 
         if submitted:
-            if not name or not email or not password:
+            if not all([name, username, password]):
                 st.error("Please fill in all fields")
                 return
 
@@ -50,13 +54,13 @@ def create_admin():
                 st.error("Passwords do not match")
                 return
 
-            if User.query.filter_by(email=email).first():
-                st.error("Email already registered")
+            if User.query.filter_by(username=username).first():
+                st.error("Username already taken")
                 return
 
             try:
                 admin = User(
-                    email=email,
+                    username=username,
                     name=name,
                     is_admin=True
                 )
@@ -83,7 +87,7 @@ def display_admin_controls():
     users = User.query.all()
 
     for user in users:
-        with st.expander(f"User: {user.name} ({user.email})"):
+        with st.expander(f"User: {user.name} ({user.username})"):
             col1, col2 = st.columns(2)
             with col1:
                 st.write(f"Admin: {'Yes' if user.is_admin else 'No'}")
@@ -105,22 +109,22 @@ def display_admin_controls():
     # Add New User
     st.subheader("Add New User")
     with st.form("add_user_form"):
-        new_name = st.text_input("Name")
-        new_email = st.text_input("Email")
+        new_name = st.text_input("Full Name")
+        new_username = st.text_input("Username")
         new_password = st.text_input("Password", type="password")
         is_admin = st.checkbox("Make Admin")
 
         if st.form_submit_button("Add User"):
-            if not new_name or not new_email or not new_password:
+            if not all([new_name, new_username, new_password]):
                 st.error("Please fill in all fields")
                 return
 
-            if User.query.filter_by(email=new_email).first():
-                st.error("Email already registered")
+            if User.query.filter_by(username=new_username).first():
+                st.error("Username already taken")
             else:
                 try:
                     new_user = User(
-                        email=new_email,
+                        username=new_username,
                         name=new_name,
                         is_admin=is_admin
                     )

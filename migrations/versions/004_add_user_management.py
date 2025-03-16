@@ -15,19 +15,19 @@ branch_labels = None
 depends_on = None
 
 def upgrade():
-    # Create users table
+    # Create users table with username instead of email
     op.create_table('users',
         sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('email', sa.String(length=120), nullable=False),
+        sa.Column('username', sa.String(length=50), nullable=False),
         sa.Column('password_hash', sa.String(length=256), nullable=True),
         sa.Column('name', sa.String(length=100), nullable=False),
         sa.Column('is_admin', sa.Boolean(), nullable=True),
         sa.Column('created_at', sa.DateTime(), nullable=True),
         sa.Column('last_login', sa.DateTime(), nullable=True),
         sa.PrimaryKeyConstraint('id'),
-        sa.UniqueConstraint('email')
+        sa.UniqueConstraint('username')
     )
-    
+
     # Add coach_id to coach_feedback table
     op.add_column('coach_feedback',
         sa.Column('coach_id', sa.Integer(), nullable=True)
