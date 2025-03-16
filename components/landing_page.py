@@ -244,22 +244,22 @@ def display_feature_preview():
         </style>
         """, unsafe_allow_html=True)
         
-        # Create the card with clickable class
-        st.markdown("""
-        <div class="premium-card premium-card-1 clickable-card" id="video-analysis-card-div" 
-             onclick="document.getElementById('video-analysis-button').click();">
+        # Create the card
+        card_html = """
+        <div class="premium-card premium-card-1 clickable-card">
             <div class="premium-badge">PREMIUM</div>
             <div class="premium-card-title">Video Analysis</div>
             <div class="premium-card-text">
                 Upload practice or game footage for detailed technique analysis with actionable feedback.
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """
         
-        # Create invisible button with no text and minimal size
-        col1, col2, col3 = st.columns([10, 1, 10])
-        with col2:
-            button_clicked = st.button("", key="video-analysis-button", help="Video Analysis")
+        # Using a container to make the whole card area clickable
+        video_card = st.container()
+        with video_card:
+            st.markdown(card_html, unsafe_allow_html=True)
+            button_clicked = st.button("Video Analysis", key="video-analysis-button", help="Video Analysis")
             # Add CSS to hide the button
             st.markdown("""
             <style>
@@ -284,22 +284,22 @@ def display_feature_preview():
     
     # Training Plans Card
     with premium_cols[1]:        
-        # Create the card with clickable class
-        st.markdown("""
-        <div class="premium-card premium-card-2 clickable-card" id="training-plans-card-div" 
-             onclick="document.getElementById('training-plans-button').click();">
+        # Create the card
+        card_html = """
+        <div class="premium-card premium-card-2 clickable-card">
             <div class="premium-badge">PREMIUM</div>
             <div class="premium-card-title">Training Plans</div>
             <div class="premium-card-text">
                 Personalized development plans based on player metrics with targeted drills and exercises.
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """
         
-        # Create invisible button with no text and minimal size
-        col1, col2, col3 = st.columns([10, 1, 10])
-        with col2:
-            button_clicked = st.button("", key="training-plans-button", help="Training Plans")
+        # Using a container to make the whole card area clickable
+        training_card = st.container()
+        with training_card:
+            st.markdown(card_html, unsafe_allow_html=True)
+            button_clicked = st.button("Training Plans", key="training-plans-button", help="Training Plans")
         
         # Handle button click
         if button_clicked:
@@ -308,22 +308,22 @@ def display_feature_preview():
     
     # Peer Comparison Card
     with premium_cols[2]:        
-        # Create the card with clickable class
-        st.markdown("""
-        <div class="premium-card premium-card-3 clickable-card" id="peer-comparison-card-div" 
-             onclick="document.getElementById('peer-comparison-button').click();">
+        # Create the card
+        card_html = """
+        <div class="premium-card premium-card-3 clickable-card">
             <div class="premium-badge">PREMIUM</div>
             <div class="premium-card-title">Peer Comparison</div>
             <div class="premium-card-text">
                 Anonymous benchmarking against other players in the same age group and position.
             </div>
         </div>
-        """, unsafe_allow_html=True)
+        """
         
-        # Create invisible button with no text and minimal size
-        col1, col2, col3 = st.columns([10, 1, 10])
-        with col2:
-            button_clicked = st.button("", key="peer-comparison-button", help="Peer Comparison")
+        # Using a container to make the whole card area clickable
+        peer_card = st.container()
+        with peer_card:
+            st.markdown(card_html, unsafe_allow_html=True)
+            button_clicked = st.button("Peer Comparison", key="peer-comparison-button", help="Peer Comparison")
         
         # Handle button click
         if button_clicked:
