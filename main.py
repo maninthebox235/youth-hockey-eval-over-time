@@ -34,13 +34,23 @@ if 'show_login' not in st.session_state:
 if 'authentication_token' not in st.session_state:
     st.session_state.authentication_token = None
 
-# Try to restore session from token
-if not st.session_state.user and st.session_state.authentication_token:
-    print(f"Attempting to restore session with token: {st.session_state.authentication_token[:10]}...")
+# Try to restore session from token in session state or URL query params
+query_params = st.experimental_get_query_params()
+url_token = query_params.get("auth_token", [None])[0]
+
+# Use URL token if available, otherwise use session token
+token_to_verify = url_token or st.session_state.authentication_token
+    
+if not st.session_state.user and token_to_verify:
+    print(f"Attempting to restore session with token...")
     try:
         with app.app_context():
-            user = User.verify_auth_token(st.session_state.authentication_token)
+            user = User.verify_auth_token(token_to_verify)
             if user:
+                # If the token came from URL and not session, store it in session
+                if url_token and not st.session_state.authentication_token:
+                    st.session_state.authentication_token = url_token
+                
                 st.session_state.user = {
                     'id': user.id,
                     'username': user.username,
@@ -52,9 +62,17 @@ if not st.session_state.user and st.session_state.authentication_token:
             else:
                 print("Token verification failed: no user found")
                 st.session_state.authentication_token = None
+                # Clear auth_token from URL if it's invalid
+                if url_token:
+                    query_params.pop("auth_token")
+                    st.experimental_set_query_params(**query_params)
     except Exception as e:
         print(f"Token verification error: {str(e)}")
         st.session_state.authentication_token = None
+        # Clear auth_token from URL if it's invalid
+        if url_token:
+            query_params.pop("auth_token")
+            st.experimental_set_query_params(**query_params)
 else:
     if st.session_state.user:
         print(f"User already in session: {st.session_state.user['username']}")

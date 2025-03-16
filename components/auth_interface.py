@@ -101,6 +101,9 @@ def login_user():
                         # Store token before user info
                         st.session_state.authentication_token = token
 
+                        # Set cookie for persistent login across contexts
+                        st.experimental_set_query_params(auth_token=token)
+
                         # Store user info in session state
                         st.session_state.user = {
                             'id': user.id,
@@ -284,7 +287,7 @@ def request_password_reset():
                     st.rerun()
             except Exception as e:
                 st.error(f"Error resetting password: {str(e)}")
-                db.session.rollback()
+                db.session_rollback()
                 logging.error(f"Error in password reset: {str(e)}")
 
     # Back to login link
