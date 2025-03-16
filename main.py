@@ -97,8 +97,9 @@ if not show_landing:
                     st.error(f"Error initializing database: {str(e)}")
 
             try:
-                # Display main content
-                players_df = get_players_df()
+                # Display main content - filter players by current user
+                user_id = st.session_state.user['id'] if 'user' in st.session_state else None
+                players_df = get_players_df(user_id=user_id)
                 
                 if players_df.empty:
                     # If no players, redirect to onboarding

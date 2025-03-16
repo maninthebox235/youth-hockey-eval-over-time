@@ -52,10 +52,22 @@ def generate_player_history(player, months=12):
         )
         db.session.add(history)
 
-def get_players_df():
-    """Get all players as a pandas DataFrame"""
+def get_players_df(user_id=None):
+    """
+    Get players as a pandas DataFrame, filtered by user_id if provided
+    
+    Args:
+        user_id: Optional user ID to filter players by owner
+        
+    Returns:
+        DataFrame containing player data
+    """
     try:
-        players = Player.query.all()
+        if user_id:
+            players = Player.query.filter_by(user_id=user_id).all()
+        else:
+            players = Player.query.all()
+            
         if not players:
             return pd.DataFrame()  # Return empty DataFrame if no players
 
