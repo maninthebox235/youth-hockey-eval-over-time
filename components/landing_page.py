@@ -3,8 +3,47 @@ import pandas as pd
 from database.models import User, db
 from datetime import datetime
 
+def display_auth_buttons():
+    """Display authentication buttons in the top-right corner"""
+    # Create container with border styling
+    st.markdown("""
+    <style>
+    .auth-buttons {
+        display: flex;
+        justify-content: flex-end;
+        padding: 10px 20px;
+        gap: 10px;
+    }
+    </style>
+    <div class="auth-buttons">
+        <div id="auth-login-btn"></div>
+        <div id="auth-signup-btn"></div>
+        <div id="auth-forgot-btn"></div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
+    
+    with col2:
+        if st.button("Login", key="top_login_button"):
+            st.session_state.show_login = True
+            st.rerun()
+    
+    with col3:
+        if st.button("Sign Up", key="top_signup_button", type="primary"):
+            st.session_state.show_signup = True
+            st.rerun()
+    
+    with col4:
+        if st.button("Forgot Password?", key="top_forgot_pw_button", type="secondary"):
+            st.session_state.show_forgot_password = True
+            st.rerun()
+
 def display_feature_preview():
     """Display feature preview on landing page"""
+    # Display authentication buttons at the top
+    display_auth_buttons()
+    
     # Banner image - set to 50% of the container width
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:

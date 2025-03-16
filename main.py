@@ -66,6 +66,8 @@ else:
 
 if 'is_admin' not in st.session_state:
     st.session_state.is_admin = False
+if 'is_premium' not in st.session_state:
+    st.session_state.is_premium = False
 if 'authentication_token' not in st.session_state:
     st.session_state.authentication_token = None
 

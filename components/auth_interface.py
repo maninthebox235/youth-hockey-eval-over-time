@@ -68,13 +68,18 @@ def login_user():
                     logging.error(f"Token generation error: {str(e)}")
                     # Continue without token - at least allow session-based auth
                     token = None
+                # For demo purposes, mark some users as premium
+                is_premium = user.username in ['aboehrig', 'lboehrig', 'coach1']
+                
                 st.session_state.user = {
                     'id': user.id,
                     'username': user.username,
                     'name': user.name,
-                    'is_admin': user.is_admin
+                    'is_admin': user.is_admin,
+                    'is_premium': is_premium
                 }
                 st.session_state.is_admin = user.is_admin
+                st.session_state.is_premium = is_premium
                 
                 st.success("Login successful!")
                 st.rerun()
@@ -125,6 +130,7 @@ def display_auth_interface():
             # Check if user is a dictionary (expected) or use safe access
             user_name = st.session_state.user.get('name', 'User') if isinstance(st.session_state.user, dict) else 'User'
             is_admin = st.session_state.user.get('is_admin', False) if isinstance(st.session_state.user, dict) else False
+            is_premium = st.session_state.user.get('is_premium', False) if isinstance(st.session_state.user, dict) else False
             
             # User profile container
             with st.container():
@@ -136,6 +142,10 @@ def display_auth_interface():
                     status_icons = []
                     if is_admin:
                         status_icons.append("🔑 **Admin Access**")
+                    if is_premium:
+                        status_icons.append("⭐ **Premium Member**")
+                    else:
+                        status_icons.append("📊 **Basic Account**")
                     
                     # Show session type
                     if 'remember_me' in st.session_state and st.session_state.remember_me:

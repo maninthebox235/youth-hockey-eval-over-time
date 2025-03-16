@@ -567,6 +567,25 @@ def display_historical_comparison(player_id, player_data):
 
 def display_peer_comparison_interface(player_id, player_data):
     """Main interface for peer comparison analytics"""
+    # Check for premium membership
+    is_premium = st.session_state.get('is_premium', False)
+    
+    if not is_premium:
+        st.warning("⭐ Peer Comparison is a premium feature")
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            st.markdown("""
+            Unlock peer comparison analytics with a premium membership.
+            This feature allows you to:
+            - Compare your player with others in the same age group
+            - See percentile rankings for all key skills
+            - Track relative performance over time
+            - Identify areas where your player stands out
+            """)
+        with col2:
+            st.button("Upgrade to Premium", type="primary", use_container_width=True)
+        return
+    
     # Ensure player_id is properly converted for database operations
     player_id_int = to_int(player_id)
     if player_id_int is None:
