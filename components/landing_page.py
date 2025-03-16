@@ -254,10 +254,19 @@ def display_signup_form():
                 db.session.commit()
 
                 # Set session state and clear signup flag
-                st.session_state.user = new_user
+                st.session_state.user = {
+                    'id': new_user.id,
+                    'username': new_user.username,
+                    'name': new_user.name,
+                    'is_admin': new_user.is_admin
+                }
                 st.session_state.is_admin = new_user.is_admin
                 st.session_state.show_signup = False
-                st.success("Account created successfully! Redirecting to dashboard...")
+                
+                # Set onboarding flag for new users
+                st.session_state.show_onboarding = True
+                
+                st.success("Account created successfully! Redirecting to onboarding...")
                 st.rerun()
             except Exception as e:
                 st.error(f"Error creating account: {str(e)}")

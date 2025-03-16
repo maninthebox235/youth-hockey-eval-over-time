@@ -15,6 +15,7 @@ from components.team_dashboard import display_team_dashboard
 from components.peer_comparison import display_peer_comparison_interface
 from components.training_plans import display_training_plan_interface
 from components.video_analysis import display_video_analysis_interface
+from components.onboarding import display_onboarding
 import time
 
 # Page configuration
@@ -68,146 +69,99 @@ if not show_landing:
     else:
         st.sidebar.image("https://images.unsplash.com/photo-1547223431-cc59f141f389",
                         caption="Player Development Platform")
-
-        try:
+        
+        # Check if we should show onboarding
+        if 'show_onboarding' not in st.session_state:
+            st.session_state.show_onboarding = False
+        
+        # Show onboarding for new users before player profiles
+        if st.session_state.show_onboarding:
+            display_onboarding()
+            # Add a button to exit onboarding mode
+            if st.button("Continue to Dashboard", key="continue_to_dashboard"):
+                st.session_state.show_onboarding = False
+                st.rerun()
+        else:
             # Initialize database if needed
             if 'db_initialized' not in st.session_state:
-                if not Player.query.first():
-                    st.info("Initializing database with sample data...")
-                    if seed_database(n_players=20):
+                try:
+                    if not Player.query.first():
+                        st.info("Initializing database with sample data...")
+                        if seed_database(n_players=0):  # Don't add sample data for new users
+                            st.session_state.db_initialized = True
+                            st.success("Database initialized successfully!")
+                            time.sleep(1)
+                    else:
                         st.session_state.db_initialized = True
-                        st.success("Database initialized successfully!")
-                        time.sleep(2)
+                except Exception as e:
+                    st.error(f"Error initializing database: {str(e)}")
+
+            try:
+                # Display main content
+                players_df = get_players_df()
+                
+                if players_df.empty:
+                    # If no players, redirect to onboarding
+                    st.warning("No player data available.")
+                    st.info("Let's get started by adding players to your account.")
+                    if st.button("Set Up Your Account", key="setup_account"):
+                        st.session_state.show_onboarding = True
+                        st.rerun()
                 else:
-                    st.session_state.db_initialized = True
-
-            # Display main content
-            players_df = get_players_df()
-            if players_df.empty:
-                st.warning("No player data available.")
-            else:
-                # Enhanced navigation menu
-                menu = st.sidebar.selectbox(
-                    "Navigation",
-                    [
-                        "Player Profiles", 
-                        "Training & Development",
-                        "Team Dashboard",
-                        "Skill Analysis",
-                        "Benchmarks & References",
-                        "Team Management"
-                    ]
-                )
-
-                if menu == "Player Profiles":
-                    st.subheader("Player Profiles")
-                    selected_player = st.selectbox(
-                        "Select Player",
-                        players_df['name'].tolist()
+                    # Enhanced navigation menu
+                    menu = st.sidebar.selectbox(
+                        "Navigation",
+                        [
+                            "Player Profiles", 
+                            "Training & Development",
+                            "Team Dashboard",
+                            "Skill Analysis",
+                            "Benchmarks & References",
+                            "Team Management"
+                        ]
                     )
-                    if selected_player:
-                        player_data = players_df[players_df['name'] == selected_player].iloc[0]
-                        player_history = get_player_history(player_data['player_id'])
-                        display_player_profile(player_data, player_history)
+
+                    if menu == "Player Profiles":
+                        st.subheader("Player Profiles")
+                        selected_player = st.selectbox(
+                            "Select Player",
+                            players_df['name'].tolist()
+                        )
+                        if selected_player:
+                            player_data = players_df[players_df['name'] == selected_player].iloc[0]
+                            player_history = get_player_history(player_data['player_id'])
+                            display_player_profile(player_data, player_history)
+                            
+                            # Add sub-navigation for additional player features
+                            player_submenu = st.radio(
+                                "Player Development Tools",
+                                ["Development Charts", "Peer Comparison", "Off-Ice Training", 
+                                 "Training Plans", "Video Analysis"],
+                                horizontal=True
+                            )
+                            
+                            if player_submenu == "Development Charts":
+                                display_development_charts(player_data, player_history)
+                            elif player_submenu == "Peer Comparison":
+                                display_peer_comparison_interface(player_data['player_id'], player_data)
+                            elif player_submenu == "Off-Ice Training":
+                                display_off_ice_interface(player_data['player_id'], player_data)
+                            elif player_submenu == "Training Plans":
+                                display_training_plan_interface(player_data['player_id'], player_data)
+                            elif player_submenu == "Video Analysis":
+                                display_video_analysis_interface(player_data['player_id'], player_data)
+
+                    elif menu == "Training & Development":
+                        st.subheader("Training & Development")
                         
-                        # Add sub-navigation for additional player features
-                        player_submenu = st.radio(
-                            "Player Development Tools",
-                            ["Development Charts", "Peer Comparison", "Off-Ice Training", 
-                             "Training Plans", "Video Analysis"],
+                        # Sub-navigation for training features
+                        training_submenu = st.radio(
+                            "Training Resources",
+                            ["Training Plans", "Off-Ice Development", "Video Analysis"],
                             horizontal=True
                         )
                         
-                        if player_submenu == "Development Charts":
-                            display_development_charts(player_data, player_history)
-                        elif player_submenu == "Peer Comparison":
-                            display_peer_comparison_interface(player_data['player_id'], player_data)
-                        elif player_submenu == "Off-Ice Training":
-                            display_off_ice_interface(player_data['player_id'], player_data)
-                        elif player_submenu == "Training Plans":
-                            display_training_plan_interface(player_data['player_id'], player_data)
-                        elif player_submenu == "Video Analysis":
-                            display_video_analysis_interface(player_data['player_id'], player_data)
-
-                elif menu == "Training & Development":
-                    st.subheader("Training & Development")
-                    
-                    # Sub-navigation for training features
-                    training_submenu = st.radio(
-                        "Training Resources",
-                        ["Training Plans", "Off-Ice Development", "Video Analysis"],
-                        horizontal=True
-                    )
-                    
-                    # Select player first
-                    selected_player = st.selectbox(
-                        "Select Player",
-                        players_df['name'].tolist()
-                    )
-                    
-                    if selected_player:
-                        player_data = players_df[players_df['name'] == selected_player].iloc[0]
-                        
-                        if training_submenu == "Training Plans":
-                            display_training_plan_interface(player_data['player_id'], player_data)
-                        elif training_submenu == "Off-Ice Development":
-                            display_off_ice_interface(player_data['player_id'], player_data)
-                        elif training_submenu == "Video Analysis":
-                            display_video_analysis_interface(player_data['player_id'], player_data)
-
-                elif menu == "Team Dashboard":
-                    # Show the enhanced team dashboard
-                    display_team_dashboard()
-
-                elif menu == "Skill Analysis":
-                    st.subheader("Skill Analysis")
-                    
-                    # Sub-navigation for analysis features
-                    analysis_submenu = st.radio(
-                        "Analysis Tools",
-                        ["Development Analytics", "Peer Comparison", "Team Statistics"],
-                        horizontal=True
-                    )
-                    
-                    if analysis_submenu == "Development Analytics":
-                        age_groups = sorted(players_df['age_group'].unique())
-                        if age_groups:
-                            age_group = st.selectbox("Select Age Group", age_groups)
-                            filtered_df = players_df[players_df['age_group'] == age_group]
-                            col1, col2 = st.columns(2)
-                            with col1:
-                                st.write("Player Distribution")
-                                st.dataframe(filtered_df[['name', 'position', 'skating_speed', 'shooting_accuracy']])
-                            with col2:
-                                st.write("Performance Summary")
-                                st.dataframe(filtered_df.describe())
-                    
-                    elif analysis_submenu == "Peer Comparison":
                         # Select player first
-                        selected_player = st.selectbox(
-                            "Select Player for Comparison",
-                            players_df['name'].tolist()
-                        )
-                        
-                        if selected_player:
-                            player_data = players_df[players_df['name'] == selected_player].iloc[0]
-                            display_peer_comparison_interface(player_data['player_id'], player_data)
-                    
-                    elif analysis_submenu == "Team Statistics":
-                        display_age_group_stats(players_df)
-                        display_player_rankings(players_df)
-
-                elif menu == "Benchmarks & References":
-                    st.subheader("Age-Appropriate Benchmarks")
-                    
-                    benchmark_submenu = st.radio(
-                        "Benchmark Tools",
-                        ["Player Benchmark Comparison", "All Benchmarks Reference"],
-                        horizontal=True
-                    )
-                    
-                    if benchmark_submenu == "Player Benchmark Comparison":
-                        # Select player to see their benchmarks
                         selected_player = st.selectbox(
                             "Select Player",
                             players_df['name'].tolist()
@@ -215,46 +169,113 @@ if not show_landing:
                         
                         if selected_player:
                             player_data = players_df[players_df['name'] == selected_player].iloc[0]
-                            display_age_benchmarks(player_data)
-                    
-                    elif benchmark_submenu == "All Benchmarks Reference":
-                        # Show all benchmarks by age
-                        display_all_benchmarks_by_age()
-
-                elif menu == "Team Management":
-                    # Show team management options
-                    team_submenu = st.radio(
-                        "Team Management Tools",
-                        ["Basic Team Management", "Enhanced Team Dashboard", "Tryout Evaluation"],
-                        horizontal=True
-                    )
-                    
-                    if team_submenu == "Basic Team Management":
-                        display_team_management()
-                    elif team_submenu == "Enhanced Team Dashboard":
-                        display_team_dashboard()
-                    elif team_submenu == "Tryout Evaluation":
-                        # First select a team for tryout evaluation
-                        from database.models import Team
-                        teams = Team.query.all()
-                        if teams:
-                            team_options = [(t.id, f"{t.name} ({t.age_group})") for t in teams]
-                            selected = st.selectbox(
-                                "Select Team for Tryout Evaluation",
-                                options=range(len(team_options)),
-                                format_func=lambda i: team_options[i][1]
-                            )
-                            team_id = team_options[selected][0]
                             
-                            # Display tryout evaluation mode for this team
-                            # This requires a slightly different function signature
-                            from components.team_dashboard import display_tryout_evaluation_mode
-                            display_tryout_evaluation_mode(team_id)
-                        else:
-                            st.info("No teams available. Please create a team first.")
+                            if training_submenu == "Training Plans":
+                                display_training_plan_interface(player_data['player_id'], player_data)
+                            elif training_submenu == "Off-Ice Development":
+                                display_off_ice_interface(player_data['player_id'], player_data)
+                            elif training_submenu == "Video Analysis":
+                                display_video_analysis_interface(player_data['player_id'], player_data)
 
-        except Exception as e:
-            st.error(f"Error: {str(e)}")
+                    elif menu == "Team Dashboard":
+                        # Show the enhanced team dashboard
+                        display_team_dashboard()
+
+                    elif menu == "Skill Analysis":
+                        st.subheader("Skill Analysis")
+                        
+                        # Sub-navigation for analysis features
+                        analysis_submenu = st.radio(
+                            "Analysis Tools",
+                            ["Development Analytics", "Peer Comparison", "Team Statistics"],
+                            horizontal=True
+                        )
+                        
+                        if analysis_submenu == "Development Analytics":
+                            age_groups = sorted(players_df['age_group'].unique())
+                            if age_groups:
+                                age_group = st.selectbox("Select Age Group", age_groups)
+                                filtered_df = players_df[players_df['age_group'] == age_group]
+                                col1, col2 = st.columns(2)
+                                with col1:
+                                    st.write("Player Distribution")
+                                    st.dataframe(filtered_df[['name', 'position', 'skating_speed', 'shooting_accuracy']])
+                                with col2:
+                                    st.write("Performance Summary")
+                                    st.dataframe(filtered_df.describe())
+                        
+                        elif analysis_submenu == "Peer Comparison":
+                            # Select player first
+                            selected_player = st.selectbox(
+                                "Select Player for Comparison",
+                                players_df['name'].tolist()
+                            )
+                            
+                            if selected_player:
+                                player_data = players_df[players_df['name'] == selected_player].iloc[0]
+                                display_peer_comparison_interface(player_data['player_id'], player_data)
+                        
+                        elif analysis_submenu == "Team Statistics":
+                            display_age_group_stats(players_df)
+                            display_player_rankings(players_df)
+
+                    elif menu == "Benchmarks & References":
+                        st.subheader("Age-Appropriate Benchmarks")
+                        
+                        benchmark_submenu = st.radio(
+                            "Benchmark Tools",
+                            ["Player Benchmark Comparison", "All Benchmarks Reference"],
+                            horizontal=True
+                        )
+                        
+                        if benchmark_submenu == "Player Benchmark Comparison":
+                            # Select player to see their benchmarks
+                            selected_player = st.selectbox(
+                                "Select Player",
+                                players_df['name'].tolist()
+                            )
+                            
+                            if selected_player:
+                                player_data = players_df[players_df['name'] == selected_player].iloc[0]
+                                display_age_benchmarks(player_data)
+                        
+                        elif benchmark_submenu == "All Benchmarks Reference":
+                            # Show all benchmarks by age
+                            display_all_benchmarks_by_age()
+
+                    elif menu == "Team Management":
+                        # Show team management options
+                        team_submenu = st.radio(
+                            "Team Management Tools",
+                            ["Basic Team Management", "Enhanced Team Dashboard", "Tryout Evaluation"],
+                            horizontal=True
+                        )
+                        
+                        if team_submenu == "Basic Team Management":
+                            display_team_management()
+                        elif team_submenu == "Enhanced Team Dashboard":
+                            display_team_dashboard()
+                        elif team_submenu == "Tryout Evaluation":
+                            # First select a team for tryout evaluation
+                            from database.models import Team
+                            teams = Team.query.all()
+                            if teams:
+                                team_options = [(t.id, f"{t.name} ({t.age_group})") for t in teams]
+                                selected = st.selectbox(
+                                    "Select Team for Tryout Evaluation",
+                                    options=range(len(team_options)),
+                                    format_func=lambda i: team_options[i][1]
+                                )
+                                team_id = team_options[selected][0]
+                                
+                                # Display tryout evaluation mode for this team
+                                # This requires a slightly different function signature
+                                from components.team_dashboard import display_tryout_evaluation_mode
+                                display_tryout_evaluation_mode(team_id)
+                            else:
+                                st.info("No teams available. Please create a team first.")
+            except Exception as e:
+                st.error(f"Error: {str(e)}")
 
 # Clean up context
 app_ctx.pop()
