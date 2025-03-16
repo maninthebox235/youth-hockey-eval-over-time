@@ -102,7 +102,7 @@ def login_user():
                         st.session_state.authentication_token = token
 
                         # Set cookie for persistent login across contexts
-                        st.experimental_set_query_params(auth_token=token)
+                        st.query_params.update(auth_token=token)
 
                         # Store user info in session state
                         st.session_state.user = {
@@ -287,7 +287,7 @@ def request_password_reset():
                     st.rerun()
             except Exception as e:
                 st.error(f"Error resetting password: {str(e)}")
-                db.session_rollback()
+                db.session.rollback()
                 logging.error(f"Error in password reset: {str(e)}")
 
     # Back to login link
@@ -301,9 +301,8 @@ def confirm_password_reset():
     from utils.token_manager import verify_reset_token
 
     # Get token and username from query parameters
-    query_params = st.query_params
-    token = query_params.get("reset_token", "")
-    username = query_params.get("username", "")
+    token = st.query_params.get("reset_token", "")
+    username = st.query_params.get("username", "")
 
     if not token or not username:
         st.error("Invalid or missing reset token.")

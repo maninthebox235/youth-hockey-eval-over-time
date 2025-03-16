@@ -1,4 +1,12 @@
 import streamlit as st
+
+# Page configuration must be the first Streamlit command
+st.set_page_config(
+    page_title="Youth Hockey Development Tracker",
+    page_icon="🏒",
+    layout="wide"
+)
+
 import pandas as pd
 from database import db, init_app
 from database.models import Player, User
@@ -35,8 +43,8 @@ if 'authentication_token' not in st.session_state:
     st.session_state.authentication_token = None
 
 # Try to restore session from token in session state or URL query params
-query_params = st.experimental_get_query_params()
-url_token = query_params.get("auth_token", [None])[0]
+query_params = st.query_params
+url_token = query_params.get("auth_token", None)
 
 # Use URL token if available, otherwise use session token
 token_to_verify = url_token or st.session_state.authentication_token
@@ -64,27 +72,24 @@ if not st.session_state.user and token_to_verify:
                 st.session_state.authentication_token = None
                 # Clear auth_token from URL if it's invalid
                 if url_token:
-                    query_params.pop("auth_token")
-                    st.experimental_set_query_params(**query_params)
+                    params = dict(query_params)
+                    if "auth_token" in params:
+                        del params["auth_token"]
+                    st.query_params.update(**params)
     except Exception as e:
         print(f"Token verification error: {str(e)}")
         st.session_state.authentication_token = None
         # Clear auth_token from URL if it's invalid
         if url_token:
-            query_params.pop("auth_token")
-            st.experimental_set_query_params(**query_params)
+            params = dict(query_params)
+            if "auth_token" in params:
+                del params["auth_token"]
+            st.query_params.update(**params)
 else:
     if st.session_state.user:
         print(f"User already in session: {st.session_state.user['username']}")
     elif not st.session_state.authentication_token:
         print("No authentication token found in session")
-
-# Page configuration
-st.set_page_config(
-    page_title="Youth Hockey Development Tracker",
-    page_icon="🏒",
-    layout="wide"
-)
 
 # Handle authentication and landing page
 show_landing = display_landing_page()
