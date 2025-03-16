@@ -117,124 +117,152 @@ def display_feature_preview():
     if 'show_premium_preview' not in st.session_state:
         st.session_state.show_premium_preview = None
     
-    premium_cols = st.columns(3)
-    
-    # Add custom CSS for feature cards
+    # Add enhanced CSS for premium features
     st.markdown("""
     <style>
-    .feature-card {
-        background-color: #f0f8ff;
+    .premium-card {
         border-radius: 10px;
-        padding: 15px;
-        border-left: 4px solid #1E88E5;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        height: 220px;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        padding: 20px;
+        margin: 10px 5px;
+        height: 230px;
+        transition: all 0.3s ease;
         position: relative;
-        cursor: pointer;
+        overflow: hidden;
+        border: 1px solid #e0e0e0;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        background-color: white;
     }
     
-    .feature-card:hover {
+    .premium-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-        background-color: #e6f3ff;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
     }
     
-    .feature-icon {
-        font-size: 28px;
-        margin-bottom: 10px;
+    .premium-card-1 {
+        border-left: 5px solid #FFD700;
     }
     
-    .feature-title {
-        font-size: 18px;
-        font-weight: bold;
-        margin-bottom: 10px;
+    .premium-card-2 {
+        border-left: 5px solid #FF7043;
+    }
+    
+    .premium-card-3 {
+        border-left: 5px solid #9C27B0;
     }
     
     .premium-badge {
         background-color: #FFD700;
         color: #333;
+        padding: 3px 10px;
+        border-radius: 15px;
         font-size: 12px;
-        padding: 2px 8px;
-        border-radius: 10px;
-        vertical-align: middle;
+        font-weight: bold;
+        display: inline-block;
+        margin-bottom: 10px;
     }
     
-    .team-badge {
-        background-color: #4169E1;
-        color: white;
-        font-size: 12px;
-        padding: 2px 8px;
-        border-radius: 10px;
-        vertical-align: middle;
+    .premium-card-title {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: #2C3E50;
     }
     
-    [data-testid="stButton"] button {
-        background-color: transparent;
-        color: transparent;
-        border: none;
-        position: relative;
-        top: -220px;
-        height: 220px;
+    .premium-card-text {
+        color: #555;
+        font-size: 16px;
+        line-height: 1.5;
+    }
+    
+    .premium-link {
+        position: absolute;
+        bottom: 15px;
+        text-align: center;
         width: 100%;
-        z-index: 1;
+        left: 0;
+        color: #FF7043;
+        font-weight: 500;
+        font-size: 15px;
+        text-decoration: none;
+        margin-top: 15px;
+    }
+    
+    .premium-link:hover {
+        text-decoration: underline;
+        color: #E64A19;
+    }
+    
+    /* Unify button styles for clickable areas */
+    .premium-button button, .team-button button {
+        background-color: transparent !important;
+        color: transparent !important;
+        border: none !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        z-index: 10 !important;
+        cursor: pointer !important;
     }
     </style>
     """, unsafe_allow_html=True)
     
+    premium_cols = st.columns(3)
+    
     # Video Analysis Card
     with premium_cols[0]:
-        # Using a transparent button that covers the card
-        col1, col2, col3 = st.columns([1,15,1])
-        with col2:
-            st.markdown("""
-            <div class="feature-card">
-                <div class="feature-icon">🎬</div>
-                <div class="feature-title">Video Analysis <span class="premium-badge">PREMIUM</span></div>
-                <p>Upload practice or game footage for detailed technique analysis with actionable feedback.</p>
-                <div style="text-align: center; color: #1E88E5; margin-top: 10px;">Click to preview</div>
+        st.markdown("""
+        <div class="premium-card premium-card-1">
+            <div class="premium-badge">PREMIUM</div>
+            <div class="premium-card-title">Video Analysis</div>
+            <div class="premium-card-text">
+                Upload practice or game footage for detailed technique analysis with actionable feedback.
             </div>
-            """, unsafe_allow_html=True)
-            
-            if st.button("Video Analysis", key="video-analysis-card"):
-                st.session_state.show_premium_preview = "video_analysis"
-                st.rerun()
+            <div class="premium-link">Click to preview</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # The actual button that will be transparent
+        if st.button("Video Analysis", key="video-analysis-card", help="Click to preview Video Analysis"):
+            st.session_state.show_premium_preview = "video_analysis"
+            st.rerun()
     
     # Training Plans Card
     with premium_cols[1]:
-        # Using a transparent button that covers the card
-        col1, col2, col3 = st.columns([1,15,1])
-        with col2:
-            st.markdown("""
-            <div class="feature-card">
-                <div class="feature-icon">🏋️</div>
-                <div class="feature-title">Training Plans <span class="premium-badge">PREMIUM</span></div>
-                <p>Personalized development plans based on player metrics with targeted drills and exercises.</p>
-                <div style="text-align: center; color: #1E88E5; margin-top: 10px;">Click to preview</div>
+        st.markdown("""
+        <div class="premium-card premium-card-2">
+            <div class="premium-badge">PREMIUM</div>
+            <div class="premium-card-title">Training Plans</div>
+            <div class="premium-card-text">
+                Personalized development plans based on player metrics with targeted drills and exercises.
             </div>
-            """, unsafe_allow_html=True)
-            
-            if st.button("Training Plans", key="training-plans-card"):
-                st.session_state.show_premium_preview = "training_plans"
-                st.rerun()
+            <div class="premium-link">Click to preview</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # The actual button that will be transparent
+        if st.button("Training Plans", key="training-plans-card", help="Click to preview Training Plans"):
+            st.session_state.show_premium_preview = "training_plans"
+            st.rerun()
     
     # Peer Comparison Card
     with premium_cols[2]:
-        # Using a transparent button that covers the card
-        col1, col2, col3 = st.columns([1,15,1])
-        with col2:
-            st.markdown("""
-            <div class="feature-card">
-                <div class="feature-icon">🔍</div>
-                <div class="feature-title">Peer Comparison <span class="premium-badge">PREMIUM</span></div>
-                <p>Anonymous benchmarking against other players in the same age group and position.</p>
-                <div style="text-align: center; color: #1E88E5; margin-top: 10px;">Click to preview</div>
+        st.markdown("""
+        <div class="premium-card premium-card-3">
+            <div class="premium-badge">PREMIUM</div>
+            <div class="premium-card-title">Peer Comparison</div>
+            <div class="premium-card-text">
+                Anonymous benchmarking against other players in the same age group and position.
             </div>
-            """, unsafe_allow_html=True)
-            
-            if st.button("Peer Comparison", key="peer-comparison-card"):
-                st.session_state.show_premium_preview = "peer_comparison"
-                st.rerun()
+            <div class="premium-link">Click to preview</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # The actual button that will be transparent
+        if st.button("Peer Comparison", key="peer-comparison-card", help="Click to preview Peer Comparison"):
+            st.session_state.show_premium_preview = "peer_comparison"
+            st.rerun()
     
     # Show premium feature preview if one is selected
     if st.session_state.show_premium_preview == "video_analysis":
@@ -447,61 +475,152 @@ def display_feature_preview():
     if 'show_team_preview' not in st.session_state:
         st.session_state.show_team_preview = None
     
+    # Add enhanced CSS for team features
+    st.markdown("""
+    <style>
+    .team-card {
+        border-radius: 10px;
+        padding: 20px;
+        margin: 10px 5px;
+        height: 230px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid #e0e0e0;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        background-color: white;
+    }
+    
+    .team-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+    
+    .team-card-1 {
+        border-left: 5px solid #A3CFF2;
+    }
+    
+    .team-card-2 {
+        border-left: 5px solid #4169E1;
+    }
+    
+    .team-card-3 {
+        border-left: 5px solid #C8102E;
+    }
+    
+    .team-badge {
+        background-color: #4169E1;
+        color: white;
+        padding: 3px 10px;
+        border-radius: 15px;
+        font-size: 12px;
+        font-weight: bold;
+        display: inline-block;
+        margin-bottom: 10px;
+    }
+    
+    .team-card-title {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: #2C3E50;
+    }
+    
+    .team-card-text {
+        color: #555;
+        font-size: 16px;
+        line-height: 1.5;
+    }
+    
+    .preview-link {
+        position: absolute;
+        bottom: 15px;
+        text-align: center;
+        width: 100%;
+        left: 0;
+        color: #4169E1;
+        font-weight: 500;
+        font-size: 15px;
+        text-decoration: none;
+        margin-top: 15px;
+    }
+    
+    .preview-link:hover {
+        text-decoration: underline;
+        color: #1E3A8A;
+    }
+    
+    /* Hide the actual buttons but keep them clickable */
+    .team-button button {
+        background-color: transparent !important;
+        color: transparent !important;
+        border: none !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        z-index: 10 !important;
+        cursor: pointer !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
     team_cols = st.columns(3)
     
     # Team Dashboard Card
     with team_cols[0]:
-        # Using a transparent button that covers the card
-        col1, col2, col3 = st.columns([1,15,1])
-        with col2:
-            st.markdown("""
-            <div class="feature-card">
-                <div class="feature-icon">📋</div>
-                <div class="feature-title">Team Dashboard <span class="team-badge">TEAM</span></div>
-                <p>Comprehensive team overview with skill heatmaps, performance metrics, and development tracking.</p>
-                <div style="text-align: center; color: #1E88E5; margin-top: 10px;">Click to preview</div>
+        st.markdown("""
+        <div class="team-card team-card-1">
+            <div class="team-badge">TEAM</div>
+            <div class="team-card-title">Team Dashboard</div>
+            <div class="team-card-text">
+                Comprehensive team overview with skill heatmaps, performance metrics, and development tracking.
             </div>
-            """, unsafe_allow_html=True)
-            
-            if st.button("Team Dashboard", key="team-dashboard-card"):
-                st.session_state.show_team_preview = "team_dashboard"
-                st.rerun()
+            <div class="preview-link">Click to preview</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # The actual button that will be transparent
+        if st.button("Team Dashboard", key="team-dashboard-card", help="Click to preview Team Dashboard"):
+            st.session_state.show_team_preview = "team_dashboard"
+            st.rerun()
     
     # Tryout Evaluation Card
     with team_cols[1]:
-        # Using a transparent button that covers the card
-        col1, col2, col3 = st.columns([1,15,1])
-        with col2:
-            st.markdown("""
-            <div class="feature-card">
-                <div class="feature-icon">🏁</div>
-                <div class="feature-title">Tryout Evaluation <span class="team-badge">TEAM</span></div>
-                <p>Streamlined assessment system for player tryouts with customizable evaluation criteria.</p>
-                <div style="text-align: center; color: #1E88E5; margin-top: 10px;">Click to preview</div>
+        st.markdown("""
+        <div class="team-card team-card-2">
+            <div class="team-badge">TEAM</div>
+            <div class="team-card-title">Tryout Evaluation</div>
+            <div class="team-card-text">
+                Streamlined assessment system for player tryouts with customizable evaluation criteria.
             </div>
-            """, unsafe_allow_html=True)
-            
-            if st.button("Tryout Evaluation", key="tryout-evaluation-card"):
-                st.session_state.show_team_preview = "tryout_evaluation"
-                st.rerun()
+            <div class="preview-link">Click to preview</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # The actual button that will be transparent
+        if st.button("Tryout Evaluation", key="tryout-evaluation-card", help="Click to preview Tryout Evaluation"):
+            st.session_state.show_team_preview = "tryout_evaluation"
+            st.rerun()
     
     # Custom Reports Card
     with team_cols[2]:
-        # Using a transparent button that covers the card
-        col1, col2, col3 = st.columns([1,15,1])
-        with col2:
-            st.markdown("""
-            <div class="feature-card">
-                <div class="feature-icon">📝</div>
-                <div class="feature-title">Custom Reports <span class="team-badge">TEAM</span></div>
-                <p>Generate detailed team and player reports for season reviews and development planning.</p>
-                <div style="text-align: center; color: #1E88E5; margin-top: 10px;">Click to preview</div>
+        st.markdown("""
+        <div class="team-card team-card-3">
+            <div class="team-badge">TEAM</div>
+            <div class="team-card-title">Custom Reports</div>
+            <div class="team-card-text">
+                Generate detailed team and player reports for season reviews and development planning.
             </div>
-            """, unsafe_allow_html=True)
-            
-            if st.button("Custom Reports", key="custom-reports-card"):
-                st.session_state.show_team_preview = "custom_reports"
-                st.rerun()
+            <div class="preview-link">Click to preview</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # The actual button that will be transparent
+        if st.button("Custom Reports", key="custom-reports-card", help="Click to preview Custom Reports"):
+            st.session_state.show_team_preview = "custom_reports"
+            st.rerun()
     
     # Show team feature preview if one is selected
     if st.session_state.show_team_preview == "team_dashboard":
