@@ -62,6 +62,15 @@ class PDFReportGenerator:
     
     def generate_player_report(self, player_id):
         """Generate a complete player assessment report"""
+        # Convert numpy int64 or any other numeric type to Python int
+        try:
+            if hasattr(player_id, 'item'):
+                player_id = int(player_id.item())
+            else:
+                player_id = int(player_id)
+        except (TypeError, ValueError):
+            return None
+            
         player = Player.query.get(player_id)
         if not player:
             return None
@@ -301,6 +310,15 @@ class PDFReportGenerator:
 
 def generate_player_pdf_report(player_id):
     """Generate a player PDF report and return as a downloadable link"""
+    # Convert numpy int64 or any other numeric type to Python int
+    try:
+        if hasattr(player_id, 'item'):
+            player_id = int(player_id.item())
+        else:
+            player_id = int(player_id)
+    except (TypeError, ValueError):
+        return None
+    
     generator = PDFReportGenerator()
     pdf_data = generator.generate_player_report(player_id)
     
@@ -315,6 +333,16 @@ def generate_player_pdf_report(player_id):
 def display_pdf_export_section(player_id):
     """Display PDF export options for player reports"""
     st.subheader("Export Player Report")
+    
+    # Convert numpy int64 or any other numeric type to Python int
+    try:
+        if hasattr(player_id, 'item'):
+            player_id = int(player_id.item())
+        else:
+            player_id = int(player_id)
+    except (TypeError, ValueError):
+        st.error("Invalid player ID format.")
+        return
     
     player = Player.query.get(player_id)
     if not player:
