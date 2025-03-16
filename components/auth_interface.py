@@ -12,11 +12,11 @@ def init_session_state():
             try:
                 # Import current app
                 from app import app
-                
+
                 # Verify token with explicit app context
                 with app.app_context():
                     user = User.verify_auth_token(st.session_state.authentication_token)
-                    
+
                 if user and user.id:
                     st.session_state.user = {
                         'id': user.id,
@@ -90,11 +90,11 @@ def login_user():
                 try:
                     # Import current app
                     from app import app
-                    
+
                     # Generate token with explicit app context
                     with app.app_context():
                         token = user.get_auth_token()
-                        
+
                     if token:
                         # Store token before user info
                         st.session_state.authentication_token = token
@@ -110,7 +110,7 @@ def login_user():
 
                         st.success(f"Welcome back, {user.name}!")
                         time.sleep(0.5)
-                        st.experimental_rerun()
+                        st.rerun()
                     else:
                         st.error("Failed to generate auth token")
                         db.session.rollback()
@@ -354,7 +354,7 @@ def confirm_password_reset():
                     st.rerun()
             except Exception as e:
                 st.error(f"Error resetting password: {str(e)}")
-                db.session.rollback()
+                db.session_rollback()
 
 def display_auth_interface():
     """Main authentication interface"""
@@ -367,11 +367,11 @@ def display_auth_interface():
         try:
             # Import current app
             from app import app
-            
+
             # Verify token with explicit app context
             with app.app_context():
                 user = User.verify_auth_token(st.session_state.authentication_token)
-                
+
             if user and user.id:
                 st.session_state.user = {
                     'id': user.id,
