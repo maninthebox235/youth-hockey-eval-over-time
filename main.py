@@ -36,15 +36,20 @@ if 'initialized' not in st.session_state:
 # Try to restore session from token
 if not st.session_state.user and st.session_state.authentication_token:
     try:
-        user = User.verify_auth_token(st.session_state.authentication_token)
-        if user:
-            st.session_state.user = {
-                'id': user.id,
-                'username': user.username,
-                'name': user.name,
-                'is_admin': user.is_admin
-            }
-            st.session_state.is_admin = user.is_admin
+        with app.app_context():
+            user = User.verify_auth_token(st.session_state.authentication_token)
+            if user:
+                st.session_state.user = {
+                    'id': user.id,
+                    'username': user.username,
+                    'name': user.name,
+                    'is_admin': user.is_admin
+                }
+                st.session_state.is_admin = user.is_admin
+                print(f"Session restored for user: {user.username}")
+            else:
+                print("Token verification failed: no user found")
+                st.session_state.authentication_token = None
     except Exception as e:
         print(f"Token verification error: {str(e)}")
         st.session_state.authentication_token = None
