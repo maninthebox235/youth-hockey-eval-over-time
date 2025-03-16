@@ -112,9 +112,9 @@ if not show_landing:
                     menu = st.sidebar.selectbox(
                         "Navigation",
                         [
+                            "Team Dashboard",
                             "Player Profiles", 
                             "Training & Development",
-                            "Team Dashboard",
                             "Skill Analysis",
                             "Benchmarks & References",
                             "Team Management"
