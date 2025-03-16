@@ -3,6 +3,7 @@ from flask_login import UserMixin
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import URLSafeTimedSerializer as Serializer
+import time
 from flask import current_app
 import os
 
@@ -34,14 +35,19 @@ class User(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
     def get_auth_token(self, expiration=2592000):  # 30 days default
-        s = Serializer(current_app.config['SECRET_KEY'], expires_in=expiration)
-        return s.dumps({'user_id': self.id}).decode('utf-8')
+        s = Serializer(current_app.config['SECRET_KEY'])
+        return s.dumps({'user_id': self.id, 'exp': int(time.time()) + expiration}).decode('utf-8')
 
     @staticmethod
     def verify_auth_token(token):
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
             data = s.loads(token)
+            # Check if token is expired
+            if 'exp' in data and int(time.time()) > data['exp']:
+                print("Token has expired")
+                return None
+                
             user = User.query.get(data['user_id'])
             if not user:
                 print(f"Token valid but user_id {data['user_id']} not found in database")
