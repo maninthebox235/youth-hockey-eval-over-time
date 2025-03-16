@@ -5,6 +5,7 @@ from components.feedback_templates import manage_feedback_templates
 from components.skill_assessment import display_skill_assessment
 import pandas as pd
 from utils.pdf_report import display_pdf_export_section
+from utils.type_converter import to_int, to_float, to_str
 
 def get_age_benchmark(age, skill_type):
     """Get benchmark data for a given age and skill"""
@@ -23,12 +24,18 @@ def get_age_benchmark(age, skill_type):
         }
     }
 
-    # Determine age group
-    if 6 <= age <= 8:
+    # Convert age to integer using our utility
+    age_int = to_int(age) 
+    if age_int is None:
+        # Default to middle age group if age is invalid
+        return benchmarks.get(skill_type, {}).get('9-11', 3.0)
+
+    # Determine age group with proper type handling
+    if 6 <= age_int <= 8:
         age_group = '6-8'
-    elif 9 <= age <= 11:
+    elif 9 <= age_int <= 11:
         age_group = '9-11'
-    elif 12 <= age <= 14:
+    elif 12 <= age_int <= 14:
         age_group = '12-14'
     else:
         age_group = '15-18'
@@ -44,13 +51,22 @@ def display_player_profile(player_data, player_history):
     with col1:
         st.image("https://images.unsplash.com/photo-1517177646641-83fe10f14633", 
                 caption=player_data['name'])
-
+                
+        # Safe handling of join_date format
+        join_date_str = ""
+        if 'join_date' in player_data and player_data['join_date'] is not None:
+            try:
+                join_date_str = player_data['join_date'].strftime('%Y-%m-%d')
+            except (AttributeError, ValueError):
+                join_date_str = str(player_data['join_date'])
+                
+        # Display player details with safe type handling
         st.markdown(f"""
         ### Player Details
-        - **Age:** {player_data['age']}
-        - **Age Group:** {player_data['age_group']}
-        - **Position:** {player_data['position']}
-        - **Join Date:** {player_data['join_date'].strftime('%Y-%m-%d')}
+        - **Age:** {to_int(player_data.get('age', 0)) or 'N/A'}
+        - **Age Group:** {player_data.get('age_group', 'N/A')}
+        - **Position:** {player_data.get('position', 'N/A')}
+        - **Join Date:** {join_date_str or 'N/A'}
         """)
 
     # Create tabs for different sections
@@ -58,7 +74,9 @@ def display_player_profile(player_data, player_history):
 
     with tabs[0]:  # Current Stats
         st.subheader("Current Statistics")
-        if player_data['position'] == 'Goalie':
+        # Safely check player position with proper error handling
+        position = to_str(player_data.get('position', ''))
+        if position and position.lower() == 'goalie':
             _display_goalie_stats(player_data)
         else:
             _display_skater_stats(player_data)
@@ -191,35 +209,59 @@ def _display_goalie_stats(player_data):
 
 def _display_development_charts(player_data, player_history):
     """Display development progress charts"""
-    if player_data['position'] == 'Goalie':
-        metrics_to_plot = ['save_percentage', 'positioning', 'reaction_time']
+    # Safely check player position with extra safeguard against None
+    try:
+        position = to_str(player_data.get('position', ''))
+        is_goalie = position and position.lower() == 'goalie'
+    except (AttributeError, TypeError):
+        is_goalie = False
+    
+    if is_goalie:
+        # Check if required metrics exist in player_history
+        required_metrics = ['save_percentage', 'positioning', 'reaction_time']
+        available_metrics = [m for m in required_metrics if m in player_history.columns]
+        
+        if not available_metrics:
+            st.info("No goalie metrics available in player history.")
+            return
+            
+        # Plot available goalie metrics
         fig = px.line(
             player_history,
             x='date',
-            y=metrics_to_plot,
+            y=available_metrics,
             title="Goalie Performance Metrics Over Time"
         )
+        st.plotly_chart(fig, use_container_width=True)
     else:
-        # For skaters, show both performance metrics and game statistics
-        fig1 = px.line(
-            player_history,
-            x='date',
-            y=['skating_speed', 'shooting_accuracy'],
-            title="Skill Development Over Time"
-        )
-
-        fig2 = px.line(
-            player_history,
-            x='date',
-            y=['goals', 'assists'],
-            title="Game Performance Over Time"
-        )
-
-        st.plotly_chart(fig1, use_container_width=True)
-        st.plotly_chart(fig2, use_container_width=True)
-        return
-
-    st.plotly_chart(fig, use_container_width=True)
+        # For skaters, check available metrics first
+        skill_metrics = ['skating_speed', 'shooting_accuracy']
+        available_skill_metrics = [m for m in skill_metrics if m in player_history.columns]
+        
+        performance_metrics = ['goals', 'assists']
+        available_perf_metrics = [m for m in performance_metrics if m in player_history.columns]
+        
+        if available_skill_metrics:
+            fig1 = px.line(
+                player_history,
+                x='date',
+                y=available_skill_metrics,
+                title="Skill Development Over Time"
+            )
+            st.plotly_chart(fig1, use_container_width=True)
+        else:
+            st.info("No skill metrics available in player history.")
+        
+        if available_perf_metrics:
+            fig2 = px.line(
+                player_history,
+                x='date',
+                y=available_perf_metrics,
+                title="Game Performance Over Time"
+            )
+            st.plotly_chart(fig2, use_container_width=True)
+        else:
+            st.info("No performance metrics available in player history.")
 
 def get_player(player_id):
     """Get player by ID"""
