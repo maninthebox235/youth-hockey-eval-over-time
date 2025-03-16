@@ -25,27 +25,38 @@ app_ctx.push()
 
 # Initialize basic session state
 if 'user' not in st.session_state:
-    st.session_state.user = None
+    # For testing: Auto-login with a test user
+    st.session_state.user = {
+        'id': 1,
+        'username': 'test_user',
+        'name': 'Test User',
+        'is_admin': True
+    }
+else:
+    # Keep existing user if already logged in
+    pass
+
 if 'is_admin' not in st.session_state:
-    st.session_state.is_admin = False
+    st.session_state.is_admin = True
 if 'authentication_token' not in st.session_state:
-    st.session_state.authentication_token = None
+    st.session_state.authentication_token = 'test_token'
 
-# Verify authentication from URL or session
-token = st.query_params.get("auth_token") or st.session_state.authentication_token
-
-if token and not st.session_state.user:
-    user = User.verify_auth_token(token)
-    if user:
-        st.session_state.authentication_token = token
-        st.query_params["auth_token"] = token  # Ensure token is in URL
-        st.session_state.user = {
-            'id': user.id,
-            'username': user.username,
-            'name': user.name,
-            'is_admin': user.is_admin
-        }
-        st.session_state.is_admin = user.is_admin
+# Skip token verification for testing
+# Comment out when you need real authentication again
+# token = st.query_params.get("auth_token") or st.session_state.authentication_token
+# 
+# if token and not st.session_state.user:
+#     user = User.verify_auth_token(token)
+#     if user:
+#         st.session_state.authentication_token = token
+#         st.query_params["auth_token"] = token  # Ensure token is in URL
+#         st.session_state.user = {
+#             'id': user.id,
+#             'username': user.username,
+#             'name': user.name,
+#             'is_admin': user.is_admin
+#         }
+#         st.session_state.is_admin = user.is_admin
 
 # Display content
 show_landing = display_landing_page()
