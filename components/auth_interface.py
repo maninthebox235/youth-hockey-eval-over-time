@@ -133,74 +133,53 @@ def display_admin_controls():
         new_username = st.text_input("Username")
 
 def request_password_reset():
-    """Display password reset request form"""
-    from app import mail
-    from utils.token_manager import generate_reset_token
+    """Display password reset form to reset password directly on the website"""
     import logging
     
     st.header("Reset Your Password")
-    st.write("Enter your username to receive a password reset link.")
+    st.write("Enter your username and verify your identity to reset your password.")
     
     with st.form("reset_request_form"):
         username = st.text_input("Username")
-        submitted = st.form_submit_button("Request Reset Link")
+        name = st.text_input("Your Full Name (for verification)")
+        new_password = st.text_input("New Password", type="password")
+        confirm_password = st.text_input("Confirm New Password", type="password")
+        submitted = st.form_submit_button("Reset Password")
         
         if submitted:
-            if not username:
-                st.error("Please enter your username")
+            if not username or not name or not new_password or not confirm_password:
+                st.error("Please fill in all fields")
                 return
             
+            if new_password != confirm_password:
+                st.error("Passwords do not match")
+                return
+            
+            # Find user and verify name matches
             user = User.query.filter_by(username=username).first()
             if not user:
-                # Still show success to prevent username enumeration
-                st.success("If an account with that username exists, a reset link has been sent.")
+                st.error("No account found with that username")
+                return
+            
+            # Verify name as a simple identity check
+            if user.name.lower() != name.lower():
+                st.error("Name verification failed. Please try again with the correct information.")
                 return
             
             try:
-                # Generate token
-                token = generate_reset_token(user)
+                # Update password
+                user.set_password(new_password)
+                db.session.commit()
+                st.success("Password has been reset successfully!")
                 
-                # Create reset link
-                reset_link = f"?reset_token={token}&username={username}"
-                
-                # Prepare and send email
-                from flask_mail import Message
-                
-                subject = "Password Reset Request"
-                body = f"""
-                Hello {user.name},
-                
-                We received a request to reset your password for the Youth Hockey Development Tracker.
-                
-                To reset your password, please click on the following link:
-                
-                {reset_link}
-                
-                If you did not request a password reset, please ignore this email.
-                
-                This link will expire in 24 hours.
-                
-                Best regards,
-                The Youth Hockey Development Team
-                """
-                
-                try:
-                    msg = Message(
-                        subject=subject,
-                        recipients=[username],
-                        body=body
-                    )
-                    
-                    mail.send(msg)
-                    st.success("Password reset link has been sent to your email address.")
-                    logging.info(f"Password reset email sent to {username}")
-                except Exception as e:
-                    st.error(f"Error sending email: {str(e)}")
-                    logging.error(f"Error sending password reset email: {str(e)}")
-                    st.info("For testing purposes, here's your reset link (this would normally be sent via email):")
-                    st.code(reset_link)
+                # Show login button
+                if st.button("Login with New Password"):
+                    st.session_state.show_forgot_password = False
+                    st.session_state.show_login = True
+                    st.rerun()
             except Exception as e:
-                st.error(f"Error generating reset token: {str(e)}")
+                st.error(f"Error resetting password: {str(e)}")
+                db.session.rollback()
                 logging.error(f"Error in password reset: {str(e)}")
     
     # Back to login link

@@ -27,6 +27,13 @@ def display_feature_preview():
             if st.button("Login", key="login_button", type="secondary"):
                 st.session_state.show_login = True
                 st.rerun()
+        
+        # Reset password option
+        if st.button("Forgot Password?", key="forgot_pw_button", type="secondary"):
+            st.session_state.show_login = False
+            st.session_state.show_signup = False
+            st.session_state.show_forgot_password = True
+            st.rerun()
 
 def display_signup_form():
     """Display the signup form for new users"""
