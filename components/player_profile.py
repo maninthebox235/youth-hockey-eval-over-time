@@ -273,6 +273,13 @@ def get_player(player_id):
         if player_id is None:
             print("Invalid player ID: None after conversion")
             return None
+            
+        # Convert to native Python int to avoid numpy.int64 compatibility issues with psycopg2
+        try:
+            player_id = int(player_id)
+        except (TypeError, ValueError):
+            print(f"Could not convert player ID {player_id} to integer")
+            return None
 
         from database.models import Player
         player = Player.query.get(player_id)

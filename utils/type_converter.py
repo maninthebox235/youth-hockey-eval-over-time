@@ -18,18 +18,24 @@ def to_int(value):
     if value is None:
         return None
     
-    # Handle numpy types that have .item() method
+    # Handle numpy types that have .item() method (numpy.int64, numpy.int32, etc.)
     if hasattr(value, 'item'):
         try:
+            # This converts numpy types to native Python types
             return int(value.item())
         except (ValueError, TypeError, AttributeError):
             pass
     
     # Try direct conversion
     try:
+        # Force to Python native int for compatibility with database drivers
         return int(value)
     except (ValueError, TypeError):
         return None
+        
+    # The returned value is guaranteed to be a native Python int
+    # This ensures compatibility with database drivers like psycopg2
+    # which may not handle numpy numeric types directly
 
 def to_float(value):
     """
@@ -44,18 +50,24 @@ def to_float(value):
     if value is None:
         return None
     
-    # Handle numpy types that have .item() method
+    # Handle numpy types that have .item() method (numpy.float32, numpy.float64, etc.)
     if hasattr(value, 'item'):
         try:
+            # This converts numpy types to native Python types
             return float(value.item())
         except (ValueError, TypeError, AttributeError):
             pass
     
     # Try direct conversion
     try:
+        # Force to Python native float for compatibility with database drivers
         return float(value)
     except (ValueError, TypeError):
         return None
+        
+    # The returned value is guaranteed to be a native Python float
+    # This ensures compatibility with database drivers like psycopg2
+    # which may not handle numpy numeric types directly
 
 def to_datetime(value):
     """

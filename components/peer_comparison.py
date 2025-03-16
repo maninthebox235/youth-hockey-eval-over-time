@@ -24,15 +24,30 @@ def get_peer_group_data(player_age, position, attribute=None):
     # Ensure player_age is properly converted to int
     player_age = to_int(player_age)
     if player_age is None:
+        st.error("Invalid player age for peer comparison")
         return pd.DataFrame()  # Return empty dataframe if age is invalid
+        
     try:
-        # Calculate age range (1 year above and below) and convert to Python ints to avoid numpy types
-        min_age = int(player_age - 1)
-        max_age = int(player_age + 1)
+        # Ensure we're using native Python types for database operations
+        # This explicitly converts from numpy.int64/int32 to Python int if necessary
+        try:
+            player_age = int(player_age)
+            min_age = int(player_age - 1)
+            max_age = int(player_age + 1)
+        except (TypeError, ValueError) as e:
+            st.error(f"Error converting player age to integer: {str(e)}")
+            return pd.DataFrame()
         
         # Ensure position is a standard string, not a numpy string type
         if position is not None:
-            position = str(position)
+            try:
+                position = str(position)
+            except (TypeError, ValueError) as e:
+                st.error(f"Error converting position to string: {str(e)}")
+                return pd.DataFrame()
+        else:
+            st.error("Position cannot be None for peer comparison")
+            return pd.DataFrame()
             
         # Query based on criteria with proper Python native types
         peer_query = Player.query.filter(
@@ -61,14 +76,28 @@ def get_peer_group_data(player_age, position, attribute=None):
                 'games_played': peer.games_played or 0
             }
             
-            # Add all numeric attributes
+            # Add all numeric attributes with proper type conversion for database compatibility
             for attr in dir(peer):
                 if attr.startswith('_') or callable(getattr(peer, attr)):
                     continue
                     
                 value = getattr(peer, attr)
                 if isinstance(value, (int, float)) and not isinstance(value, bool):
-                    player_data[attr] = value
+                    # Convert numpy types to native Python types for database compatibility
+                    if hasattr(value, 'item'):
+                        try:
+                            # Extract native Python type from numpy type
+                            if isinstance(value, (np.integer, int)):
+                                player_data[attr] = int(value.item())
+                            elif isinstance(value, (np.floating, float)):
+                                player_data[attr] = float(value.item())
+                            else:
+                                player_data[attr] = value
+                        except (TypeError, ValueError, AttributeError):
+                            # Fallback if conversion fails
+                            player_data[attr] = value
+                    else:
+                        player_data[attr] = value
                     
             peer_data.append(player_data)
             
@@ -389,11 +418,14 @@ def display_historical_comparison(player_id, player_data):
     """Show how player compares to peers over time"""
     st.subheader("Historical Performance Trends")
     
-    # Convert player_id to integer using our utility
+    # Convert player_id to Python integer using our utility and ensure it's a native int type
     player_id_int = to_int(player_id)
     if player_id_int is None:
         st.error("Invalid player ID for historical comparison")
         return
+        
+    # Convert to native Python int to avoid numpy.int64 compatibility issues with psycopg2
+    player_id_int = int(player_id_int)
     
     # Get player history
     try:
@@ -538,6 +570,13 @@ def display_peer_comparison_interface(player_id, player_data):
     player_id_int = to_int(player_id)
     if player_id_int is None:
         st.error("Invalid player ID for peer comparison")
+        return
+    
+    # Convert to native Python int to avoid numpy.int64 compatibility issues with psycopg2
+    try:
+        player_id_int = int(player_id_int)
+    except (TypeError, ValueError):
+        st.error("Could not convert player ID to integer")
         return
         
     # Create tabs for different views
