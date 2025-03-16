@@ -344,6 +344,11 @@ def display_auth_interface():
                     # If token was from URL, store it in session state
                     if url_token:
                         st.session_state.authentication_token = url_token
+                        try:
+                            # Ensure query_params is updated correctly
+                            st.query_params.update({"auth_token": url_token})
+                        except Exception as e:
+                            print(f"Error updating query params: {str(e)}")
 
                     st.session_state.user = {
                         'id': user.id,

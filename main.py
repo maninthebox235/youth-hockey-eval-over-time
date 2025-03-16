@@ -80,12 +80,17 @@ if not st.session_state.user and token_to_verify:
                             st.query_params.update(**params)
                 except Exception as token_verify_error:
                     print(f"Internal token verification error: {str(token_verify_error)}")
+                    # Safe error handling for token verification
                     st.session_state.authentication_token = None
+                    # Clear auth_token from URL if it's invalid
                     if url_token:
-                        params = dict(query_params)
-                        if "auth_token" in params:
-                            del params["auth_token"]
-                        st.query_params.update(**params)
+                        try:
+                            params = dict(query_params)
+                            if "auth_token" in params:
+                                del params["auth_token"]
+                            st.query_params.update(**params)
+                        except Exception as param_error:
+                            print(f"Error clearing URL params: {str(param_error)}")
             else:
                 print("No token provided for verification")
     except Exception as e:
@@ -93,10 +98,13 @@ if not st.session_state.user and token_to_verify:
         st.session_state.authentication_token = None
         # Clear auth_token from URL if it's invalid
         if url_token:
-            params = dict(query_params)
-            if "auth_token" in params:
-                del params["auth_token"]
-            st.query_params.update(**params)
+            try:
+                params = dict(query_params)
+                if "auth_token" in params:
+                    del params["auth_token"]
+                st.query_params.update(**params)
+            except Exception as param_error:
+                print(f"Error clearing URL params: {str(param_error)}")
 else:
     if st.session_state.user:
         print(f"User already in session: {st.session_state.user['username']}")
