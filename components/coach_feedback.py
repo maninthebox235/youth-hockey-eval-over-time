@@ -187,14 +187,16 @@ def display_feedback_form(player_id, player_name, position):
                                 step=1
                             )
         else:
-            # Default rating fields based on position
+            # Default rating fields organized by skill category
             if position == "Goalie":
+                # Add goalie-specific skill categories
+                st.markdown("### Goaltending Skills")
                 col1, col2, col3 = st.columns(3)
                 with col1:
                     ratings['save_technique_rating'] = st.slider(
                         "Save Technique", 
                         min_value=1, 
-                        max_value=5,  # Explicitly set max to 5
+                        max_value=5,
                         value=3,
                         step=1
                     )
@@ -202,7 +204,7 @@ def display_feedback_form(player_id, player_name, position):
                     ratings['positioning_rating'] = st.slider(
                         "Positioning", 
                         min_value=1, 
-                        max_value=5,  # Explicitly set max to 5
+                        max_value=5,
                         value=3,
                         step=1
                     )
@@ -210,17 +212,37 @@ def display_feedback_form(player_id, player_name, position):
                     ratings['rebound_control_rating'] = st.slider(
                         "Rebound Control", 
                         min_value=1, 
-                        max_value=5,  # Explicitly set max to 5
+                        max_value=5,
                         value=3,
                         step=1
                     )
 
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    ratings['recovery_rating'] = st.slider("Recovery", 1, 5, 3)
+                with col2:
+                    ratings['puck_handling_rating'] = st.slider("Puck Handling", 1, 5, 3)
+                with col3:
+                    ratings['communication_rating'] = st.slider("Communication", 1, 5, 3)
+                
+                # Add skating skills section
+                st.markdown("### Skating Skills")
                 col1, col2 = st.columns(2)
                 with col1:
-                    ratings['communication_rating'] = st.slider("Communication", 1, 5, 3)
+                    ratings['skating_speed_rating'] = st.slider("Skating Speed", 1, 5, 3)
                 with col2:
-                    ratings['mental_toughness_rating'] = st.slider("Mental Toughness", 1, 5, 3)
+                    ratings['agility_rating'] = st.slider("Agility", 1, 5, 3)
+                
+                # Add Hockey IQ section
+                st.markdown("### Hockey IQ")
+                col1, col2 = st.columns(2)
+                with col1:
+                    ratings['game_awareness_rating'] = st.slider("Game Awareness", 1, 5, 3)
+                with col2:
+                    ratings['decision_making_rating'] = st.slider("Decision Making", 1, 5, 3)
             else:
+                # Add general ratings
+                st.markdown("### Overall Skills")
                 col1, col2, col3 = st.columns(3)
                 with col1:
                     ratings['skating_rating'] = st.slider("Skating", 1, 5, 3)
@@ -228,6 +250,66 @@ def display_feedback_form(player_id, player_name, position):
                     ratings['shooting_rating'] = st.slider("Shooting", 1, 5, 3)
                 with col3:
                     ratings['teamwork_rating'] = st.slider("Teamwork", 1, 5, 3)
+                
+                # Add skating skills section
+                st.markdown("### Skating Skills")
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    ratings['skating_speed_rating'] = st.slider("Skating Speed", 1, 5, 3)
+                with col2:
+                    ratings['backward_skating_rating'] = st.slider("Backward Skating", 1, 5, 3)
+                with col3:
+                    ratings['agility_rating'] = st.slider("Agility", 1, 5, 3)
+                
+                col1, col2 = st.columns(2)
+                with col1:
+                    ratings['edge_control_rating'] = st.slider("Edge Control", 1, 5, 3)
+                
+                # Add technical skills section
+                st.markdown("### Technical Skills")
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    ratings['puck_control_rating'] = st.slider("Puck Control", 1, 5, 3)
+                with col2:
+                    ratings['passing_accuracy_rating'] = st.slider("Passing Accuracy", 1, 5, 3)
+                with col3:
+                    ratings['shooting_accuracy_rating'] = st.slider("Shooting Accuracy", 1, 5, 3)
+                
+                col1, col2 = st.columns(2)
+                with col1:
+                    ratings['receiving_rating'] = st.slider("Receiving", 1, 5, 3)
+                with col2:
+                    ratings['stick_protection_rating'] = st.slider("Stick Protection", 1, 5, 3)
+                
+                # Add Hockey IQ section
+                st.markdown("### Hockey IQ")
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    ratings['hockey_sense_rating'] = st.slider("Hockey Sense", 1, 5, 3)
+                with col2:
+                    ratings['decision_making_rating'] = st.slider("Decision Making", 1, 5, 3)
+                with col3:
+                    ratings['game_awareness_rating'] = st.slider("Game Awareness", 1, 5, 3)
+                
+                # Add Position specific skills section
+                st.markdown("### Position-Specific Skills")
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    ratings['compete_level_rating'] = st.slider("Compete Level", 1, 5, 3)
+                with col2:
+                    ratings['offensive_ability_rating'] = st.slider("Offensive Ability", 1, 5, 3)
+                with col3:
+                    ratings['defensive_ability_rating'] = st.slider("Defensive Ability", 1, 5, 3)
+                
+                if position == "Forward":
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        ratings['net_front_rating'] = st.slider("Net Front Presence", 1, 5, 3)
+                
+                if position == "Defense":
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        ratings['gap_control_rating'] = st.slider("Gap Control", 1, 5, 3)
 
         submitted = st.form_submit_button("Submit Feedback")
 
@@ -271,15 +353,47 @@ def display_feedback_history(player_id):
             with st.expander(f"Feedback from {row['coach']} on {row['date']}", expanded=True):
                 st.write(row['feedback'])
 
-                # Display ratings in columns
-                cols = st.columns(3)
-                ratings = {k: v for k, v in row.items() if k.endswith('_rating') and pd.notna(v)}
-
+                # Get all ratings and organize by category
                 from utils.type_converter import to_int
-                for i, (metric, value) in enumerate(ratings.items()):
-                    with cols[i % 3]:
-                        metric_name = metric.replace('_rating', '').replace('_', ' ').title()
-                        # Use type converter for consistent handling
-                        st.metric(metric_name, to_int(value) or 0)
+                ratings = {k: v for k, v in row.items() if k.endswith('_rating') and pd.notna(v)}
+                
+                # Organize ratings by category for better display
+                if ratings:
+                    # Define rating categories
+                    skating_ratings = ['skating_rating', 'skating_speed_rating', 'backward_skating_rating', 
+                                      'agility_rating', 'edge_control_rating']
+                    
+                    technical_ratings = ['puck_control_rating', 'passing_accuracy_rating', 'shooting_rating',
+                                        'shooting_accuracy_rating', 'receiving_rating', 'stick_protection_rating']
+                    
+                    hockey_iq_ratings = ['hockey_sense_rating', 'decision_making_rating', 
+                                        'game_awareness_rating', 'teamwork_rating']
+                    
+                    position_ratings = ['compete_level_rating', 'offensive_ability_rating', 
+                                       'defensive_ability_rating', 'net_front_rating', 'gap_control_rating']
+                    
+                    goalie_ratings = ['save_technique_rating', 'positioning_rating', 'rebound_control_rating',
+                                     'recovery_rating', 'puck_handling_rating', 'communication_rating']
+                    
+                    # Function to display a category of ratings
+                    def display_rating_category(category_name, rating_keys):
+                        category_ratings = {k: v for k, v in ratings.items() if k in rating_keys}
+                        if category_ratings:
+                            st.markdown(f"**{category_name}**")
+                            cols = st.columns(3)
+                            for i, (metric, value) in enumerate(category_ratings.items()):
+                                with cols[i % 3]:
+                                    metric_name = metric.replace('_rating', '').replace('_', ' ').title()
+                                    st.metric(metric_name, to_int(value) or 0)
+                    
+                    # Display ratings by category
+                    display_rating_category("Overall Skills", ['skating_rating', 'shooting_rating', 'teamwork_rating'])
+                    display_rating_category("Skating Skills", skating_ratings)
+                    display_rating_category("Technical Skills", technical_ratings)
+                    display_rating_category("Hockey IQ", hockey_iq_ratings)
+                    display_rating_category("Position-Specific Skills", position_ratings)
+                    display_rating_category("Goaltending Skills", goalie_ratings)
+                else:
+                    st.info("No ratings provided with this feedback.")
     else:
         st.info("No feedback available yet.")

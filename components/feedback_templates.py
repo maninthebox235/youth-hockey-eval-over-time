@@ -28,40 +28,138 @@ def create_template_form():
 
         st.subheader("Rating Categories")
 
-        # Default categories based on player type
-        if player_type == "Goalie":
-            default_categories = {
-                "save_technique_rating": "Save Technique",
-                "positioning_rating": "Positioning",
-                "rebound_control_rating": "Rebound Control",
-                "communication_rating": "Communication",
-                "mental_toughness_rating": "Mental Toughness"
-            }
-        else:
-            default_categories = {
-                "skating_rating": "Skating",
-                "shooting_rating": "Shooting",
-                "passing_rating": "Passing",
-                "teamwork_rating": "Teamwork",
-                "game_awareness_rating": "Game Awareness"
-            }
-
-        # Common categories
+        # Define category groups for better organization
+        skating_categories = {
+            "skating_speed_rating": "Skating Speed",
+            "backward_skating_rating": "Backward Skating", 
+            "agility_rating": "Agility", 
+            "edge_control_rating": "Edge Control"
+        }
+        
+        technical_categories = {
+            "puck_control_rating": "Puck Control",
+            "passing_accuracy_rating": "Passing Accuracy",
+            "shooting_accuracy_rating": "Shooting Accuracy",
+            "receiving_rating": "Receiving",
+            "stick_protection_rating": "Stick Protection"
+        }
+        
+        hockey_iq_categories = {
+            "hockey_sense_rating": "Hockey Sense",
+            "decision_making_rating": "Decision Making",
+            "game_awareness_rating": "Game Awareness",
+            "teamwork_rating": "Teamwork"
+        }
+        
+        # Position-specific categories
+        position_categories = {
+            "compete_level_rating": "Compete Level",
+            "offensive_ability_rating": "Offensive Ability",
+            "defensive_ability_rating": "Defensive Ability",
+            "net_front_rating": "Net Front Presence",
+            "gap_control_rating": "Gap Control"
+        }
+        
+        # Goalie-specific categories
+        goalie_categories = {
+            "save_technique_rating": "Save Technique",
+            "positioning_rating": "Positioning",
+            "rebound_control_rating": "Rebound Control",
+            "recovery_rating": "Recovery",
+            "puck_handling_rating": "Puck Handling",
+            "communication_rating": "Communication"
+        }
+        
+        # General categories
+        general_categories = {
+            "skating_rating": "Overall Skating",
+            "shooting_rating": "Overall Shooting",
+            "teamwork_rating": "Overall Teamwork"
+        }
+        
+        # Common categories that apply to all players
         common_categories = {
             "effort_rating": "Effort",
             "improvement_rating": "Areas for Improvement",
             "strengths_rating": "Key Strengths"
         }
 
-        # Create checkboxes for default categories
+        # Initialize the categories dictionary
         categories = {}
-        st.subheader("Default Categories")
-        for key, label in default_categories.items():
-            categories[key] = st.checkbox(label, key=f"default_{key}")
-
+        
+        # Determine which categories to show based on player type
+        if player_type == "Goalie":
+            # For goalies, show goalie-specific categories and other relevant ones
+            st.subheader("Goaltending Skills")
+            cols = st.columns(3)
+            items = list(goalie_categories.items())
+            for i, (key, label) in enumerate(items):
+                with cols[i % 3]:
+                    categories[key] = st.checkbox(label, key=f"goalie_{key}")
+            
+            # Goalies still need some skating and hockey IQ skills
+            st.subheader("Skating Skills")
+            cols = st.columns(3)
+            goalie_skating_keys = ["skating_speed_rating", "agility_rating"]
+            for i, key in enumerate(goalie_skating_keys):
+                with cols[i % 3]:
+                    categories[key] = st.checkbox(skating_categories[key], key=f"skating_{key}")
+            
+            st.subheader("Hockey IQ")
+            cols = st.columns(3)
+            goalie_iq_keys = ["decision_making_rating", "game_awareness_rating"]
+            for i, key in enumerate(goalie_iq_keys):
+                with cols[i % 3]:
+                    categories[key] = st.checkbox(hockey_iq_categories[key], key=f"iq_{key}")
+        else:
+            # For skaters, show all skill categories organized by group
+            st.subheader("General Skills")
+            cols = st.columns(3)
+            for i, (key, label) in enumerate(general_categories.items()):
+                with cols[i % 3]:
+                    categories[key] = st.checkbox(label, key=f"general_{key}")
+            
+            st.subheader("Skating Skills")
+            cols = st.columns(3)
+            items = list(skating_categories.items())
+            for i, (key, label) in enumerate(items):
+                with cols[i % 3]:
+                    categories[key] = st.checkbox(label, key=f"skating_{key}")
+            
+            st.subheader("Technical Skills")
+            cols = st.columns(3)
+            items = list(technical_categories.items())
+            for i, (key, label) in enumerate(items):
+                with cols[i % 3]:
+                    categories[key] = st.checkbox(label, key=f"technical_{key}")
+            
+            st.subheader("Hockey IQ")
+            cols = st.columns(3)
+            items = list(hockey_iq_categories.items())
+            for i, (key, label) in enumerate(items):
+                with cols[i % 3]:
+                    categories[key] = st.checkbox(label, key=f"iq_{key}")
+            
+            st.subheader("Position-Specific Skills")
+            cols = st.columns(3)
+            items = list(position_categories.items())
+            for i, (key, label) in enumerate(items):
+                # Show net_front only for forwards and gap_control only for defense
+                show_item = True
+                if key == "net_front_rating":
+                    show_item = st.checkbox("Include Forward-specific skills", value=True, key="show_forward_skills")
+                elif key == "gap_control_rating":
+                    show_item = st.checkbox("Include Defense-specific skills", value=True, key="show_defense_skills")
+                
+                if show_item:
+                    with cols[i % 3]:
+                        categories[key] = st.checkbox(label, key=f"position_{key}")
+        
         st.subheader("Common Categories")
-        for key, label in common_categories.items():
-            categories[key] = st.checkbox(label, key=f"common_{key}")
+        cols = st.columns(3)
+        for i, (key, label) in enumerate(common_categories.items()):
+            with cols[i % 3]:
+                categories[key] = st.checkbox(label, key=f"common_{key}")
 
         # Custom categories
         st.subheader("Add Custom Categories")
@@ -84,8 +182,8 @@ def create_template_form():
         submitted = st.form_submit_button("Create Template")
 
         if submitted and name:
-            # Combine selected categories
-            selected_categories = {k: v for k, v in {**categories, **common_categories}.items() if v}
+            # Combine selected categories - only include checkboxes that were checked (value is True)
+            selected_categories = {k: v for k, v in categories.items() if v}
 
             if not selected_categories:
                 st.error("Please select at least one category")
@@ -130,9 +228,60 @@ def display_templates():
     for template in templates:
         with st.expander(f"{template.name} ({template.player_type})", expanded=False):
             st.write(f"**Description:** {template.description or 'No description provided'}")
-            st.write("**Categories:**")
-            for category in template.template_structure['categories']:
-                st.write(f"- {category.replace('_rating', '').replace('_', ' ').title()}")
+            
+            # Group template categories by skill type for better readability
+            categories = template.template_structure.get('categories', [])
+            
+            # Define category groups
+            skating_categories = [c for c in categories if c.startswith('skating') or 
+                                c in ['backward_skating_rating', 'agility_rating', 'edge_control_rating']]
+            
+            technical_categories = [c for c in categories if c in ['puck_control_rating', 'passing_accuracy_rating', 
+                                   'shooting_accuracy_rating', 'receiving_rating', 'stick_protection_rating']]
+            
+            hockey_iq_categories = [c for c in categories if c in ['hockey_sense_rating', 'decision_making_rating', 
+                                   'game_awareness_rating', 'teamwork_rating']]
+            
+            position_categories = [c for c in categories if c in ['compete_level_rating', 'offensive_ability_rating', 
+                                  'defensive_ability_rating', 'net_front_rating', 'gap_control_rating']]
+            
+            goalie_categories = [c for c in categories if c in ['save_technique_rating', 'positioning_rating', 
+                                'rebound_control_rating', 'recovery_rating', 'puck_handling_rating', 
+                                'communication_rating']]
+            
+            common_categories = [c for c in categories if c in ['effort_rating', 'improvement_rating', 'strengths_rating']]
+            
+            # Find categories that don't fit in any group
+            other_categories = [c for c in categories if c not in skating_categories + technical_categories + 
+                              hockey_iq_categories + position_categories + goalie_categories + common_categories]
+            
+            # Display categories by group
+            def display_category_group(title, category_list):
+                if category_list:
+                    st.write(f"**{title}:**")
+                    for category in category_list:
+                        st.write(f"- {category.replace('_rating', '').replace('_', ' ').title()}")
+            
+            if skating_categories:
+                display_category_group("Skating Skills", skating_categories)
+                
+            if technical_categories:
+                display_category_group("Technical Skills", technical_categories)
+                
+            if hockey_iq_categories:
+                display_category_group("Hockey IQ", hockey_iq_categories)
+                
+            if position_categories:
+                display_category_group("Position-Specific Skills", position_categories)
+                
+            if goalie_categories:
+                display_category_group("Goaltending Skills", goalie_categories)
+                
+            if common_categories:
+                display_category_group("Common Skills", common_categories)
+                
+            if other_categories:
+                display_category_group("Other Skills", other_categories)
 
             col1, col2, col3 = st.columns([1, 1, 1])
             with col1:
