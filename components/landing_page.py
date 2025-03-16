@@ -67,16 +67,6 @@ def display_auth_buttons():
         color: white !important;
         border: none !important;
     }
-    
-    /* Forgot password link style */
-    .forgot-btn button {
-        background-color: transparent !important;
-        color: #666 !important;
-        border: none !important;
-        font-size: 12px !important;
-        text-decoration: underline !important;
-        padding: 2px 5px !important;
-    }
     </style>
     
     <div class="auth-header">
@@ -88,32 +78,24 @@ def display_auth_buttons():
     """, unsafe_allow_html=True)
     
     # Create a clean horizontal container for buttons at the top
-    cols = st.columns([6, 1, 1.2, 1.3])
+    cols = st.columns([7, 1.2, 1])
     
     # Empty column to push buttons to the right
     cols[0].empty()
     
-    # Login button
+    # Sign Up button (first)
     with cols[1]:
-        st.markdown('<div class="login-btn">', unsafe_allow_html=True)
-        if st.button("Login", key="top_login_button"):
-            st.session_state.show_login = True
-            st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
-    
-    # Sign Up button
-    with cols[2]:
         st.markdown('<div class="signup-btn">', unsafe_allow_html=True)
         if st.button("Sign Up", key="top_signup_button"):
             st.session_state.show_signup = True
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
     
-    # Forgot Password
-    with cols[3]:
-        st.markdown('<div class="forgot-btn">', unsafe_allow_html=True)
-        if st.button("Forgot Password?", key="top_forgot_pw_button"):
-            st.session_state.show_forgot_password = True
+    # Login button (second)
+    with cols[2]:
+        st.markdown('<div class="login-btn">', unsafe_allow_html=True)
+        if st.button("Login", key="top_login_button"):
+            st.session_state.show_login = True
             st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
 
