@@ -7,7 +7,23 @@ import time
 def init_session_state():
     """Initialize session state variables"""
     if 'user' not in st.session_state:
+        # Try to load from existing token first
+        if 'authentication_token' in st.session_state:
+            try:
+                user = User.verify_auth_token(st.session_state.authentication_token)
+                if user:
+                    st.session_state.user = {
+                        'id': user.id,
+                        'username': user.username,
+                        'name': user.name,
+                        'is_admin': user.is_admin
+                    }
+                    st.session_state.is_admin = user.is_admin
+                    return
+            except Exception:
+                pass
         st.session_state.user = None
+        
     if 'is_admin' not in st.session_state:
         st.session_state.is_admin = False
     if 'show_forgot_password' not in st.session_state:
@@ -65,6 +81,16 @@ def login_user():
                 user.last_login = datetime.utcnow()
                 db.session.commit()
 
+                # Generate and store authentication token first
+                token = user.get_auth_token()
+                if not token:
+                    st.error("Failed to generate auth token")
+                    db.session.rollback()
+                    return
+
+                # Store token before user info
+                st.session_state.authentication_token = token
+                
                 # Store user info in session state
                 st.session_state.user = {
                     'id': user.id,
@@ -73,14 +99,10 @@ def login_user():
                     'is_admin': user.is_admin
                 }
                 st.session_state.is_admin = user.is_admin
-
-                # Generate and store authentication token
-                token = user.get_auth_token()
-                if token:
-                    st.session_state.authentication_token = token
-                    st.success(f"Welcome back, {user.name}!")
-                    time.sleep(0.5)
-                    st.rerun()
+                
+                st.success(f"Welcome back, {user.name}!")
+                time.sleep(0.5)
+                st.experimental_rerun()
                 else:
                     st.error("Failed to generate auth token")
                     db.session.rollback()
