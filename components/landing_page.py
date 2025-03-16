@@ -216,7 +216,7 @@ def display_feature_preview():
     }
     
     /* Unify button styles for clickable areas */
-    .premium-button button, .team-button button {
+    [data-testid="column"] button, .premium-button button, .team-button button {
         background-color: transparent !important;
         color: transparent !important;
         border: none !important;
@@ -240,6 +240,22 @@ def display_feature_preview():
         <style>
         .clickable-card {
             cursor: pointer;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Make the premium card buttons visible and clickable */
+        div[data-testid="column"] button {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            background: transparent !important;
+            border: none !important;
+            color: transparent !important;
+            cursor: pointer !important;
+            z-index: 10 !important;
         }
         </style>
         """, unsafe_allow_html=True)
@@ -260,22 +276,8 @@ def display_feature_preview():
         with video_card:
             st.markdown(card_html, unsafe_allow_html=True)
             button_clicked = st.button("", key="video-analysis-button", help="Video Analysis")
-            # Add CSS to hide the button
-            st.markdown("""
-            <style>
-            [data-testid="stButton"] {
-                position: absolute;
-                width: 1px;
-                height: 1px;
-                padding: 0;
-                margin: -1px;
-                overflow: hidden;
-                clip: rect(0, 0, 0, 0);
-                white-space: nowrap;
-                border-width: 0;
-            }
-            </style>
-            """, unsafe_allow_html=True)
+            # We don't need this CSS here since we're using the unified button styles
+            # from the main premium cards CSS
         
         # Handle button click
         if button_clicked:
