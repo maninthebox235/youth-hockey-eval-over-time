@@ -169,11 +169,11 @@ def display_skill_assessment(player_id):
                     for metric, value in all_ratings.items():
                         setattr(player, metric, value)
 
-                    # Create historical record
+                    # Create historical record with correct field name 'notes'
                     history = PlayerHistory(
                         player_id=player.id,
                         date=datetime.utcnow().date(),
-                        assessment_notes=notes,
+                        notes=notes,  # Changed from assessment_notes to notes
                         **all_ratings
                     )
 
