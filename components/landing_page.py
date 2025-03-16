@@ -5,6 +5,9 @@ from datetime import datetime
 
 def display_feature_preview():
     """Display feature preview on landing page"""
+    # Banner image
+    st.image("static/images/hockey/players/smiling.jpg", use_container_width=True)
+    
     st.title("🏒 IceTracker: Youth Hockey Player Development Platform")
     st.markdown("##### Comprehensive skill tracking, personalized training, and advanced analytics for young players")
     
@@ -653,7 +656,7 @@ def display_feature_preview():
                 st.success("Sample report generated! See preview on the right.")
             
         with reports_col2:
-            st.image("static/images/hockey/report.png", caption="Hockey Team Performance Report")
+            st.image("static/images/hockey/players/goalie-crouching.jpg", caption="Hockey Team Performance Report")
             
             # Sample report sections
             st.markdown("""
