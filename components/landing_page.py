@@ -212,36 +212,59 @@ def display_feature_preview():
     
     # Video Analysis Card
     with premium_cols[0]:
-        video_card_html = """
-        <div class="premium-card premium-card-1">
+        # Add CSS to make cards clickable
+        st.markdown("""
+        <style>
+        .clickable-card {
+            cursor: pointer;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        
+        # Create the card with clickable class
+        st.markdown("""
+        <div class="premium-card premium-card-1 clickable-card" id="video-analysis-card-div" 
+             onclick="document.getElementById('video-analysis-button').click();">
             <div class="premium-badge">PREMIUM</div>
             <div class="premium-card-title">Video Analysis</div>
             <div class="premium-card-text">
                 Upload practice or game footage for detailed technique analysis with actionable feedback.
             </div>
         </div>
-        """
+        """, unsafe_allow_html=True)
         
-        # Make the entire card clickable using an HTML button
-        video_card_html = f"""
-        <button onclick="this.closest('div').querySelector('button[kind=\"secondary\"]').click();" 
-                style="background: none; border: none; width: 100%; padding: 0; cursor: pointer; text-align: left;">
-            {video_card_html}
-        </button>
-        """
+        # Create invisible button with no text and minimal size
+        col1, col2, col3 = st.columns([10, 1, 10])
+        with col2:
+            button_clicked = st.button("", key="video-analysis-button", help="Video Analysis")
+            # Add CSS to hide the button
+            st.markdown("""
+            <style>
+            [data-testid="stButton"] {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                padding: 0;
+                margin: -1px;
+                overflow: hidden;
+                clip: rect(0, 0, 0, 0);
+                white-space: nowrap;
+                border-width: 0;
+            }
+            </style>
+            """, unsafe_allow_html=True)
         
-        st.markdown(video_card_html, unsafe_allow_html=True)
-        
-        # Hidden button that will be triggered by the HTML button
-        if st.button("", key="video-analysis-card", help="Click to preview Video Analysis", type="secondary", 
-                   style="display: none;"):
+        # Handle button click
+        if button_clicked:
             st.session_state.show_premium_preview = "video_analysis"
             st.rerun()
     
     # Training Plans Card
-    with premium_cols[1]:
+    with premium_cols[1]:        
+        # Create the card with clickable class
         st.markdown("""
-        <div class="premium-card premium-card-2">
+        <div class="premium-card premium-card-2 clickable-card" id="training-plans-card-div" 
+             onclick="document.getElementById('training-plans-button').click();">
             <div class="premium-badge">PREMIUM</div>
             <div class="premium-card-title">Training Plans</div>
             <div class="premium-card-text">
@@ -250,26 +273,37 @@ def display_feature_preview():
         </div>
         """, unsafe_allow_html=True)
         
-        # The actual button that will be transparent
-        if st.button("Training Plans", key="training-plans-card", help="Click to preview Training Plans"):
+        # Create invisible button with no text and minimal size
+        col1, col2, col3 = st.columns([10, 1, 10])
+        with col2:
+            button_clicked = st.button("", key="training-plans-button", help="Training Plans")
+        
+        # Handle button click
+        if button_clicked:
             st.session_state.show_premium_preview = "training_plans"
             st.rerun()
     
     # Peer Comparison Card
-    with premium_cols[2]:
+    with premium_cols[2]:        
+        # Create the card with clickable class
         st.markdown("""
-        <div class="premium-card premium-card-3">
+        <div class="premium-card premium-card-3 clickable-card" id="peer-comparison-card-div" 
+             onclick="document.getElementById('peer-comparison-button').click();">
             <div class="premium-badge">PREMIUM</div>
             <div class="premium-card-title">Peer Comparison</div>
             <div class="premium-card-text">
                 Anonymous benchmarking against other players in the same age group and position.
             </div>
-            <div class="premium-link">Click to preview</div>
         </div>
         """, unsafe_allow_html=True)
         
-        # The actual button that will be transparent
-        if st.button("Peer Comparison", key="peer-comparison-card", help="Click to preview Peer Comparison"):
+        # Create invisible button with no text and minimal size
+        col1, col2, col3 = st.columns([10, 1, 10])
+        with col2:
+            button_clicked = st.button("", key="peer-comparison-button", help="Peer Comparison")
+        
+        # Handle button click
+        if button_clicked:
             st.session_state.show_premium_preview = "peer_comparison"
             st.rerun()
     
@@ -578,56 +612,74 @@ def display_feature_preview():
     team_cols = st.columns(3)
     
     # Team Dashboard Card
-    with team_cols[0]:
+    with team_cols[0]:        
+        # Create the card with clickable class
         st.markdown("""
-        <div class="team-card team-card-1">
+        <div class="team-card team-card-1 clickable-card" id="team-dashboard-card-div" 
+             onclick="document.getElementById('team-dashboard-button').click();">
             <div class="team-badge">TEAM</div>
             <div class="team-card-title">Team Dashboard</div>
             <div class="team-card-text">
                 Comprehensive team overview with skill heatmaps, performance metrics, and development tracking.
             </div>
-            <div class="preview-link">Click to preview</div>
         </div>
         """, unsafe_allow_html=True)
         
-        # The actual button that will be transparent
-        if st.button("Team Dashboard", key="team-dashboard-card", help="Click to preview Team Dashboard"):
+        # Create invisible button with no text and minimal size
+        col1, col2, col3 = st.columns([10, 1, 10])
+        with col2:
+            button_clicked = st.button("", key="team-dashboard-button", help="Team Dashboard")
+        
+        # Handle button click
+        if button_clicked:
             st.session_state.show_team_preview = "team_dashboard"
             st.rerun()
     
     # Tryout Evaluation Card
-    with team_cols[1]:
+    with team_cols[1]:        
+        # Create the card with clickable class
         st.markdown("""
-        <div class="team-card team-card-2">
+        <div class="team-card team-card-2 clickable-card" id="tryout-evaluation-card-div" 
+             onclick="document.getElementById('tryout-evaluation-button').click();">
             <div class="team-badge">TEAM</div>
             <div class="team-card-title">Tryout Evaluation</div>
             <div class="team-card-text">
                 Streamlined assessment system for player tryouts with customizable evaluation criteria.
             </div>
-            <div class="preview-link">Click to preview</div>
         </div>
         """, unsafe_allow_html=True)
         
-        # The actual button that will be transparent
-        if st.button("Tryout Evaluation", key="tryout-evaluation-card", help="Click to preview Tryout Evaluation"):
+        # Create invisible button with no text and minimal size
+        col1, col2, col3 = st.columns([10, 1, 10])
+        with col2:
+            button_clicked = st.button("", key="tryout-evaluation-button", help="Tryout Evaluation")
+        
+        # Handle button click
+        if button_clicked:
             st.session_state.show_team_preview = "tryout_evaluation"
             st.rerun()
     
     # Custom Reports Card
-    with team_cols[2]:
+    with team_cols[2]:        
+        # Create the card with clickable class
         st.markdown("""
-        <div class="team-card team-card-3">
+        <div class="team-card team-card-3 clickable-card" id="custom-reports-card-div" 
+             onclick="document.getElementById('custom-reports-button').click();">
             <div class="team-badge">TEAM</div>
             <div class="team-card-title">Custom Reports</div>
             <div class="team-card-text">
                 Generate detailed team and player reports for season reviews and development planning.
             </div>
-            <div class="preview-link">Click to preview</div>
         </div>
         """, unsafe_allow_html=True)
         
-        # The actual button that will be transparent
-        if st.button("Custom Reports", key="custom-reports-card", help="Click to preview Custom Reports"):
+        # Create invisible button with no text and minimal size
+        col1, col2, col3 = st.columns([10, 1, 10])
+        with col2:
+            button_clicked = st.button("", key="custom-reports-button", help="Custom Reports")
+        
+        # Handle button click
+        if button_clicked:
             st.session_state.show_team_preview = "custom_reports"
             st.rerun()
     
