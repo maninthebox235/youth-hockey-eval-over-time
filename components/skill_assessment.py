@@ -9,9 +9,10 @@ def rate_skill(label, key, help_text="", default_value=3):
         label,
         min_value=1,
         max_value=5,
-        value=default_value,
+        value=min(max(default_value, 1), 5),
         help=help_text,
-        key=key
+        key=key,
+        step=1
     )
 
 def get_position_specific_metrics(position):
@@ -152,7 +153,7 @@ def display_skill_assessment(player_id):
                 history = PlayerHistory(
                     player_id=player.id,
                     date=datetime.utcnow().date(),
-                    notes=notes,
+                    assessment_notes=notes,
                     **all_ratings
                 )
 

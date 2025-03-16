@@ -64,25 +64,21 @@ def login_user():
                 user.last_login = datetime.utcnow()
                 db.session.commit()
 
-                try:
-                    # Store user info in session state
-                    st.session_state.user = {
-                        'id': user.id,
-                        'username': user.username,
-                        'name': user.name,
-                        'is_admin': user.is_admin
-                    }
-                    st.session_state.is_admin = user.is_admin
-
-                    # Generate and store authentication token
-                    token = user.get_auth_token()
-                    if token:
-                        st.session_state.authentication_token = token
-                        st.success(f"Welcome back, {user.name}!")
-                        time.sleep(0.5)
-                        st.rerun()
-                    else:
-                        raise Exception("Failed to generate auth token")
+                # Store user info in session state
+                st.session_state.user = {
+                    'id': user.id,
+                    'username': user.username,
+                    'name': user.name,
+                    'is_admin': user.is_admin
+                }
+                st.session_state.is_admin = user.is_admin
+                
+                # Generate and store authentication token
+                token = user.get_auth_token()
+                st.session_state.authentication_token = token
+                st.success(f"Welcome back, {user.name}!")
+                time.sleep(0.5)
+                return True
 
                 except Exception as e:
                     print(f"Session error: {str(e)}")
