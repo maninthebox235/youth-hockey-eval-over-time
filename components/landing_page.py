@@ -180,22 +180,8 @@ def display_feature_preview():
     </div>
     """, unsafe_allow_html=True)
     
-    # Testimonials
-    st.markdown("""
-    <div style="margin: 20px 0;">
-        <h3 style="text-align: center;">What Coaches & Parents Are Saying</h3>
-        <div style="display: flex; justify-content: space-between; margin-top: 15px;">
-            <div style="flex: 1; padding: 15px; margin: 0 10px; background-color: #f9f9f9; border-radius: 8px;">
-                <p style="font-style: italic;">"This platform has transformed how we track player development. The personalized training plans have been a game-changer for our team."</p>
-                <p style="text-align: right;"><strong>- Coach Michael, Minnesota Youth Hockey</strong></p>
-            </div>
-            <div style="flex: 1; padding: 15px; margin: 0 10px; background-color: #f9f9f9; border-radius: 8px;">
-                <p style="font-style: italic;">"As a hockey parent, I finally have a clear picture of my child's progress. The age benchmarks give us realistic goals to work toward."</p>
-                <p style="text-align: right;"><strong>- Sarah P., Hockey Parent</strong></p>
-            </div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    # Space before call to action
+    st.markdown("<div style='margin: 20px 0;'></div>", unsafe_allow_html=True)
     
     # Call to action
     st.markdown("""
