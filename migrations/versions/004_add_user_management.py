@@ -1,4 +1,4 @@
-"""Add user management
+"""Add user management with username
 
 Revision ID: 004
 Revises: 003
@@ -15,7 +15,10 @@ branch_labels = None
 depends_on = None
 
 def upgrade():
-    # Create users table with username instead of email
+    # Drop existing users table if it exists
+    op.drop_table('users', if_exists=True)
+
+    # Create users table with username
     op.create_table('users',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('username', sa.String(length=50), nullable=False),
