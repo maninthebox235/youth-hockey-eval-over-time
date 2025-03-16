@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from datetime import datetime, timedelta
 from database import db, init_app
 from database.models import Player, User
 from utils.data_generator import get_players_df, get_player_history, seed_database
@@ -44,7 +45,7 @@ if 'is_admin' not in st.session_state:
 if 'authentication_token' not in st.session_state:
     st.session_state.authentication_token = None
 
-# Check for authentication token in URL params
+# Check for authentication token in URL params or session state
 token = st.query_params.get("auth_token") or st.session_state.get('authentication_token')
 
 # Try to verify token and log in user if token is valid
@@ -53,7 +54,13 @@ if token and not st.session_state.user:
     if user:
         # Token is valid, set session state
         st.session_state.authentication_token = token
-        st.query_params["auth_token"] = token  # Ensure token is in URL
+        
+        # Update query params for current session
+        # If Remember Me is enabled, we keep token in the URL
+        if st.session_state.get('remember_me', False):
+            st.query_params["auth_token"] = token
+        
+        # Set user info in session
         st.session_state.user = {
             'id': user.id,
             'username': user.username,
@@ -61,8 +68,6 @@ if token and not st.session_state.user:
             'is_admin': user.is_admin
         }
         st.session_state.is_admin = user.is_admin
-        # Set remember_me flag if token has long expiration
-        st.session_state.remember_me = True
 
 # Display content
 show_landing = display_landing_page()
@@ -105,7 +110,9 @@ if not show_landing:
                 header_col1, header_col2 = st.columns([6, 1])
                 with header_col2:
                     if st.button("🚪 Logout", type="primary", use_container_width=True):
+                        # Clear session state
                         st.session_state.clear()
+                        # Clear URL parameters to remove the token
                         st.query_params.clear()
                         st.info("Logging out...")
                         st.rerun()

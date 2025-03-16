@@ -61,6 +61,9 @@ def login_user():
                     st.session_state.authentication_token = token
                     st.session_state.remember_me = remember_me
                     st.query_params["auth_token"] = token
+                    
+                    # If remember me is checked, the token will be preserved in URL parameters
+                    # This allows for a persistent login experience across browser sessions
                 except Exception as e:
                     logging.error(f"Token generation error: {str(e)}")
                     # Continue without token - at least allow session-based auth
@@ -148,7 +151,7 @@ def display_auth_interface():
                     if st.button("Logout", use_container_width=True):
                         # Clear session state
                         st.session_state.clear()
-                        # Clear URL parameters
+                        # Clear URL parameters (removes the auth token)
                         st.query_params.clear()
                         # Redirect to login page
                         st.info("Logging out...")
