@@ -500,16 +500,27 @@ def display_tryout_evaluation_mode(team_id):
                     st.write(f"**Age:** {player_age}")
                     st.write(f"**Position:** {player_position}")
                     
-                    # Hidden fields to keep the values
-                    player_name_input = st.text_input("Player Name", value=player_name, key="tryout_player_name", label_visibility="collapsed")
-                    player_age_input = st.number_input("Age", min_value=6, max_value=18, value=player_age, key="tryout_player_age", label_visibility="collapsed")
-                    player_position_input = st.selectbox("Position", ["Forward", "Defense", "Goalie"], index=["Forward", "Defense", "Goalie"].index(player_position), key="tryout_player_position", label_visibility="collapsed")
+                    # Hidden fields to keep the values - use session state values to ensure consistency
+                    # Use empty containers instead of displaying fields
+                    name_container = st.empty()
+                    age_container = st.empty()
+                    position_container = st.empty()
                 else:
-                    # New player form
-                    player_name = st.text_input("Player Name", key="tryout_player_name")
-                    player_age = st.number_input("Age", min_value=6, max_value=18, value=int(team.age_group.replace('U', '')), key="tryout_player_age")
-                    player_position = st.selectbox("Position", ["Forward", "Defense", "Goalie"], key="tryout_player_position")
-                    selected_player_id = None
+                    # New player form - for adding a new player not in the system
+                    with st.container():
+                        st.markdown("#### Add New Player")
+                        player_name = st.text_input("Player Name", key="tryout_player_name")
+                        player_age = st.number_input("Age", min_value=6, max_value=18, value=int(team.age_group.replace('U', '')), key="tryout_player_age")
+                        player_position = st.selectbox("Position", ["Forward", "Defense", "Goalie"], key="tryout_player_position")
+                        selected_player_id = None
+                        
+                        # Clear session state to avoid interference with an existing player
+                        if 'selected_player_name' in st.session_state:
+                            del st.session_state.selected_player_name
+                        if 'selected_player_age' in st.session_state:
+                            del st.session_state.selected_player_age
+                        if 'selected_player_position' in st.session_state:
+                            del st.session_state.selected_player_position
             except Exception as e:
                 st.error(f"Error loading team players: {str(e)}")
                 player_name = st.text_input("Player Name", key="tryout_player_name")
@@ -606,7 +617,12 @@ def display_tryout_evaluation_mode(team_id):
             submitted = st.form_submit_button("Save Evaluation")
 
             if submitted:
-                if not player_name or not evaluator_name:
+                # Use session state values if available (for selected player), otherwise use form values
+                eval_player_name = st.session_state.get('selected_player_name', player_name)
+                eval_player_age = st.session_state.get('selected_player_age', player_age)
+                eval_player_position = st.session_state.get('selected_player_position', player_position)
+                
+                if not eval_player_name or not evaluator_name:
                     st.error("Player name and evaluator name are required")
                 else:
                     # Combine comments
@@ -620,17 +636,22 @@ def display_tryout_evaluation_mode(team_id):
                     **Recommendation:** {recommendation}
                     """
 
-                    # Check if player exists, otherwise create new player
-                    player = Player.query.filter_by(name=player_name, age_group=team.age_group).first()
+                    # For an existing player, use the player_id directly
+                    player = None
+                    if selected_player_id and selected_player_id > 0:
+                        player = Player.query.get(selected_player_id)
+                    else:
+                        # Check if player exists, otherwise create new player
+                        player = Player.query.filter_by(name=eval_player_name, age_group=team.age_group).first()
 
                     if not player:
                         # Create new player
                         try:
                             player = Player(
-                                name=player_name,
-                                age=player_age,
+                                name=eval_player_name,
+                                age=eval_player_age,
                                 age_group=team.age_group,
-                                position=player_position,
+                                position=eval_player_position,
                                 join_date=datetime.utcnow()
                             )
 
@@ -665,7 +686,7 @@ def display_tryout_evaluation_mode(team_id):
                         db.session.add(feedback)
                         db.session.commit()
 
-                        st.success(f"Evaluation for {player_name} saved successfully!")
+                        st.success(f"Evaluation for {eval_player_name} saved successfully!")
                         
                         # Add redirect to team overview
                         st.session_state.show_tryout_mode = False  # Turn off tryout mode
