@@ -23,10 +23,6 @@ app = init_app()
 app_ctx = app.app_context()
 app_ctx.push()
 
-# Check URL parameters for auth token
-query_params = st.query_params
-url_token = query_params.get("auth_token", None)
-
 # Initialize session state
 if 'user' not in st.session_state:
     st.session_state.user = None
@@ -35,107 +31,108 @@ if 'is_admin' not in st.session_state:
 if 'authentication_token' not in st.session_state:
     st.session_state.authentication_token = None
 
-# Try to restore session from token in URL or session state
+# Check for authentication token in URL parameters
+auth_token = st.query_params.get("auth_token", None)
+
+# Try to restore session from token
 if not st.session_state.user:
-    token_to_try = url_token or st.session_state.authentication_token
+    token_to_try = auth_token or st.session_state.authentication_token
     if token_to_try:
         try:
-            with app.app_context():
-                user = User.verify_auth_token(token_to_try)
-                if user:
-                    # Store token in both session and URL
-                    st.session_state.authentication_token = token_to_try
-                    if not url_token:
-                        st.query_params["auth_token"] = token_to_try
+            user = User.verify_auth_token(token_to_try)
+            if user:
+                # Store token in session state
+                st.session_state.authentication_token = token_to_try
+                # Ensure token is in URL parameters
+                if not auth_token:
+                    st.query_params["auth_token"] = token_to_try
 
-                    # Set user info
-                    st.session_state.user = {
-                        'id': user.id,
-                        'username': user.username,
-                        'name': user.name,
-                        'is_admin': user.is_admin
-                    }
-                    st.session_state.is_admin = user.is_admin
-                else:
-                    st.session_state.authentication_token = None
-                    st.query_params.clear()
+                # Set user info
+                st.session_state.user = {
+                    'id': user.id,
+                    'username': user.username,
+                    'name': user.name,
+                    'is_admin': user.is_admin
+                }
+                st.session_state.is_admin = user.is_admin
         except Exception as e:
-            print(f"Token verification error: {str(e)}")
+            print(f"Session restoration error: {str(e)}")
             st.session_state.authentication_token = None
             st.query_params.clear()
 
 # Display landing page or main content
 show_landing = display_landing_page()
 
-if not show_landing and st.session_state.user:
-    st.sidebar.image("https://images.unsplash.com/photo-1547223431-cc59f141f389",
-                     caption="Player Development Platform")
+if not show_landing:
+    # Display authentication interface if not logged in
+    if not st.session_state.user:
+        display_auth_interface()
+    else:
+        # Main application content
+        st.sidebar.image("https://images.unsplash.com/photo-1547223431-cc59f141f389",
+                        caption="Player Development Platform")
 
-    # Initialize database if needed
-    if 'db_initialized' not in st.session_state:
+        # Continue with the rest of your application logic...
         try:
-            if not Player.query.first():
-                st.info("Initializing database with sample data...")
-                if seed_database(n_players=20):
-                    st.session_state.db_initialized = True
-                    st.success("Database initialized successfully!")
-                    time.sleep(2)
+            if 'db_initialized' not in st.session_state:
+                if not Player.query.first():
+                    st.info("Initializing database with sample data...")
+                    if seed_database(n_players=20):
+                        st.session_state.db_initialized = True
+                        st.success("Database initialized successfully!")
+                        time.sleep(2)
                 else:
-                    st.error("Error initializing database.")
-            else:
-                st.session_state.db_initialized = True
-        except Exception as e:
-            st.error(f"Database error: {str(e)}")
+                    st.session_state.db_initialized = True
 
-    # Get and display player data
-    try:
-        players_df = get_players_df()
-        if not players_df.empty:
-            menu = st.sidebar.selectbox(
-                "Navigation",
-                ["Player Profiles", "Development Analytics", "Team Statistics", "Team Management"]
-            )
-
-            if menu == "Player Profiles":
-                st.subheader("Player Profiles")
-                selected_player = st.selectbox(
-                    "Select Player",
-                    players_df['name'].tolist()
+            players_df = get_players_df()
+            if not players_df.empty:
+                menu = st.sidebar.selectbox(
+                    "Navigation",
+                    ["Player Profiles", "Development Analytics", "Team Statistics", "Team Management"]
                 )
 
-                if selected_player:
-                    player_data = players_df[players_df['name'] == selected_player].iloc[0]
-                    player_history = get_player_history(player_data['player_id'])
-                    display_player_profile(player_data, player_history)
-                    display_development_charts(player_data, player_history)
+                # Your existing menu logic remains the same...
+                if menu == "Player Profiles":
+                    st.subheader("Player Profiles")
+                    selected_player = st.selectbox(
+                        "Select Player",
+                        players_df['name'].tolist()
+                    )
 
-            elif menu == "Development Analytics":
-                st.subheader("Development Analytics")
-                age_groups = sorted(players_df['age_group'].unique())
-                if age_groups:
-                    age_group = st.selectbox("Select Age Group", age_groups)
-                    filtered_df = players_df[players_df['age_group'] == age_group]
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        st.write("Player Distribution")
-                        st.dataframe(filtered_df[['name', 'position', 'skating_speed', 'shooting_accuracy']])
+                    if selected_player:
+                        player_data = players_df[players_df['name'] == selected_player].iloc[0]
+                        player_history = get_player_history(player_data['player_id'])
+                        display_player_profile(player_data, player_history)
+                        display_development_charts(player_data, player_history)
 
-                    with col2:
-                        st.write("Performance Summary")
-                        st.dataframe(filtered_df.describe())
+                elif menu == "Development Analytics":
+                    st.subheader("Development Analytics")
+                    age_groups = sorted(players_df['age_group'].unique())
+                    if age_groups:
+                        age_group = st.selectbox("Select Age Group", age_groups)
+                        filtered_df = players_df[players_df['age_group'] == age_group]
 
-            elif menu == "Team Management":
-                display_team_management()
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            st.write("Player Distribution")
+                            st.dataframe(filtered_df[['name', 'position', 'skating_speed', 'shooting_accuracy']])
 
-            else:  # Team Statistics
-                st.subheader("Team Statistics")
-                display_age_group_stats(players_df)
-                display_player_rankings(players_df)
+                        with col2:
+                            st.write("Performance Summary")
+                            st.dataframe(filtered_df.describe())
 
-        else:
-            st.warning("No player data available.")
-    except Exception as e:
-        st.error(f"Error: {str(e)}")
+                elif menu == "Team Management":
+                    display_team_management()
+
+                else:  # Team Statistics
+                    st.subheader("Team Statistics")
+                    display_age_group_stats(players_df)
+                    display_player_rankings(players_df)
+
+            else:
+                st.warning("No player data available.")
+        except Exception as e:
+            st.error(f"Error: {str(e)}")
 
 # Clean up context
 app_ctx.pop()

@@ -51,31 +51,30 @@ class User(UserMixin, db.Model):
 
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
-            print(f"Attempting to verify token: {token[:10]}...") # Print first part of token for debugging
             data = s.loads(token)
-
-            #Improved type checking and error handling
             if not isinstance(data, dict):
-                print(f"Error: Invalid token data type: {type(data)}. Token: {token}")
+                print(f"Invalid token data type: {type(data)}")
                 return None
 
-            print(f"Token data loaded successfully: {list(data.keys())}")
-
             user_id = data.get('user_id')
-            if user_id is None:
-                print("Error: 'user_id' not found in token data. Token: {token}")
+            if not user_id:
+                print("No user_id found in token data")
+                return None
+
+            # Verify expiration
+            exp = data.get('exp')
+            if not exp or int(time.time()) > exp:
+                print("Token has expired")
                 return None
 
             user = User.query.get(user_id)
             if user:
-                print(f"User found with ID {user_id}: {user.username}")
-            else:
-                print(f"No user found with ID {user_id}")
-            return user
+                print(f"Successfully verified token for user: {user.username}")
+                return user
+            print(f"No user found with ID: {user_id}")
+            return None
         except Exception as e:
-            print(f"Token verification exception: {str(e)}")
-            import traceback
-            traceback.print_exc()
+            print(f"Token verification error: {str(e)}")
             return None
 
 class CoachFeedback(db.Model):
