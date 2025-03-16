@@ -31,21 +31,16 @@ app_ctx.push()
 
 # Initialize basic session state
 if 'user' not in st.session_state:
-    # For testing: Auto-login with a test user
-    st.session_state.user = {
-        'id': 1,
-        'username': 'test_user',
-        'name': 'Test User',
-        'is_admin': True
-    }
+    # Set user to None to show landing page
+    st.session_state.user = None
 else:
     # Keep existing user if already logged in
     pass
 
 if 'is_admin' not in st.session_state:
-    st.session_state.is_admin = True
+    st.session_state.is_admin = False
 if 'authentication_token' not in st.session_state:
-    st.session_state.authentication_token = 'test_token'
+    st.session_state.authentication_token = None
 
 # Skip token verification for testing
 # Comment out when you need real authentication again
