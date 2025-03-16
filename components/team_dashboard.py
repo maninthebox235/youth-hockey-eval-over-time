@@ -110,6 +110,14 @@ def display_team_overview(team, players_df):
                       title='Age Distribution',
                       labels={'Count': 'Number of Players', 'Age': 'Age (years)'})
         st.plotly_chart(fig2, use_container_width=True, key="age_distribution_bar")
+        
+        # Add Team Skills Distribution Heatmap
+        st.subheader("Team Skills Distribution")
+        heatmap = create_team_skill_heatmap(players_df)
+        if heatmap:
+            st.plotly_chart(heatmap, use_container_width=True, key="team_skills_heatmap_overview")
+        else:
+            st.info("Not enough skill data available to generate team skills heatmap.")
 
 def create_team_skill_heatmap(players_df):
     """Create a team skills heatmap to identify strengths and weaknesses"""
@@ -256,10 +264,8 @@ def display_team_analysis(team, players_df):
             formatted_skill = skill.replace('_', ' ').title()
             st.metric(formatted_skill, f"{avg:.1f}")
 
-    # Team Skills Heatmap
-    heatmap = create_team_skill_heatmap(players_df)
-    if heatmap:
-        st.plotly_chart(heatmap, use_container_width=True, key="team_skills_heatmap")
+    # Add a note about skills distribution now being in the Overview tab
+    st.info("Team Skills Distribution visualization is now available in the Team Overview tab.")
 
     # Performance by position
     if 'goals' in players_df.columns and not players_df['goals'].isnull().all():
