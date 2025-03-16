@@ -310,7 +310,7 @@ def display_feature_preview():
         plan_col1, plan_col2 = st.columns([1, 1])
         
         with plan_col1:
-            st.image("https://cdn.pixabay.com/photo/2019/02/15/08/06/ice-hockey-3997825_1280.jpg", caption="Personalized Hockey Training")
+            st.image("static/images/hockey_training.svg", caption="Personalized Hockey Training")
             st.markdown("""
             <div style="margin-top: 10px;">
                 <h4>Personalized Development</h4>
@@ -575,7 +575,7 @@ def display_feature_preview():
         tryout_col1, tryout_col2 = st.columns([1, 1])
         
         with tryout_col1:
-            st.image("https://cdn.pixabay.com/photo/2017/04/24/09/25/ice-hockey-2255687_1280.jpg", caption="Hockey Tryout Evaluation")
+            st.image("static/images/hockey_tryout.svg", caption="Hockey Tryout Evaluation")
             
             st.markdown("""
             <div style="margin-top: 15px;">
@@ -653,7 +653,7 @@ def display_feature_preview():
                 st.success("Sample report generated! See preview on the right.")
             
         with reports_col2:
-            st.image("https://cdn.pixabay.com/photo/2018/01/06/23/25/hockey-3066858_1280.jpg", caption="Hockey Team Performance Report")
+            st.image("static/images/hockey_report.svg", caption="Hockey Team Performance Report")
             
             # Sample report sections
             st.markdown("""

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <!-- Ice rink background -->
+  <rect width="800" height="600" fill="#f0f9ff" />
+  
+  <!-- Center ice circle -->
+  <circle cx="400" cy="300" r="100" fill="none" stroke="#4169E1" stroke-width="3" />
+  <circle cx="400" cy="300" r="10" fill="#c8102e" />
+  
+  <!-- Blue lines -->
+  <rect x="0" y="200" width="800" height="6" fill="#4169E1" />
+  <rect x="0" y="394" width="800" height="6" fill="#4169E1" />
+  
+  <!-- Coach with clipboard -->
+  <g transform="translate(150, 300) scale(0.8)" fill="#333">
+    <path d="M-25,-20 C-30,0 -30,20 -25,40 C-20,55 -10,65 0,70 C10,65 20,55 25,40 C30,20 30,0 25,-20 C15,-30 5,-35 0,-35 C-5,-35 -15,-30 -25,-20 Z" />
+    <ellipse cx="0" cy="-45" rx="15" ry="12" />
+    <!-- Clipboard -->
+    <rect x="30" y="-20" width="30" height="40" rx="2" fill="#f5f5f5" stroke="#333" stroke-width="1" />
+    <line x1="40" y1="-10" x2="50" y2="-10" stroke="#333" stroke-width="1" />
+    <line x1="40" y1="0" x2="50" y2="0" stroke="#333" stroke-width="1" />
+    <line x1="40" y1="10" x2="50" y2="10" stroke="#333" stroke-width="1" />
+  </g>
+  
+  <!-- Players being evaluated -->
+  <!-- Player 1 (skating) -->
+  <g transform="translate(350, 200) scale(0.6)" fill="#003366">
+    <path d="M-30,-20 C-35,0 -40,20 -30,50 C-20,70 -10,80 0,85 C10,80 15,70 20,60 C35,30 40,10 40,-10 C40,-30 35,-50 30,-70 C20,-80 10,-85 0,-85 C-10,-85 -20,-80 -30,-70 Z" />
+    <ellipse cx="0" cy="-95" rx="20" ry="15" />
+    <path d="M-40,50 L-80,90 L-60,100 L-20,60 Z" />
+    <rect x="-25" y="85" width="20" height="5" rx="2" />
+    <rect x="5" y="85" width="20" height="5" rx="2" />
+  </g>
+  
+  <!-- Player 2 (shooting) -->
+  <g transform="translate(500, 300) scale(0.6) rotate(20)" fill="#003366">
+    <path d="M-30,-20 C-35,0 -40,20 -30,50 C-20,70 -10,80 0,85 C10,80 15,70 20,60 C35,30 40,10 40,-10 C40,-30 35,-50 30,-70 C20,-80 10,-85 0,-85 C-10,-85 -20,-80 -30,-70 Z" />
+    <ellipse cx="0" cy="-95" rx="20" ry="15" />
+    <path d="M40,50 L80,30 L90,50 L40,60 Z" />
+    <rect x="-25" y="85" width="20" height="5" rx="2" />
+    <rect x="5" y="85" width="20" height="5" rx="2" />
+  </g>
+  
+  <!-- Player 3 (in line) -->
+  <g transform="translate(350, 400) scale(0.6)" fill="#003366">
+    <path d="M-30,-20 C-35,0 -40,20 -30,50 C-20,70 -10,80 0,85 C10,80 15,70 20,60 C35,30 40,10 40,-10 C40,-30 35,-50 30,-70 C20,-80 10,-85 0,-85 C-10,-85 -20,-80 -30,-70 Z" />
+    <ellipse cx="0" cy="-95" rx="20" ry="15" />
+    <path d="M-40,50 L-80,90 L-60,100 L-20,60 Z" />
+    <rect x="-25" y="85" width="20" height="5" rx="2" />
+    <rect x="5" y="85" width="20" height="5" rx="2" />
+  </g>
+  
+  <!-- Player 4 (in line) -->
+  <g transform="translate(450, 430) scale(0.6)" fill="#003366">
+    <path d="M-30,-20 C-35,0 -40,20 -30,50 C-20,70 -10,80 0,85 C10,80 15,70 20,60 C35,30 40,10 40,-10 C40,-30 35,-50 30,-70 C20,-80 10,-85 0,-85 C-10,-85 -20,-80 -30,-70 Z" />
+    <ellipse cx="0" cy="-95" rx="20" ry="15" />
+    <path d="M-40,50 L-80,90 L-60,100 L-20,60 Z" />
+    <rect x="-25" y="85" width="20" height="5" rx="2" />
+    <rect x="5" y="85" width="20" height="5" rx="2" />
+  </g>
+  
+  <!-- Player 5 (in line) -->
+  <g transform="translate(550, 450) scale(0.6)" fill="#003366">
+    <path d="M-30,-20 C-35,0 -40,20 -30,50 C-20,70 -10,80 0,85 C10,80 15,70 20,60 C35,30 40,10 40,-10 C40,-30 35,-50 30,-70 C20,-80 10,-85 0,-85 C-10,-85 -20,-80 -30,-70 Z" />
+    <ellipse cx="0" cy="-95" rx="20" ry="15" />
+    <path d="M-40,50 L-80,90 L-60,100 L-20,60 Z" />
+    <rect x="-25" y="85" width="20" height="5" rx="2" />
+    <rect x="5" y="85" width="20" height="5" rx="2" />
+  </g>
+  
+  <!-- Assistant Coach with stopwatch -->
+  <g transform="translate(650, 300) scale(0.8)" fill="#333">
+    <path d="M-25,-20 C-30,0 -30,20 -25,40 C-20,55 -10,65 0,70 C10,65 20,55 25,40 C30,20 30,0 25,-20 C15,-30 5,-35 0,-35 C-5,-35 -15,-30 -25,-20 Z" />
+    <ellipse cx="0" cy="-45" rx="15" ry="12" />
+    <!-- Stopwatch -->
+    <circle cx="-30" cy="-10" r="15" fill="#f5f5f5" stroke="#333" stroke-width="1" />
+    <line x1="-30" y1="-10" x2="-20" y2="-5" stroke="#333" stroke-width="1" />
+  </g>
+  
+  <!-- Cones for drills -->
+  <polygon points="400,150 410,180 390,180" fill="#FF7043" />
+  <polygon points="450,150 460,180 440,180" fill="#FF7043" />
+  <polygon points="500,150 510,180 490,180" fill="#FF7043" />
+  
+  <!-- Evaluation checklist -->
+  <g transform="translate(100, 150)">
+    <rect x="0" y="0" width="120" height="100" rx="5" fill="white" stroke="#333" stroke-width="2" />
+    <text x="60" y="20" font-family="Arial" font-size="12" text-anchor="middle" fill="#333">TRYOUT EVALUATION</text>
+    <line x1="10" y1="30" x2="110" y2="30" stroke="#333" stroke-width="1" />
+    
+    <!-- Checkmarks -->
+    <rect x="15" y="40" width="10" height="10" fill="none" stroke="#333" stroke-width="1" />
+    <text x="40" y="50" font-family="Arial" font-size="10" fill="#333">Skating</text>
+    
+    <rect x="15" y="60" width="10" height="10" fill="none" stroke="#333" stroke-width="1" />
+    <path d="M15,65 L20,70 L25,60" stroke="#333" stroke-width="1" fill="none" />
+    <text x="40" y="70" font-family="Arial" font-size="10" fill="#333">Shooting</text>
+    
+    <rect x="15" y="80" width="10" height="10" fill="none" stroke="#333" stroke-width="1" />
+    <text x="40" y="90" font-family="Arial" font-size="10" fill="#333">Passing</text>
+  </g>
+</svg>
