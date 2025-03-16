@@ -28,30 +28,58 @@ def create_template_form():
 
         st.subheader("Rating Categories")
 
-        # Different categories based on player type
+        # Default categories based on player type
         if player_type == "Goalie":
-            categories = {
-                "save_technique_rating": st.checkbox("Save Technique"),
-                "positioning_rating": st.checkbox("Positioning"),
-                "rebound_control_rating": st.checkbox("Rebound Control"),
-                "communication_rating": st.checkbox("Communication"),
-                "mental_toughness_rating": st.checkbox("Mental Toughness")
+            default_categories = {
+                "save_technique_rating": "Save Technique",
+                "positioning_rating": "Positioning",
+                "rebound_control_rating": "Rebound Control",
+                "communication_rating": "Communication",
+                "mental_toughness_rating": "Mental Toughness"
             }
         else:
-            categories = {
-                "skating_rating": st.checkbox("Skating"),
-                "shooting_rating": st.checkbox("Shooting"),
-                "passing_rating": st.checkbox("Passing"),
-                "teamwork_rating": st.checkbox("Teamwork"),
-                "game_awareness_rating": st.checkbox("Game Awareness")
+            default_categories = {
+                "skating_rating": "Skating",
+                "shooting_rating": "Shooting",
+                "passing_rating": "Passing",
+                "teamwork_rating": "Teamwork",
+                "game_awareness_rating": "Game Awareness"
             }
 
-        # Common categories for all players
+        # Common categories
         common_categories = {
-            "effort_rating": st.checkbox("Effort"),
-            "improvement_rating": st.checkbox("Areas for Improvement"),
-            "strengths_rating": st.checkbox("Key Strengths")
+            "effort_rating": "Effort",
+            "improvement_rating": "Areas for Improvement",
+            "strengths_rating": "Key Strengths"
         }
+
+        # Create checkboxes for default categories
+        categories = {}
+        st.subheader("Default Categories")
+        for key, label in default_categories.items():
+            categories[key] = st.checkbox(label, key=f"default_{key}")
+
+        st.subheader("Common Categories")
+        for key, label in common_categories.items():
+            categories[key] = st.checkbox(label, key=f"common_{key}")
+
+        # Custom categories
+        st.subheader("Add Custom Categories")
+        custom_categories = []
+        
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            new_category = st.text_input("New Category Name", key="new_category")
+        with col2:
+            if st.button("Add Category", key="add_category") and new_category:
+                custom_categories.append(new_category)
+                st.session_state.custom_categories = custom_categories
+
+        # Display and select custom categories
+        if "custom_categories" in st.session_state:
+            for category in st.session_state.custom_categories:
+                category_key = f"{category.lower().replace(' ', '_')}_rating"
+                categories[category_key] = st.checkbox(category)
 
         submitted = st.form_submit_button("Create Template")
 

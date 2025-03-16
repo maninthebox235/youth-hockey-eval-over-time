@@ -143,6 +143,22 @@ def display_feedback_form(player_id, player_name, position):
         ratings = {}
 
         st.subheader("Rating Categories")
+        
+        # Get template structure if template selected
+        categories_to_rate = []
+        if selected_template:
+            categories_to_rate = selected_template.template_structure.get('categories', [])
+            
+            # Display ratings for each category
+            for category in categories_to_rate:
+                category_label = category.replace('_rating', '').replace('_', ' ').title()
+                ratings[category] = st.slider(
+                    category_label,
+                    min_value=1,
+                    max_value=5,
+                    value=3,
+                    help=f"Rate {category_label.lower()} from 1-5"
+                )
 
         if selected_template:
             # Use template structure to create rating sliders
