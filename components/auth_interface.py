@@ -31,13 +31,15 @@ def login_user():
                 return
 
             try:
+                # Get user from database
                 user = User.query.filter_by(username=username).first()
+
                 if user and user.check_password(password):
                     # Update last login time
                     user.last_login = datetime.utcnow()
                     db.session.commit()
 
-                    # Store user info in session state
+                    # Store user info in session state as dictionary
                     st.session_state.user = {
                         'id': user.id,
                         'username': user.username,
@@ -55,7 +57,8 @@ def login_user():
                 else:
                     st.error("Invalid username or password")
             except Exception as e:
-                st.error(f"Login error: {str(e)}")
+                print(f"Login error: {str(e)}")  # Log the error
+                st.error("Login failed. Please try again.")
                 db.session.rollback()
 
 def create_admin():
