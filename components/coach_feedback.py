@@ -16,30 +16,29 @@ def get_templates_for_player(player_type):
 def submit_coach_feedback(player_id, coach_name, feedback_text, ratings, template_id=None):
     """Submit new coach feedback for a player"""
     try:
-        # Convert numpy int64 or any other numeric type to Python int
-        try:
-            player_id = int(player_id)
-        except (TypeError, ValueError):
-            if hasattr(player_id, 'item'):
-                player_id = int(player_id.item())
-            else:
-                raise ValueError("Invalid player ID type")
+        # Use type converter utility for consistent handling
+        from utils.type_converter import to_int
+        
+        # Convert player_id to Python int
+        player_id = to_int(player_id)
+        if player_id is None:
+            raise ValueError("Invalid player ID: None after conversion")
 
         # Ensure template_id is a regular Python int if provided
         if template_id is not None:
-            if hasattr(template_id, 'item'):
-                template_id = template_id.item()
-            else:
-                template_id = int(template_id)
+            template_id = to_int(template_id)
 
         # Ensure all rating values are integers and filter out None values
         validated_ratings = {}
         for key, value in ratings.items():
             if key.endswith('_rating') and value is not None:
                 try:
-                    validated_ratings[key] = int(float(value))
-                except (ValueError, TypeError):
-                    print(f"Error converting rating {key}: {value}")
+                    validated_ratings[key] = to_int(value)
+                    if validated_ratings[key] is None:
+                        print(f"Warning: Rating {key} converted to None, skipping")
+                        continue
+                except Exception as e:
+                    print(f"Error converting rating {key}: {value} - {str(e)}")
                     continue
 
         # Create feedback entry
@@ -71,14 +70,13 @@ def submit_coach_feedback(player_id, coach_name, feedback_text, ratings, templat
 def get_player_feedback(player_id):
     """Get all feedback for a specific player"""
     try:
-        # Convert numpy int64 or any other numeric type to Python int
-        try:
-            player_id = int(player_id)
-        except (TypeError, ValueError):
-            if hasattr(player_id, 'item'):
-                player_id = int(player_id.item())
-            else:
-                raise ValueError("Invalid player ID type")
+        # Use type converter utility for consistent handling
+        from utils.type_converter import to_int
+        
+        # Convert player_id to Python int
+        player_id = to_int(player_id)
+        if player_id is None:
+            raise ValueError("Invalid player ID: None after conversion")
 
         feedback = CoachFeedback.query.filter_by(player_id=player_id).order_by(CoachFeedback.date.desc()).all()
         if not feedback:
@@ -98,8 +96,12 @@ def get_player_feedback(player_id):
                     value = getattr(f, column.name)
                     if value is not None:
                         try:
-                            feedback_data[column.name] = int(float(value))
-                        except (ValueError, TypeError):
+                            # Use type converter for consistent handling
+                            converted_value = to_int(value)
+                            if converted_value is not None:
+                                feedback_data[column.name] = converted_value
+                        except Exception as e:
+                            print(f"Error converting {column.name}: {value} - {str(e)}")
                             continue
 
             data.append(feedback_data)
@@ -112,14 +114,13 @@ def get_player_feedback(player_id):
 def display_feedback_form(player_id, player_name, position):
     """Display feedback form for a player"""
     try:
-        # Convert numpy int64 or any other numeric type to Python int
-        try:
-            player_id = int(player_id)
-        except (TypeError, ValueError):
-            if hasattr(player_id, 'item'):
-                player_id = int(player_id.item())
-            else:
-                raise ValueError("Invalid player ID type")
+        # Use type converter utility for consistent handling
+        from utils.type_converter import to_int
+        
+        # Convert player_id to Python int
+        player_id = to_int(player_id)
+        if player_id is None:
+            raise ValueError("Invalid player ID: None after conversion")
     except ValueError as e:
         st.error(f"Invalid player ID: {e}")
         return
@@ -250,14 +251,13 @@ def display_feedback_form(player_id, player_name, position):
 def display_feedback_history(player_id):
     """Display the feedback history for a player"""
     try:
-        # Convert numpy int64 or any other numeric type to Python int
-        try:
-            player_id = int(player_id)
-        except (TypeError, ValueError):
-            if hasattr(player_id, 'item'):
-                player_id = int(player_id.item())
-            else:
-                raise ValueError("Invalid player ID type")
+        # Use type converter utility for consistent handling
+        from utils.type_converter import to_int
+        
+        # Convert player_id to Python int
+        player_id = to_int(player_id)
+        if player_id is None:
+            raise ValueError("Invalid player ID: None after conversion")
     except ValueError as e:
         st.error(f"Invalid player ID: {e}")
         return
@@ -275,9 +275,11 @@ def display_feedback_history(player_id):
                 cols = st.columns(3)
                 ratings = {k: v for k, v in row.items() if k.endswith('_rating') and pd.notna(v)}
 
+                from utils.type_converter import to_int
                 for i, (metric, value) in enumerate(ratings.items()):
                     with cols[i % 3]:
                         metric_name = metric.replace('_rating', '').replace('_', ' ').title()
-                        st.metric(metric_name, int(value))
+                        # Use type converter for consistent handling
+                        st.metric(metric_name, to_int(value) or 0)
     else:
         st.info("No feedback available yet.")
