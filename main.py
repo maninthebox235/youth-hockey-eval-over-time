@@ -90,10 +90,10 @@ if not st.session_state.user and token_to_verify:
                     except Exception as param_error:
                         print(f"Error clearing URL params: {str(param_error)}")
         else:
-        print("No token provided for verification")
-except Exception as e:
-    print(f"Token verification outer error: {str(e)}")
-    st.session_state.authentication_token = None
+            print("No token provided for verification")
+    except Exception as e:
+        print(f"Token verification outer error: {str(e)}")
+        st.session_state.authentication_token = None
         # Clear auth_token from URL if it's invalid
         if url_token:
             try:
