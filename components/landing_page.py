@@ -7,7 +7,7 @@ def display_feature_preview():
     st.title("Hockey Player Tracking System")
     st.markdown("##### Track player development, manage teams, and provide structured feedback")
 
-    col1, col2 = st.columns([1,2,1])
+    col1, col2, col3 = st.columns([1,2,1])
 
     with col2:
         st.markdown("### Start Your Free Trial Today!")
