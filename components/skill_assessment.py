@@ -86,7 +86,12 @@ def display_skill_assessment(player_id):
                 raise ValueError("Invalid player ID type")
                 
         player = Player.query.get(player_id)
-    if not player:
+        if not player:
+            st.error("Player not found")
+            return False
+    except Exception as e:
+        st.error(f"Error loading player: {str(e)}")
+        return False
         st.error("Player not found")
         return False
 
