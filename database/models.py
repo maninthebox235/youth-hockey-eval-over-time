@@ -36,7 +36,11 @@ class User(UserMixin, db.Model):
 
     def get_auth_token(self, expiration=2592000):  # 30 days default
         s = Serializer(current_app.config['SECRET_KEY'])
-        return s.dumps({'user_id': self.id, 'exp': int(time.time()) + expiration}).decode('utf-8')
+        token = s.dumps({'user_id': self.id, 'exp': int(time.time()) + expiration})
+        # Handle both string and bytes return types from dumps()
+        if isinstance(token, bytes):
+            return token.decode('utf-8')
+        return token
 
     @staticmethod
     def verify_auth_token(token):
