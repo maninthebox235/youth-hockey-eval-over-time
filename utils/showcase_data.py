@@ -309,8 +309,8 @@ def display_feature_showcase():
         st.write("Track game statistics to monitor on-ice performance")
         
         # Create synthetic game stats chart
-        perf_data = player_history[['date', 'goals', 'assists']]
-        perf_data['points'] = perf_data['goals'] + perf_data['assists']
+        perf_data = player_history[['date', 'goals', 'assists']].copy()
+        perf_data.loc[:, 'points'] = perf_data['goals'] + perf_data['assists']
         
         perf_fig = px.bar(
             perf_data,
