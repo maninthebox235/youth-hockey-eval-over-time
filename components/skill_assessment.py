@@ -177,27 +177,29 @@ def display_skill_assessment(player_id):
                     # Make sure we're not in a failed transaction state
                     db.session.rollback()
                     
-                    # Update player metrics
+                    # Update player metrics that exist in the Player model
                     for metric, value in all_ratings.items():
-                        setattr(player, metric, value)
-
-                    # Check if notes column exists in PlayerHistory
-                    # This handles the error about missing 'notes' column
-                    try:
-                        # Create historical record with notes field
-                        history = PlayerHistory(
-                            player_id=player.id,
-                            date=datetime.utcnow().date(),
-                            notes=notes,
-                            **all_ratings
-                        )
-                    except Exception:
-                        # Fallback if notes column doesn't exist
-                        history = PlayerHistory(
-                            player_id=player.id,
-                            date=datetime.utcnow().date(),
-                            **all_ratings
-                        )
+                        if hasattr(player, metric):
+                            setattr(player, metric, value)
+                        
+                    # Filter metrics to only include those that exist in PlayerHistory model
+                    valid_metrics = {}
+                    player_history_columns = [column.key for column in PlayerHistory.__table__.columns]
+                    
+                    for metric, value in all_ratings.items():
+                        if metric in player_history_columns:
+                            valid_metrics[metric] = value
+                    
+                    # Create historical record with notes field
+                    history = PlayerHistory(
+                        player_id=player.id,
+                        date=datetime.utcnow().date(),
+                        notes=notes
+                    )
+                    
+                    # Set the valid metrics individually
+                    for metric, value in valid_metrics.items():
+                        setattr(history, metric, value)
 
                     db.session.add(history)
                     db.session.commit()

@@ -149,11 +149,46 @@ class Player(db.Model):
     # Skater metrics
     skating_speed = db.Column(db.Float, nullable=True)
     shooting_accuracy = db.Column(db.Float, nullable=True)
+    
+    # Additional skating metrics
+    edge_control = db.Column(db.Float, nullable=True)
+    agility = db.Column(db.Float, nullable=True)
+    backward_skating = db.Column(db.Float, nullable=True)
+    
+    # Stickhandling metrics
+    puck_control = db.Column(db.Float, nullable=True)
+    passing_accuracy = db.Column(db.Float, nullable=True)
+    receiving = db.Column(db.Float, nullable=True)
+    stick_protection = db.Column(db.Float, nullable=True)
+    
+    # Game IQ metrics
+    decision_making = db.Column(db.Float, nullable=True)
+    game_awareness = db.Column(db.Float, nullable=True)
+    hockey_sense = db.Column(db.Float, nullable=True)
+    
+    # Forward specific metrics
+    wrist_shot = db.Column(db.Float, nullable=True)
+    slap_shot = db.Column(db.Float, nullable=True)
+    one_timer = db.Column(db.Float, nullable=True)
+    shot_accuracy = db.Column(db.Float, nullable=True)
+    
+    # Defense specific metrics
+    gap_control = db.Column(db.Float, nullable=True)
+    physicality = db.Column(db.Float, nullable=True)
+    shot_blocking = db.Column(db.Float, nullable=True)
+    breakout_passes = db.Column(db.Float, nullable=True)
 
     # Goalie metrics
     save_percentage = db.Column(db.Float, nullable=True)
     reaction_time = db.Column(db.Float, nullable=True)
     positioning = db.Column(db.Float, nullable=True)
+    save_technique = db.Column(db.Float, nullable=True)
+    rebound_control = db.Column(db.Float, nullable=True)
+    puck_handling = db.Column(db.Float, nullable=True)
+    recovery = db.Column(db.Float, nullable=True)
+    glove_saves = db.Column(db.Float, nullable=True)
+    blocker_saves = db.Column(db.Float, nullable=True)
+    post_integration = db.Column(db.Float, nullable=True)
 
     # Common stats
     games_played = db.Column(db.Integer, default=0)
