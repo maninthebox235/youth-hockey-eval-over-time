@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <!-- Ice background -->
+  <rect width="800" height="600" fill="#f0f9ff" />
+  
+  <!-- Center ice line -->
+  <rect x="0" y="295" width="800" height="10" fill="#c8102e" />
+  
+  <!-- Face-off circle -->
+  <circle cx="400" cy="300" r="70" fill="none" stroke="#0a3161" stroke-width="4" />
+  <circle cx="400" cy="300" r="10" fill="#c8102e" />
+  
+  <!-- Team A players (in blue) -->
+  <g fill="#003366">
+    <!-- Center player -->
+    <g transform="translate(340, 300) scale(0.6)">
+      <path d="M-30,-20 C-35,0 -40,20 -30,50 C-20,70 -10,80 0,85 C10,80 15,70 20,60 C35,30 40,10 40,-10 C40,-30 35,-50 30,-70 C20,-80 10,-85 0,-85 C-10,-85 -20,-80 -30,-70 Z" />
+      <ellipse cx="0" cy="-95" rx="20" ry="15" />
+      <path d="M-40,50 L-80,90 L-60,100 L-20,60 Z" />
+      <rect x="-25" y="85" width="20" height="5" rx="2" />
+      <rect x="5" y="85" width="20" height="5" rx="2" />
+    </g>
+    
+    <!-- Left wing -->
+    <g transform="translate(200, 250) scale(0.6) rotate(-20)">
+      <path d="M-30,-20 C-35,0 -40,20 -30,50 C-20,70 -10,80 0,85 C10,80 15,70 20,60 C35,30 40,10 40,-10 C40,-30 35,-50 30,-70 C20,-80 10,-85 0,-85 C-10,-85 -20,-80 -30,-70 Z" />
+      <ellipse cx="0" cy="-95" rx="20" ry="15" />
+      <path d="M-40,50 L-80,90 L-60,100 L-20,60 Z" />
+      <rect x="-25" y="85" width="20" height="5" rx="2" />
+      <rect x="5" y="85" width="20" height="5" rx="2" />
+    </g>
+    
+    <!-- Right wing -->
+    <g transform="translate(260, 400) scale(0.6) rotate(30)">
+      <path d="M-30,-20 C-35,0 -40,20 -30,50 C-20,70 -10,80 0,85 C10,80 15,70 20,60 C35,30 40,10 40,-10 C40,-30 35,-50 30,-70 C20,-80 10,-85 0,-85 C-10,-85 -20,-80 -30,-70 Z" />
+      <ellipse cx="0" cy="-95" rx="20" ry="15" />
+      <path d="M-40,50 L-80,90 L-60,100 L-20,60 Z" />
+      <rect x="-25" y="85" width="20" height="5" rx="2" />
+      <rect x="5" y="85" width="20" height="5" rx="2" />
+    </g>
+    
+    <!-- Left defense -->
+    <g transform="translate(150, 320) scale(0.6)">
+      <path d="M-30,-20 C-35,0 -40,20 -30,50 C-20,70 -10,80 0,85 C10,80 15,70 20,60 C35,30 40,10 40,-10 C40,-30 35,-50 30,-70 C20,-80 10,-85 0,-85 C-10,-85 -20,-80 -30,-70 Z" />
+      <ellipse cx="0" cy="-95" rx="20" ry="15" />
+      <path d="M-40,50 L-80,90 L-60,100 L-20,60 Z" />
+      <rect x="-25" y="85" width="20" height="5" rx="2" />
+      <rect x="5" y="85" width="20" height="5" rx="2" />
+    </g>
+  </g>
+  
+  <!-- Team B players (in red) -->
+  <g fill="#c8102e">
+    <!-- Center player -->
+    <g transform="translate(460, 300) scale(0.6)">
+      <path d="M-30,-20 C-35,0 -40,20 -30,50 C-20,70 -10,80 0,85 C10,80 15,70 20,60 C35,30 40,10 40,-10 C40,-30 35,-50 30,-70 C20,-80 10,-85 0,-85 C-10,-85 -20,-80 -30,-70 Z" />
+      <ellipse cx="0" cy="-95" rx="20" ry="15" />
+      <path d="M40,50 L80,90 L60,100 L20,60 Z" />
+      <rect x="-25" y="85" width="20" height="5" rx="2" />
+      <rect x="5" y="85" width="20" height="5" rx="2" />
+    </g>
+    
+    <!-- Left wing -->
+    <g transform="translate(600, 250) scale(0.6) rotate(20)">
+      <path d="M-30,-20 C-35,0 -40,20 -30,50 C-20,70 -10,80 0,85 C10,80 15,70 20,60 C35,30 40,10 40,-10 C40,-30 35,-50 30,-70 C20,-80 10,-85 0,-85 C-10,-85 -20,-80 -30,-70 Z" />
+      <ellipse cx="0" cy="-95" rx="20" ry="15" />
+      <path d="M40,50 L80,90 L60,100 L20,60 Z" />
+      <rect x="-25" y="85" width="20" height="5" rx="2" />
+      <rect x="5" y="85" width="20" height="5" rx="2" />
+    </g>
+    
+    <!-- Right wing -->
+    <g transform="translate(540, 400) scale(0.6) rotate(-30)">
+      <path d="M-30,-20 C-35,0 -40,20 -30,50 C-20,70 -10,80 0,85 C10,80 15,70 20,60 C35,30 40,10 40,-10 C40,-30 35,-50 30,-70 C20,-80 10,-85 0,-85 C-10,-85 -20,-80 -30,-70 Z" />
+      <ellipse cx="0" cy="-95" rx="20" ry="15" />
+      <path d="M40,50 L80,90 L60,100 L20,60 Z" />
+      <rect x="-25" y="85" width="20" height="5" rx="2" />
+      <rect x="5" y="85" width="20" height="5" rx="2" />
+    </g>
+    
+    <!-- Right defense -->
+    <g transform="translate(650, 320) scale(0.6)">
+      <path d="M-30,-20 C-35,0 -40,20 -30,50 C-20,70 -10,80 0,85 C10,80 15,70 20,60 C35,30 40,10 40,-10 C40,-30 35,-50 30,-70 C20,-80 10,-85 0,-85 C-10,-85 -20,-80 -30,-70 Z" />
+      <ellipse cx="0" cy="-95" rx="20" ry="15" />
+      <path d="M40,50 L80,90 L60,100 L20,60 Z" />
+      <rect x="-25" y="85" width="20" height="5" rx="2" />
+      <rect x="5" y="85" width="20" height="5" rx="2" />
+    </g>
+  </g>
+  
+  <!-- Puck -->
+  <circle cx="400" cy="310" r="10" fill="#111" />
+  
+  <!-- Referee -->
+  <g transform="translate(400, 230) scale(0.5)" fill="#222">
+    <path d="M-30,-20 C-35,0 -40,20 -30,50 C-20,70 -10,80 0,85 C10,80 15,70 20,60 C35,30 40,10 40,-10 C40,-30 35,-50 30,-70 C20,-80 10,-85 0,-85 C-10,-85 -20,-80 -30,-70 Z" />
+    <ellipse cx="0" cy="-95" rx="20" ry="15" />
+    <!-- Whistle -->
+    <circle cx="40" cy="-75" r="5" fill="#777" />
+  </g>
+  
+  <!-- Scoreboard suggestion -->
+  <rect x="300" y="50" width="200" height="60" rx="5" fill="#333" />
+  <text x="400" y="85" font-family="Arial" font-size="30" fill="white" text-anchor="middle">2 - 1</text>
+</svg>

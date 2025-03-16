@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <!-- Ice background -->
+  <rect width="800" height="600" fill="#f0f9ff" />
+  
+  <!-- Hockey player silhouette -->
+  <g transform="translate(400, 300) scale(1.5)" fill="#0a3161">
+    <!-- Body -->
+    <path d="M-30,-70 C-35,-50 -40,-30 -40,-10 C-40,10 -35,30 -20,60 C-15,70 -10,80 0,85 C10,80 15,70 20,60 C35,30 40,10 40,-10 C40,-30 35,-50 30,-70 C20,-80 10,-85 0,-85 C-10,-85 -20,-80 -30,-70 Z" />
+    
+    <!-- Helmet -->
+    <ellipse cx="0" cy="-95" rx="20" ry="15" />
+    
+    <!-- Stick -->
+    <path d="M-40,50 L-80,120 L-60,130 L-20,60 Z" />
+    
+    <!-- Skates -->
+    <rect x="-25" y="85" width="20" height="5" rx="2" />
+    <rect x="5" y="85" width="20" height="5" rx="2" />
+  </g>
+  
+  <!-- Hockey puck -->
+  <ellipse cx="500" cy="450" rx="15" ry="7" fill="#111" />
+  
+  <!-- Hockey net suggestion -->
+  <path d="M650,400 L750,350 L750,450 L650,500 Z" fill="none" stroke="#999" stroke-width="3" />
+  
+  <!-- Ice markings -->
+  <circle cx="400" cy="300" r="150" fill="none" stroke="#a3cff2" stroke-width="2" stroke-dasharray="5,5" />
+  <line x1="200" y1="100" x2="600" y2="500" stroke="#a3cff2" stroke-width="2" />
+  <line x1="200" y1="500" x2="600" y2="100" stroke="#a3cff2" stroke-width="2" />
+</svg>
