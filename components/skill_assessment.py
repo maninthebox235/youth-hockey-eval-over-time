@@ -225,7 +225,7 @@ def add_new_assessment(player):
                 all_ratings[metric] = st.slider(
                     f"{metric.replace('_', ' ').title()} Rating",
                     min_value=1,
-                    max_value=5,
+                    max_value=5,  # Ensure this is always 5
                     value=current_value,
                     key=f"rating_{metric}_1",
                     step=1
@@ -247,7 +247,7 @@ def add_new_assessment(player):
                 all_ratings[metric] = st.slider(
                     f"{metric.replace('_', ' ').title()} Rating",
                     min_value=1,
-                    max_value=5,
+                    max_value=5,  # Ensure this is always 5
                     value=current_value,
                     key=f"rating_{metric}_2",
                     step=1
@@ -274,8 +274,10 @@ def add_new_assessment(player):
                 
                 # Update player metrics that exist in the Player model
                 for metric, value in all_ratings.items():
+                    # Ensure value is in the valid 1-5 range
+                    validated_value = min(max(value, 1), 5)
                     if hasattr(player, metric):
-                        setattr(player, metric, value)
+                        setattr(player, metric, validated_value)
                     
                 # Filter metrics to only include those that exist in PlayerHistory model
                 valid_metrics = {}
@@ -321,7 +323,7 @@ def rate_skill(label, key, description="", default_value=3):
     return st.slider(
         label,
         min_value=1,
-        max_value=5,
+        max_value=5,  # Ensure all sliders are 1-5 scale
         value=default_value,
         key=key,
         step=1
