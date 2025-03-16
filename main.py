@@ -48,7 +48,7 @@ url_token = query_params.get("auth_token", None)
 # Use URL token if available, otherwise use session token if it exists
 token_to_verify = url_token or st.session_state.get("authentication_token")
 
-if not st.session_state.user and token_to_verify:
+if token_to_verify:
     print(f"Attempting to restore session with token...")
     try:
         with app.app_context():
@@ -72,10 +72,13 @@ if not st.session_state.user and token_to_verify:
                     st.session_state.authentication_token = None
                     # Clear auth_token from URL if it's invalid
                     if url_token:
-                        params = dict(query_params)
-                        if "auth_token" in params:
-                            del params["auth_token"]
-                        st.query_params.update(**params)
+                        try:
+                            params = dict(query_params)
+                            if "auth_token" in params:
+                                del params["auth_token"]
+                            st.query_params.update(**params)
+                        except Exception as param_error:
+                            print(f"Error clearing URL params: {str(param_error)}")
             except Exception as token_verify_error:
                 print(f"Internal token verification error: {str(token_verify_error)}")
                 # Safe error handling for token verification
