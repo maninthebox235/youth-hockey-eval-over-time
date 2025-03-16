@@ -44,20 +44,24 @@ class User(UserMixin, db.Model):
 
     @staticmethod
     def verify_auth_token(token):
+        """Verify the authentication token"""
+        if not token:
+            return None
+
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
             data = s.loads(token)
-            # Check if token is expired
-            if 'exp' in data and int(time.time()) > data['exp']:
-                print("Token has expired")
+
+            # Get user ID from token
+            user_id = data.get('user_id')
+
+            if not user_id:
                 return None
-                
-            user = User.query.get(data['user_id'])
-            if not user:
-                print(f"Token valid but user_id {data['user_id']} not found in database")
-            return user
+
+            # Return user if found
+            return User.query.get(user_id)
         except Exception as e:
-            print(f"Token verification failed: {str(e)}")
+            print(f"Token verification exception: {str(e)}")
             return None
 
 class CoachFeedback(db.Model):

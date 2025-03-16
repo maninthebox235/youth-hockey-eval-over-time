@@ -52,29 +52,33 @@ if not st.session_state.user and token_to_verify:
     print(f"Attempting to restore session with token...")
     try:
         with app.app_context():
-            user = User.verify_auth_token(token_to_verify)
-            if user:
-                # If the token came from URL and not session, store it in session
-                if url_token and not st.session_state.authentication_token:
-                    st.session_state.authentication_token = url_token
+            # Only proceed if token_to_verify is not None
+            if token_to_verify:
+                user = User.verify_auth_token(token_to_verify)
+                if user:
+                    # If the token came from URL and not session, store it in session
+                    if url_token and not st.session_state.authentication_token:
+                        st.session_state.authentication_token = url_token
 
-                st.session_state.user = {
-                    'id': user.id,
-                    'username': user.username,
-                    'name': user.name,
-                    'is_admin': user.is_admin
-                }
-                st.session_state.is_admin = user.is_admin
-                print(f"Session successfully restored for user: {user.username}")
+                    st.session_state.user = {
+                        'id': user.id,
+                        'username': user.username,
+                        'name': user.name,
+                        'is_admin': user.is_admin
+                    }
+                    st.session_state.is_admin = user.is_admin
+                    print(f"Session successfully restored for user: {user.username}")
+                else:
+                    print("Token verification failed: no user found")
+                    st.session_state.authentication_token = None
+                    # Clear auth_token from URL if it's invalid
+                    if url_token:
+                        params = dict(query_params)
+                        if "auth_token" in params:
+                            del params["auth_token"]
+                        st.query_params.update(**params)
             else:
-                print("Token verification failed: no user found")
-                st.session_state.authentication_token = None
-                # Clear auth_token from URL if it's invalid
-                if url_token:
-                    params = dict(query_params)
-                    if "auth_token" in params:
-                        del params["auth_token"]
-                    st.query_params.update(**params)
+                print("No token provided for verification")
     except Exception as e:
         print(f"Token verification error: {str(e)}")
         st.session_state.authentication_token = None
