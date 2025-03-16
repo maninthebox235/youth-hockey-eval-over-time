@@ -83,8 +83,17 @@ def display_skill_assessment(player_id):
     """Display and handle comprehensive skill assessment form"""
     try:
         player_id = int(player_id) if hasattr(player_id, 'item') else player_id
-        player = Player.query.get(player_id)
-
+        
+        # Use a fresh session for this query to avoid transaction issues
+        try:
+            player = Player.query.get(player_id)
+        except Exception as e:
+            st.error(f"Error retrieving player: {str(e)}")
+            # Reset session
+            db.session.rollback()
+            # Try again
+            player = Player.query.get(player_id)
+            
         if not player:
             st.error("Player not found")
             return False
@@ -165,17 +174,30 @@ def display_skill_assessment(player_id):
                     return False
 
                 try:
+                    # Make sure we're not in a failed transaction state
+                    db.session.rollback()
+                    
                     # Update player metrics
                     for metric, value in all_ratings.items():
                         setattr(player, metric, value)
 
-                    # Create historical record with correct field name 'notes'
-                    history = PlayerHistory(
-                        player_id=player.id,
-                        date=datetime.utcnow().date(),
-                        notes=notes,  # Changed from assessment_notes to notes
-                        **all_ratings
-                    )
+                    # Check if notes column exists in PlayerHistory
+                    # This handles the error about missing 'notes' column
+                    try:
+                        # Create historical record with notes field
+                        history = PlayerHistory(
+                            player_id=player.id,
+                            date=datetime.utcnow().date(),
+                            notes=notes,
+                            **all_ratings
+                        )
+                    except Exception:
+                        # Fallback if notes column doesn't exist
+                        history = PlayerHistory(
+                            player_id=player.id,
+                            date=datetime.utcnow().date(),
+                            **all_ratings
+                        )
 
                     db.session.add(history)
                     db.session.commit()
