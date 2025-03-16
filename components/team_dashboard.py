@@ -474,34 +474,56 @@ def display_tryout_evaluation_mode(team_id):
                 # Add option to add a new player
                 team_players.append((-1, "-- Add New Player --"))
                 
-                # Player selection dropdown
+                # Create a unique key for this form
+                form_key = f"tryout_form_{team.id}"
+                
+                # Initialize session state for player data if needed
+                if 'current_player_id' not in st.session_state:
+                    st.session_state.current_player_id = -1
+                    st.session_state.current_player_name = ""
+                    st.session_state.current_player_age = 0
+                    st.session_state.current_player_position = ""
+                
+                # Player selection dropdown with key
                 player_option = st.selectbox(
                     "Select Player", 
                     options=range(len(team_players)),
-                    format_func=lambda i: team_players[i][1]
+                    format_func=lambda i: team_players[i][1],
+                    key=f"{form_key}_player_select"
                 )
                 
                 selected_player_id = team_players[player_option][0]
                 
-                # If existing player selected, auto-fill details
+                # Check if selection has changed
+                if selected_player_id != st.session_state.current_player_id:
+                    # Update the session state with new player info
+                    st.session_state.current_player_id = selected_player_id
+                    
+                    # If existing player selected, load their details
+                    if selected_player_id > 0:
+                        player = Player.query.get(selected_player_id)
+                        if player:
+                            st.session_state.current_player_name = player.name
+                            st.session_state.current_player_age = player.age
+                            st.session_state.current_player_position = player.position
+                    else:
+                        # Clear for new player
+                        st.session_state.current_player_name = ""
+                        st.session_state.current_player_age = int(team.age_group.replace('U', ''))
+                        st.session_state.current_player_position = "Forward"
+                
+                # If existing player selected, display info
                 if selected_player_id > 0:
-                    player = Player.query.get(selected_player_id)
-                    player_name = player.name
-                    player_age = player.age
-                    player_position = player.position
+                    player_name = st.session_state.current_player_name
+                    player_age = st.session_state.current_player_age
+                    player_position = st.session_state.current_player_position
                     
-                    # Store player info in session state for use in the rest of the form
-                    st.session_state.selected_player_name = player_name
-                    st.session_state.selected_player_age = player_age
-                    st.session_state.selected_player_position = player_position
-                    
-                    # Display player info with updated values from the selected player
+                    # Display player info
                     st.write(f"**Name:** {player_name}")
                     st.write(f"**Age:** {player_age}")
                     st.write(f"**Position:** {player_position}")
                     
-                    # Hidden fields to keep the values - use session state values to ensure consistency
-                    # Use empty containers instead of displaying fields
+                    # Hidden fields to keep the values
                     name_container = st.empty()
                     age_container = st.empty()
                     position_container = st.empty()
@@ -515,12 +537,10 @@ def display_tryout_evaluation_mode(team_id):
                         selected_player_id = None
                         
                         # Clear session state to avoid interference with an existing player
-                        if 'selected_player_name' in st.session_state:
-                            del st.session_state.selected_player_name
-                        if 'selected_player_age' in st.session_state:
-                            del st.session_state.selected_player_age
-                        if 'selected_player_position' in st.session_state:
-                            del st.session_state.selected_player_position
+                        st.session_state.current_player_id = -1
+                        st.session_state.current_player_name = ""
+                        st.session_state.current_player_age = int(team.age_group.replace('U', ''))
+                        st.session_state.current_player_position = "Forward"
             except Exception as e:
                 st.error(f"Error loading team players: {str(e)}")
                 player_name = st.text_input("Player Name", key="tryout_player_name")
@@ -537,7 +557,7 @@ def display_tryout_evaluation_mode(team_id):
             st.subheader("Skills Assessment")
             
             # Determine the position to use for skills (use the session state if available from dropdown)
-            display_position = st.session_state.get('selected_player_position', player_position)
+            display_position = st.session_state.get('current_player_position', player_position)
             
             if display_position == "Goalie":
                 # Goalie skills
@@ -618,9 +638,9 @@ def display_tryout_evaluation_mode(team_id):
 
             if submitted:
                 # Use session state values if available (for selected player), otherwise use form values
-                eval_player_name = st.session_state.get('selected_player_name', player_name)
-                eval_player_age = st.session_state.get('selected_player_age', player_age)
-                eval_player_position = st.session_state.get('selected_player_position', player_position)
+                eval_player_name = st.session_state.get('current_player_name', player_name)
+                eval_player_age = st.session_state.get('current_player_age', player_age)
+                eval_player_position = st.session_state.get('current_player_position', player_position)
                 
                 if not eval_player_name or not evaluator_name:
                     st.error("Player name and evaluator name are required")
