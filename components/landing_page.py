@@ -62,9 +62,11 @@ def display_feature_preview():
         """)
 
         if st.button("Create Account", type="primary"):
-            display_signup_form()
+            st.session_state.show_signup = True
+            st.rerun()
         if st.button("Already have an account? Login"):
             st.session_state.show_login = True
+            st.rerun()
 
 def display_signup_form():
     """Display the signup form for new users"""
@@ -107,21 +109,34 @@ def display_signup_form():
                 db.session.add(new_user)
                 db.session.commit()
 
-                # Set session state to log in the user
+                # Set session state and clear signup flag
                 st.session_state.user = new_user
                 st.session_state.is_admin = new_user.is_admin
-                st.success("Account created successfully! Welcome to Hockey Development Tracker.")
+                st.session_state.show_signup = False
+                st.success("Account created successfully! Redirecting to dashboard...")
                 st.rerun()
             except Exception as e:
                 st.error(f"Error creating account: {str(e)}")
 
 def display_landing_page():
     """Main landing page handler"""
-    if st.session_state.get('show_login', False):
+    # Initialize session state
+    if 'show_signup' not in st.session_state:
+        st.session_state.show_signup = False
+    if 'show_login' not in st.session_state:
+        st.session_state.show_login = False
+
+    # Check if user is already logged in
+    if 'user' in st.session_state and st.session_state.user:
+        return False  # Skip landing page
+
+    # Handle auth flow
+    if st.session_state.show_signup:
+        display_signup_form()
+    elif st.session_state.get('show_login', False):
         from components.auth_interface import login_user
         login_user()
-    elif 'user' in st.session_state and st.session_state.user:
-        # Skip landing page if user is logged in
-        return
     else:
         display_feature_preview()
+
+    return True  # Show landing page content
