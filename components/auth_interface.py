@@ -81,9 +81,13 @@ def display_admin_controls():
         return
 
     st.header("Admin Control Panel")
-
-    # User Management tab
-    st.subheader("User Management")
+    
+    # Create tabs for different admin functions
+    tab1, tab2 = st.tabs(["User Management", "Email Settings"])
+    
+    with tab1:
+        # User Management tab
+        st.subheader("User Management")
     users = User.query.all()
 
     for user in users:
@@ -135,6 +139,11 @@ def display_admin_controls():
                     st.rerun()
                 except Exception as e:
                     st.error(f"Error adding user: {str(e)}")
+    
+    with tab2:
+        # Email Settings tab
+        from components.email_settings import display_email_settings
+        display_email_settings()
 
 def display_auth_interface():
     """Main authentication interface"""

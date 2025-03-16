@@ -61,12 +61,15 @@ def display_feature_preview():
         ✅ Expert support
         """)
 
-        if st.button("Create Account", type="primary"):
-            st.session_state.show_signup = True
-            st.rerun()
-        if st.button("Already have an account? Login"):
-            st.session_state.show_login = True
-            st.rerun()
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("Sign Up Now", type="primary", key="signup_button"):
+                st.session_state.show_signup = True
+                st.rerun()
+        with col2:
+            if st.button("Login", key="login_button", type="secondary"):
+                st.session_state.show_login = True
+                st.rerun()
 
 def display_signup_form():
     """Display the signup form for new users"""
