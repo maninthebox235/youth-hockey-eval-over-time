@@ -108,6 +108,13 @@ def get_player_history(player_id):
         if player_id is None:
             print("Invalid player_id: None after conversion")
             return pd.DataFrame()
+            
+        # Explicitly convert to native Python int to avoid numpy.int64 issues with psycopg2
+        try:
+            player_id = int(player_id)
+        except (TypeError, ValueError):
+            print(f"Error converting player_id {player_id} to native Python int")
+            return pd.DataFrame()
 
         # Query the player
         player = Player.query.get(player_id)
@@ -115,7 +122,7 @@ def get_player_history(player_id):
             print(f"Player not found for ID: {player_id}")
             return pd.DataFrame()
 
-        # Get history records
+        # Get history records - now using native Python int for database compatibility
         history = PlayerHistory.query.filter_by(player_id=player_id).order_by(PlayerHistory.date).all()
         if not history:
             print(f"No history found for player ID: {player_id}")

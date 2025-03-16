@@ -92,6 +92,13 @@ def display_skill_assessment(player_id):
         if player_id is None:
             st.error("Invalid player ID")
             return False
+            
+        # Ensure we convert to native Python int for database compatibility
+        try:
+            player_id = int(player_id)  # Explicitly cast to native Python int
+        except (TypeError, ValueError):
+            st.error(f"Could not convert player ID {player_id} to integer")
+            return False
 
         # Use a fresh session for this query to avoid transaction issues
         try:
