@@ -21,20 +21,22 @@ app_ctx.push()
 # Initialize session state and verify authentication token
 if 'initialized' not in st.session_state:
     st.session_state.initialized = True
-    # Initialize other session state variables if needed
-    if 'user' not in st.session_state:
-        st.session_state.user = None
-    if 'is_admin' not in st.session_state:
-        st.session_state.is_admin = False
-    if 'show_signup' not in st.session_state:
-        st.session_state.show_signup = False
-    if 'show_login' not in st.session_state:
-        st.session_state.show_login = False
-    if 'authentication_token' not in st.session_state:
-        st.session_state.authentication_token = None
+    
+# Initialize essential session state variables every time
+if 'user' not in st.session_state:
+    st.session_state.user = None
+if 'is_admin' not in st.session_state:
+    st.session_state.is_admin = False
+if 'show_signup' not in st.session_state:
+    st.session_state.show_signup = False
+if 'show_login' not in st.session_state:
+    st.session_state.show_login = False
+if 'authentication_token' not in st.session_state:
+    st.session_state.authentication_token = None
 
 # Try to restore session from token
 if not st.session_state.user and st.session_state.authentication_token:
+    print(f"Attempting to restore session with token: {st.session_state.authentication_token[:10]}...")
     try:
         with app.app_context():
             user = User.verify_auth_token(st.session_state.authentication_token)
@@ -46,13 +48,18 @@ if not st.session_state.user and st.session_state.authentication_token:
                     'is_admin': user.is_admin
                 }
                 st.session_state.is_admin = user.is_admin
-                print(f"Session restored for user: {user.username}")
+                print(f"Session successfully restored for user: {user.username}")
             else:
                 print("Token verification failed: no user found")
                 st.session_state.authentication_token = None
     except Exception as e:
         print(f"Token verification error: {str(e)}")
         st.session_state.authentication_token = None
+else:
+    if st.session_state.user:
+        print(f"User already in session: {st.session_state.user['username']}")
+    elif not st.session_state.authentication_token:
+        print("No authentication token found in session")
 
 # Page configuration
 st.set_page_config(

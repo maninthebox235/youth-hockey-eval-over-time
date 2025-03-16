@@ -34,16 +34,20 @@ class User(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
     def get_auth_token(self, expiration=2592000):  # 30 days default
-        s = Serializer(current_app.config['SECRET_KEY'])
-        return s.dumps({'user_id': self.id})
+        s = Serializer(current_app.config['SECRET_KEY'], expires_in=expiration)
+        return s.dumps({'user_id': self.id}).decode('utf-8')
 
     @staticmethod
     def verify_auth_token(token):
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
             data = s.loads(token)
-            return User.query.get(data['user_id'])
-        except:
+            user = User.query.get(data['user_id'])
+            if not user:
+                print(f"Token valid but user_id {data['user_id']} not found in database")
+            return user
+        except Exception as e:
+            print(f"Token verification failed: {str(e)}")
             return None
 
 class CoachFeedback(db.Model):

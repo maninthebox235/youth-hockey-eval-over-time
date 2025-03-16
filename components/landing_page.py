@@ -113,6 +113,10 @@ def display_landing_page():
         return True
 
     # Handle auth flow
+    if st.session_state.user:
+        # User is authenticated, don't show landing page
+        return False
+    
     if st.session_state.show_signup:
         display_signup_form()
     elif st.session_state.get('show_login', False):
@@ -124,4 +128,4 @@ def display_landing_page():
     else:
         display_feature_preview()
 
-    return True  # Show landing page
+    return True  # Show landing pageing page
