@@ -23,7 +23,7 @@ def init_session_state():
             except Exception as e:
                 print(f"Session token verification error: {str(e)}")
         st.session_state.user = None
-        
+
     if 'is_admin' not in st.session_state:
         st.session_state.is_admin = False
     if 'show_forgot_password' not in st.session_state:
@@ -87,7 +87,7 @@ def login_user():
                     if token:
                         # Store token before user info
                         st.session_state.authentication_token = token
-                        
+
                         # Store user info in session state
                         st.session_state.user = {
                             'id': user.id,
@@ -96,7 +96,7 @@ def login_user():
                             'is_admin': user.is_admin
                         }
                         st.session_state.is_admin = user.is_admin
-                        
+
                         st.success(f"Welcome back, {user.name}!")
                         time.sleep(0.5)
                         st.experimental_rerun()
@@ -112,6 +112,7 @@ def login_user():
                 print(f"Login error: {str(e)}")
                 st.error("Invalid login credentials. Please try again.")
                 db.session.rollback()
+
 
 def create_admin():
     """Create initial admin user"""
