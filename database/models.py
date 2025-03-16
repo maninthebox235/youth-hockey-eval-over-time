@@ -46,7 +46,11 @@ class User(UserMixin, db.Model):
                 
             s = Serializer(secret_key)
             token_data = {'id': self.id, 'exp': time.time() + expiration}
-            return s.dumps(token_data).decode('utf-8')
+            token = s.dumps(token_data)
+            # Handle both string and bytes return types from dumps()
+            if isinstance(token, bytes):
+                return token.decode('utf-8')
+            return token
         except Exception as e:
             import logging
             logging.error(f"Error generating auth token: {str(e)}")
