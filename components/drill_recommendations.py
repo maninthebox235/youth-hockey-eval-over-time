@@ -42,6 +42,11 @@ class DrillRecommendationEngine:
         Returns:
             Dictionary with skills as keys and trend values (1=improving, 0=stable, -1=declining)
         """
+        # Ensure player_id is a Python native int
+        player_id = to_int(player_id)
+        if player_id is None:
+            return {}
+            
         # Get history for this player with date filter
         cutoff_date = datetime.now() - timedelta(days=lookback_months*30)
         history = PlayerHistory.query.filter(
@@ -92,6 +97,11 @@ class DrillRecommendationEngine:
         Returns:
             Dictionary with team context data
         """
+        # Ensure player_id is a Python native int
+        player_id = to_int(player_id)
+        if player_id is None:
+            return None
+            
         # Get player's current team
         membership = TeamMembership.query.filter(
             TeamMembership.player_id == player_id,
@@ -156,13 +166,28 @@ class DrillRecommendationEngine:
         Returns:
             List of recommended drills with context explanation
         """
+        # Ensure we have a standard Python integer for player_id
+        player_id = to_int(player_id)
+        if player_id is None:
+            return []
+            
         # Get player data
         player = Player.query.get(player_id)
         if not player:
             return []
             
-        # Convert player to dictionary
-        player_dict = {c.name: getattr(player, c.name) for c in player.__table__.columns}
+        # Convert player to dictionary and ensure all values are Python native types
+        player_dict = {}
+        for c in player.__table__.columns:
+            value = getattr(player, c.name)
+            
+            # Convert value based on its type
+            if isinstance(value, (int, np.integer)):
+                player_dict[c.name] = to_int(value)
+            elif isinstance(value, (float, np.floating)):
+                player_dict[c.name] = to_float(value)
+            else:
+                player_dict[c.name] = value
         
         # Get player needs (weaknesses) from training plans
         needs = self.training_plans.get_player_needs(player_dict)
@@ -309,6 +334,12 @@ def display_contextual_drill_recommendations(player_id, player_data=None):
         player_id: ID of the player
         player_data: Optional player data (saves a database query)
     """
+    # Ensure player_id is a Python native int
+    player_id = to_int(player_id)
+    if player_id is None:
+        st.error("Invalid player ID")
+        return
+        
     # Initialize recommendation engine
     engine = DrillRecommendationEngine()
     
@@ -363,6 +394,12 @@ def integrate_with_training_plans(player_id, player_data=None):
         player_id: ID of the player
         player_data: Optional player data (saves a database query)
     """
+    # Ensure player_id is a Python native int
+    player_id = to_int(player_id)
+    if player_id is None:
+        st.error("Invalid player ID")
+        return
+        
     # Add personalized drill recommendations section
     st.markdown("## Daily Drill Recommendations")
     
