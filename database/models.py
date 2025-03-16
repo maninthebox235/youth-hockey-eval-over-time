@@ -144,6 +144,7 @@ class Player(db.Model):
     age_group = db.Column(db.String(10), nullable=False)
     position = db.Column(db.String(20), nullable=False)
     join_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)  # Allow nullable for existing data
 
     # Player metrics based on position
     # Skater metrics

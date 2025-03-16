@@ -116,7 +116,8 @@ def add_player_from_data(player_data, team_id=None, user_id=None):
         age=int(player_data['age']),
         age_group=player_data['age_group'] if 'age_group' in player_data else get_age_group(int(player_data['age'])),
         position=player_data['position'],
-        join_date=datetime.utcnow()
+        join_date=datetime.utcnow(),
+        user_id=user_id  # Associate player with the user
     )
     
     # Add optional fields if available
@@ -182,13 +183,17 @@ def display_manual_add_form():
         
         if submitted and name:
             try:
+                # Get user ID from session
+                user_id = st.session_state.user['id'] if 'user' in st.session_state else None
+                
                 new_player = Player(
                     name=name,
                     age=age,
                     age_group=get_age_group(age),
                     position=position,
                     jersey_number=jersey_number if jersey_number > 0 else None,
-                    join_date=datetime.utcnow()
+                    join_date=datetime.utcnow(),
+                    user_id=user_id  # Associate player with the user
                 )
                 
                 db.session.add(new_player)
