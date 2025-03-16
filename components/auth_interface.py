@@ -193,16 +193,16 @@ def confirm_password_reset():
     from utils.token_manager import verify_reset_token
     
     # Get token and username from query parameters
-    query_params = st.experimental_get_query_params()
-    token = query_params.get("reset_token", [""])[0]
-    username = query_params.get("username", [""])[0]
+    query_params = st.query_params
+    token = query_params.get("reset_token", "")
+    username = query_params.get("username", "")
     
     if not token or not username:
         st.error("Invalid or missing reset token.")
         if st.button("Return to Login"):
             st.session_state.show_reset_confirmation = False
             st.session_state.show_login = True
-            st.experimental_set_query_params()
+            st.query_params.clear()
             st.rerun()
         return
     
@@ -241,7 +241,7 @@ def confirm_password_reset():
                 st.success("Password has been reset successfully!")
                 
                 # Clear query parameters
-                st.experimental_set_query_params()
+                st.query_params.clear()
                 
                 # Show login button
                 if st.button("Login with New Password"):
