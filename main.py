@@ -76,9 +76,9 @@ if not st.session_state.user and token_to_verify:
                         if "auth_token" in params:
                             del params["auth_token"]
                         st.query_params.update(**params)
-                except Exception as token_verify_error:
-                    print(f"Internal token verification error: {str(token_verify_error)}")
-                    # Safe error handling for token verification
+            except Exception as token_verify_error:
+                print(f"Internal token verification error: {str(token_verify_error)}")
+                # Safe error handling for token verification
                     st.session_state.authentication_token = None
                     # Clear auth_token from URL if it's invalid
                     if url_token:
