@@ -111,12 +111,18 @@ def create_team_skill_heatmap(players_df):
     if players_df.empty:
         return None
 
-    # Get all skill columns (those with float values typically)
+    # Define columns to exclude from skill metrics (including ID columns)
+    excluded_columns = [
+        'player_id', 'user_id', 'id', 'name', 'age', 'position', 'team_position', 
+        'games_played', 'goals', 'assists', 'goals_against', 'saves',
+        'join_date', 'created_at', 'last_login'
+    ]
+    
+    # Get all skill columns (only numeric columns that aren't in excluded list)
     skill_cols = []
     for col in players_df.columns:
-        if col not in ['player_id', 'name', 'age', 'position', 'team_position', 
-                      'games_played', 'goals', 'assists', 'goals_against', 'saves']:
-            if players_df[col].dtype in [np.float64, np.int64] and not players_df[col].isnull().all():
+        if col not in excluded_columns:
+            if players_df[col].dtype in [np.float64, np.int64, float, int] and not players_df[col].isnull().all():
                 skill_cols.append(col)
 
     if not skill_cols:
