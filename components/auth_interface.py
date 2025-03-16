@@ -103,9 +103,6 @@ def login_user():
                 st.success(f"Welcome back, {user.name}!")
                 time.sleep(0.5)
                 st.experimental_rerun()
-            else:
-                st.error("Failed to generate auth token")
-                db.session.rollback()
 
             except Exception as e:
                 print(f"Login error: {str(e)}")
