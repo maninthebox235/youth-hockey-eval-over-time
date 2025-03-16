@@ -88,7 +88,15 @@ def display_player_profile(player_data, player_history):
             display_feedback_history(player_data['player_id'])
 
         with feedback_tabs[2]:
-            manage_feedback_templates()
+            if 'manage_templates' not in st.session_state:
+                st.session_state.manage_templates = False
+                
+            if st.session_state.manage_templates:
+                manage_feedback_templates()
+            else:
+                if st.button("Manage Templates"):
+                    st.session_state.manage_templates = True
+                    st.rerun()
 
 def _display_skater_stats(player_data):
     """Display statistics for skater players"""
@@ -195,7 +203,8 @@ def get_player(player_id):
                 player_id = int(player_id.item())
             else:
                 raise ValueError("Invalid player ID type")
-
+        
+        from database.models import Player
         player = Player.query.get(player_id)
         if player:
             return player
