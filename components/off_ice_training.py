@@ -82,12 +82,18 @@ class OffIceTraining:
             player = Player.query.get(player_id)
             if not player:
                 return False
+            
+            # Convert NumPy types to Python native types
+            if hasattr(player_id, 'item'):
+                player_id = player_id.item()
+            if hasattr(duration, 'item'):
+                duration = duration.item()
                 
             # Record as a player history entry
             history = PlayerHistory(
-                player_id=player_id,
+                player_id=int(player_id),
                 date=training_date,
-                notes=f"OFF-ICE TRAINING: {training_type}\n\nActivities: {', '.join(activities)}\n\nDuration: {duration} minutes\n\n{notes}"
+                notes=f"OFF-ICE TRAINING: {training_type}\n\nActivities: {', '.join(activities)}\n\nDuration: {int(duration)} minutes\n\n{notes}"
             )
             
             db.session.add(history)
@@ -102,6 +108,13 @@ class OffIceTraining:
     def display_training_log(self, player_id):
         """Display a log of past off-ice training sessions"""
         try:
+            # Convert NumPy types to Python native types
+            if hasattr(player_id, 'item'):
+                player_id = player_id.item()
+            
+            # Ensure player_id is an integer for database query
+            player_id = int(player_id)
+                
             # Fetch player history entries that contain off-ice training
             history_entries = PlayerHistory.query.filter_by(player_id=player_id)\
                              .order_by(PlayerHistory.date.desc()).all()
@@ -297,6 +310,22 @@ def display_off_ice_interface(player_id, player_data):
     """Main interface for off-ice training tracking"""
     off_ice = OffIceTraining()
     
+    # Convert NumPy types to Python native types
+    if hasattr(player_id, 'item'):
+        player_id = int(player_id.item())
+    else:
+        player_id = int(player_id)
+    
+    # Convert other NumPy types in player_data if needed
+    player_age = player_data['age']
+    if hasattr(player_age, 'item'):
+        player_age = int(player_age.item())
+    else:
+        player_age = int(player_age)
+        
+    player_name = player_data['name']
+    player_position = player_data['position']
+    
     st.title("Off-Ice Training Tracker")
     st.write("Track and monitor off-ice development activities")
     
@@ -307,7 +336,7 @@ def display_off_ice_interface(player_id, player_data):
         off_ice.display_training_log(player_id)
         
     with tabs[1]:
-        off_ice.display_training_form(player_id, player_data['name'])
+        off_ice.display_training_form(player_id, player_name)
         
     with tabs[2]:
-        off_ice.display_age_appropriate_plan(player_data['age'], player_data['position'])
+        off_ice.display_age_appropriate_plan(player_age, player_position)

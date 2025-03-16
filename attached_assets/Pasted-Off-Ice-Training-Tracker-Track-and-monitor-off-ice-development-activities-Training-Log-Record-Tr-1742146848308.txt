@@ -1,0 +1,13 @@
+Off-Ice Training Tracker
+Track and monitor off-ice development activities
+
+
+Training Log
+
+
+Record Training
+
+
+Training Plan
+
+Error displaying training log: (psycopg2.ProgrammingError) can't adapt type 'numpy.int64' [SQL: SELECT player_history.id AS player_history_id, player_history.player_id AS player_history_player_id, player_history.date AS player_history_date, player_history.notes AS player_history_notes, player_history.skating_speed AS player_history_skating_speed, player_history.shooting_accuracy AS player_history_shooting_accuracy, player_history.edge_control AS player_history_edge_control, player_history.agility AS player_history_agility, player_history.backward_skating AS player_history_backward_skating, player_history.puck_control AS player_history_puck_control, player_history.passing_accuracy AS player_history_passing_accuracy, player_history.receiving AS player_history_receiving, player_history.stick_protection AS player_history_stick_protection, player_history.decision_making AS player_history_decision_making, player_history.game_awareness AS player_history_game_awareness, player_history.hockey_sense AS player_history_hockey_sense, player_history.wrist_shot AS player_history_wrist_shot, player_history.slap_shot AS player_history_slap_shot, player_history.one_timer AS player_history_one_timer, player_history.shot_accuracy AS player_history_shot_accuracy, player_history.gap_control AS player_history_gap_control, player_history.physicality AS player_history_physicality, player_history.shot_blocking AS player_history_shot_blocking, player_history.breakout_passes AS player_history_breakout_passes, player_history.save_percentage AS player_history_save_percentage, player_history.reaction_time AS player_history_reaction_time, player_history.positioning AS player_history_positioning, player_history.save_technique AS player_history_save_technique, player_history.rebound_control AS player_history_rebound_control, player_history.puck_handling AS player_history_puck_handling, player_history.recovery AS player_history_recovery, player_history.glove_saves AS player_history_glove_saves, player_history.blocker_saves AS player_history_blocker_saves, player_history.post_integration AS player_history_post_integration, player_history.games_played AS player_history_games_played, player_history.goals AS player_history_goals, player_history.assists AS player_history_assists, player_history.goals_against AS player_history_goals_against, player_history.saves AS player_history_saves FROM player_history WHERE player_history.player_id = %(player_id_1)s ORDER BY player_history.date DESC] [parameters: {'player_id_1': np.int64(7)}] (Background on this error at: https://sqlalche.me/e/20/f405)
