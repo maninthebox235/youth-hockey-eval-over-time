@@ -17,7 +17,19 @@ def update_password(username, new_password):
             print("Available users:")
             for u in users:
                 print(f"Username: {u.username}, Name: {u.name}")
-            return False
+            
+            # Create the user if they don't exist
+            print(f"Creating new user with username: {username}")
+            user = User(
+                username=username,
+                name="Luke Boehrig",
+                is_admin=True
+            )
+            user.set_password(new_password)
+            db.session.add(user)
+            db.session.commit()
+            print(f"Created new user: {username} with provided password")
+            return True
             
         # Update the password
         password_hash = generate_password_hash(new_password)
