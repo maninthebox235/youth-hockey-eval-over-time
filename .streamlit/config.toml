@@ -20,5 +20,4 @@ fastReruns = true
 toolbarMode = "minimal"
 showErrorDetails = true
 
-[server.sessionStateOptions]
-maxSessionDays = 14
+# Session lifetime is now handled differently in newer Streamlit versions
