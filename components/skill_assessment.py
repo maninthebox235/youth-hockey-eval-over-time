@@ -74,29 +74,17 @@ def get_age_appropriate_benchmarks(age, metric):
         }
     }
 
-    # Find appropriate age group
     for (min_age, max_age), values in benchmarks.get(metric, {}).items():
         if min_age <= age <= max_age:
             return values
     return {'min': 1, 'target': 3, 'description': "Standard performance"}
-
-def rate_skill(label, key, description="", default_value=3):
-    """Create a standardized rating slider for skills"""
-    st.write(f"_{description}_")
-    return st.slider(
-        label,
-        min_value=1,
-        max_value=5,
-        value=default_value,
-        key=key,
-        step=1
-    )
 
 def display_skill_assessment(player_id):
     """Display and handle comprehensive skill assessment form"""
     try:
         player_id = int(player_id) if hasattr(player_id, 'item') else player_id
         player = Player.query.get(player_id)
+
         if not player:
             st.error("Player not found")
             return False
@@ -106,58 +94,69 @@ def display_skill_assessment(player_id):
 
         metrics = get_skill_metrics(player.position)
 
-        with st.form("skill_assessment_form"):
+        with st.form(key="skill_assessment_form"):
             st.write("### Rate player's skills (1-5 scale)")
             st.write("1 = Needs significant improvement")
             st.write("3 = Meeting age-appropriate expectations")
             st.write("5 = Exceeding expectations significantly")
 
-            # Create sections for different skill categories
             all_ratings = {}
-            col1, col2 = st.columns(2)
 
-            # Split metrics into two columns for better layout
+            # Split metrics into two columns
+            col1, col2 = st.columns(2)
             metrics_list = list(metrics.items())
             mid_point = len(metrics_list) // 2
 
+            # First column
             with col1:
                 for metric, description in metrics_list[:mid_point]:
-                    benchmark = get_age_appropriate_benchmarks(player.age, metric)
                     st.write(f"**{metric.replace('_', ' ').title()}**")
-                    if benchmark:
-                        st.write(f"Age target: {benchmark['description']}")
+                    st.write(f"_{description}_")
 
-                    current_value = getattr(player, metric, 3)
-                    all_ratings[metric] = rate_skill(
-                        "Rating",
-                        f"rating_{metric}_1",
-                        description=description,
-                        default_value=int(current_value)
+                    # Get current value with safe default
+                    try:
+                        current_value = getattr(player, metric, None)
+                        current_value = int(current_value) if current_value is not None else 3
+                    except (ValueError, TypeError):
+                        current_value = 3
+
+                    all_ratings[metric] = st.slider(
+                        f"{metric.replace('_', ' ').title()} Rating",
+                        min_value=1,
+                        max_value=5,
+                        value=current_value,
+                        key=f"rating_{metric}_1"
                     )
 
+            # Second column
             with col2:
                 for metric, description in metrics_list[mid_point:]:
-                    benchmark = get_age_appropriate_benchmarks(player.age, metric)
                     st.write(f"**{metric.replace('_', ' ').title()}**")
-                    if benchmark:
-                        st.write(f"Age target: {benchmark['description']}")
+                    st.write(f"_{description}_")
 
-                    current_value = getattr(player, metric, 3)
-                    all_ratings[metric] = rate_skill(
-                        "Rating",
-                        f"rating_{metric}_2",
-                        description=description,
-                        default_value=int(current_value)
+                    # Get current value with safe default
+                    try:
+                        current_value = getattr(player, metric, None)
+                        current_value = int(current_value) if current_value is not None else 3
+                    except (ValueError, TypeError):
+                        current_value = 3
+
+                    all_ratings[metric] = st.slider(
+                        f"{metric.replace('_', ' ').title()} Rating",
+                        min_value=1,
+                        max_value=5,
+                        value=current_value,
+                        key=f"rating_{metric}_2"
                     )
 
-            # Additional notes and observations
+            # Assessment notes
             st.write("### Assessment Notes")
             notes = st.text_area(
                 "Observations and Development Goals",
                 placeholder="Add specific observations, areas for improvement, and development goals"
             )
 
-            # Submit button at the bottom of the form
+            # Submit button
             submitted = st.form_submit_button("Save Assessment")
 
             if submitted:
@@ -194,3 +193,38 @@ def display_skill_assessment(player_id):
     except Exception as e:
         st.error(f"Error in skill assessment: {str(e)}")
         return False
+
+def rate_skill(label, key, description="", default_value=3):
+    """Create a standardized rating slider for skills"""
+    st.write(f"_{description}_")
+    return st.slider(
+        label,
+        min_value=1,
+        max_value=5,
+        value=default_value,
+        key=key,
+        step=1
+    )
+
+def get_age_appropriate_benchmarks(age, metric):
+    """Get age-appropriate benchmark values for metrics"""
+    benchmarks = {
+        'skating_speed': {
+            (6, 8): {'min': 2, 'target': 3, 'description': "Basic forward skating"},
+            (9, 11): {'min': 2.5, 'target': 3.5, 'description': "Developing speed"},
+            (12, 14): {'min': 3, 'target': 4, 'description': "Advanced speed"},
+            (15, 18): {'min': 3.5, 'target': 4.5, 'description': "Elite speed"}
+        },
+        'puck_control': {
+            (6, 8): {'min': 1.5, 'target': 2.5, 'description': "Basic puck handling"},
+            (9, 11): {'min': 2, 'target': 3, 'description': "Controlled movements"},
+            (12, 14): {'min': 2.5, 'target': 3.5, 'description': "Advanced control"},
+            (15, 18): {'min': 3, 'target': 4, 'description': "Elite puck handling"}
+        }
+    }
+
+    # Find appropriate age group
+    for (min_age, max_age), values in benchmarks.get(metric, {}).items():
+        if min_age <= age <= max_age:
+            return values
+    return {'min': 1, 'target': 3, 'description': "Standard performance"}
