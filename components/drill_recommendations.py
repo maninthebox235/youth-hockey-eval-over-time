@@ -334,6 +334,25 @@ def display_contextual_drill_recommendations(player_id, player_data=None):
         player_id: ID of the player
         player_data: Optional player data (saves a database query)
     """
+    # Check for premium membership
+    is_premium = st.session_state.get('is_premium', False)
+    
+    if not is_premium:
+        st.warning("⭐ Drill Recommendations is a premium feature")
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            st.markdown("""
+            Unlock personalized drill recommendations with a premium membership. 
+            Get custom drills based on:
+            - Player position and age
+            - Current skill assessment
+            - Recent performance trends
+            - Team context and peer comparison
+            """)
+        with col2:
+            st.button("Upgrade to Premium", type="primary", use_container_width=True)
+        return
+        
     # Ensure player_id is a Python native int
     player_id = to_int(player_id)
     if player_id is None:
