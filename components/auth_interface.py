@@ -359,7 +359,11 @@ def display_auth_interface():
             except Exception as e:
                 print(f"Token verification error: {str(e)}")
                 st.session_state.authentication_token = None
-                st.query_params.clear()
+                # Clear auth_token from URL
+                params = dict(st.query_params)
+                if "auth_token" in params:
+                    del params["auth_token"]
+                st.query_params.update(**params)
 
     if not st.session_state.user:
         if not User.query.filter_by(is_admin=True).first():

@@ -90,7 +90,7 @@ def display_player_profile(player_data, player_history):
         with feedback_tabs[2]:
             if 'manage_templates' not in st.session_state:
                 st.session_state.manage_templates = False
-                
+
             if st.session_state.manage_templates:
                 manage_feedback_templates()
             else:
@@ -203,7 +203,7 @@ def get_player(player_id):
                 player_id = int(player_id.item())
             else:
                 raise ValueError("Invalid player ID type")
-        
+
         from database.models import Player
         player = Player.query.get(player_id)
         if player:
