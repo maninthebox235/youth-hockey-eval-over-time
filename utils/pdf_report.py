@@ -285,7 +285,25 @@ class PDFReportGenerator:
     
     def _get_rating_description(self, metric, value):
         """Get descriptive text for a metric rating"""
-        # Basic descriptions based on value, could be enhanced with more specific descriptions for each metric
+        # For statistics like games_played, goals, assists, etc., return factual description
+        stat_metrics = ['games_played', 'goals', 'assists', 'saves', 'goals_against']
+        if metric.lower() in stat_metrics:
+            if value is None or value == 0:
+                return "No data recorded yet"
+            elif metric == 'games_played':
+                return f"Player has participated in {int(value)} games"
+            elif metric == 'goals':
+                return f"Player has scored {int(value)} goals"
+            elif metric == 'assists':
+                return f"Player has made {int(value)} assists"
+            elif metric == 'saves':
+                return f"Player has made {int(value)} saves"
+            elif metric == 'goals_against':
+                return f"Player has conceded {int(value)} goals"
+            else:
+                return f"Current value: {int(value)}"
+        
+        # For skill ratings
         if value is None:
             return "Not assessed"
         
