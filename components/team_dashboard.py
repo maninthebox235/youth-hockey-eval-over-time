@@ -447,6 +447,10 @@ def display_tryout_evaluation_mode(team_id):
         st.error("Team not found")
         return
 
+    # Get current user info from session
+    user_id = st.session_state.user['id'] if 'user' in st.session_state else 1  # Default to 1 if not logged in
+    user_name = st.session_state.user['name'] if 'user' in st.session_state else "Coach"
+
     st.write(f"Evaluating players for: **{team.name} ({team.age_group})**")
 
     # Create tab for new evaluation vs. reviewing evaluations
@@ -456,9 +460,56 @@ def display_tryout_evaluation_mode(team_id):
         with st.form("tryout_evaluation_form"):
             # Player information
             st.subheader("Player Information")
-            player_name = st.text_input("Player Name", key="tryout_player_name")
-            player_age = st.number_input("Age", min_value=6, max_value=18, value=int(team.age_group.replace('U', '')))
-            player_position = st.selectbox("Position", ["Forward", "Defense", "Goalie"])
+            
+            # Get players on this team for the dropdown
+            team_players = []
+            try:
+                # Get players from memberships
+                memberships = TeamMembership.query.filter_by(team_id=team.id).all()
+                if memberships:
+                    player_ids = [m.player_id for m in memberships]
+                    players = Player.query.filter(Player.id.in_(player_ids)).all()
+                    team_players = [(p.id, f"{p.name} - {p.position}") for p in players]
+                
+                # Add option to add a new player
+                team_players.append((-1, "-- Add New Player --"))
+                
+                # Player selection dropdown
+                player_option = st.selectbox(
+                    "Select Player", 
+                    options=range(len(team_players)),
+                    format_func=lambda i: team_players[i][1]
+                )
+                
+                selected_player_id = team_players[player_option][0]
+                
+                # If existing player selected, auto-fill details
+                if selected_player_id > 0:
+                    player = Player.query.get(selected_player_id)
+                    player_name = player.name
+                    player_age = player.age
+                    player_position = player.position
+                    
+                    # Display player info (read-only)
+                    st.write(f"**Name:** {player_name}")
+                    st.write(f"**Age:** {player_age}")
+                    st.write(f"**Position:** {player_position}")
+                    
+                    # Hidden fields to keep the values
+                    st.text_input("Player Name", value=player_name, key="tryout_player_name", label_visibility="collapsed")
+                    st.number_input("Age", min_value=6, max_value=18, value=player_age, key="tryout_player_age", label_visibility="collapsed")
+                    st.selectbox("Position", ["Forward", "Defense", "Goalie"], index=["Forward", "Defense", "Goalie"].index(player_position), key="tryout_player_position", label_visibility="collapsed")
+                else:
+                    # New player form
+                    player_name = st.text_input("Player Name", key="tryout_player_name")
+                    player_age = st.number_input("Age", min_value=6, max_value=18, value=int(team.age_group.replace('U', '')), key="tryout_player_age")
+                    player_position = st.selectbox("Position", ["Forward", "Defense", "Goalie"], key="tryout_player_position")
+                    selected_player_id = None
+            except Exception as e:
+                st.error(f"Error loading team players: {str(e)}")
+                player_name = st.text_input("Player Name", key="tryout_player_name")
+                player_age = st.number_input("Age", min_value=6, max_value=18, value=int(team.age_group.replace('U', '')), key="tryout_player_age")
+                player_position = st.selectbox("Position", ["Forward", "Defense", "Goalie"], key="tryout_player_position")
 
             # Evaluation scale explanation
             st.write("### Evaluation Scale")
@@ -541,7 +592,8 @@ def display_tryout_evaluation_mode(team_id):
                 ["Highly Recommend", "Recommend", "Neutral", "Do Not Recommend"]
             )
 
-            evaluator_name = st.text_input("Evaluator Name")
+            # Pre-fill with current user's name if available
+            evaluator_name = st.text_input("Evaluator Name", value=user_name)
 
             submitted = st.form_submit_button("Save Evaluation")
 
@@ -588,10 +640,11 @@ def display_tryout_evaluation_mode(team_id):
 
                     # Create feedback entry for the tryout
                     try:
+                        # Use the current user ID from session if available, otherwise default to 1
                         feedback = CoachFeedback(
                             player_id=player.id,
-                            coach_id=1,  # Default coach ID 
-                            coach_name=evaluator_name,
+                            coach_id=user_id,  # Use the user_id from session
+                            coach_name=evaluator_name or user_name,  # Use name provided or session username
                             feedback_text=comments
                         )
 
