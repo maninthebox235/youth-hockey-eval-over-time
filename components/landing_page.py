@@ -23,6 +23,29 @@ def display_feature_preview():
     }
     .feature-icon {
         font-size: 24px;
+    }
+    
+    /* Make cards clickable */
+    .clickable-card {
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .clickable-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+    
+    /* Hide the actual buttons but keep them accessible */
+    div[data-testid="column"] > div > div > div > div > button {
+        background-color: transparent;
+        color: transparent;
+        border: none;
+        padding: 0;
+        width: 1px;
+        height: 1px;
+        position: absolute;
+        overflow: hidden;
         margin-bottom: 10px;
     }
     .feature-title {
