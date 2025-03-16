@@ -41,6 +41,15 @@ def display_feature_preview():
         font-size: 12px;
         margin-left: 5px;
     }
+    .demo-banner {
+        background-color: #A3CFF2;
+        color: #1E3A8A;
+        padding: 10px;
+        border-radius: 5px;
+        margin: 10px 0;
+        text-align: center;
+        font-weight: bold;
+    }
     </style>
     """, unsafe_allow_html=True)
     
@@ -91,6 +100,11 @@ def display_feature_preview():
             <p>Track multiple players under one account, perfect for families with siblings or coaches managing teams.</p>
         </div>
         """, unsafe_allow_html=True)
+    
+    # Feature Showcase - Import and display interactive demo
+    st.markdown("<div class='demo-banner'>Try the interactive demo below 👇</div>", unsafe_allow_html=True)
+    from utils.showcase_data import display_feature_showcase
+    display_feature_showcase()
     
     # Premium Features Section
     st.subheader("Premium Features")
