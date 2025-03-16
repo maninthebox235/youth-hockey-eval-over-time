@@ -1,4 +1,5 @@
-from flask import Flask
+
+from flask import Flask, jsonify
 from database import init_app, db
 from flask_migrate import Migrate
 from flask_mail import Mail
@@ -19,7 +20,7 @@ def create_app():
     app = Flask(__name__)
 
     # Set a stable secret key
-    app.config['SECRET_KEY'] = 'your-secret-key-goes-here'  # Changed from os.urandom(24) for session stability
+    app.config['SECRET_KEY'] = 'your-secret-key-goes-here'
 
     # Configure database
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
@@ -38,6 +39,13 @@ def create_app():
         from database.models import User
         return User.query.get(int(user_id))
 
+    # Route to test email configuration
+    @app.route('/test-email', methods=['GET'])
+    def test_email():
+        from utils.email_service import test_email_configuration
+        result = test_email_configuration(mail)
+        return jsonify(result)
+
     with app.app_context():
         try:
             db.create_all()
@@ -52,17 +60,7 @@ def init_app():
     app = create_app()
     return app
 
-# Route to test email configuration
-@app.route('/test-email', methods=['GET'])
-def test_email():
-    from utils.email_service import test_email_configuration
-    from flask import jsonify
-    
-    result = test_email_configuration(mail)
-    return jsonify(result)
-
 if __name__ == '__main__':
     app = create_app()
-    
     # Run Flask on port 5001 to avoid conflict with Streamlit
     app.run(host='0.0.0.0', port=5001, debug=True)
