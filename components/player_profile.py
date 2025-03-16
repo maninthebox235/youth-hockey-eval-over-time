@@ -183,3 +183,23 @@ def _display_development_charts(player_data, player_history):
         return
 
     st.plotly_chart(fig, use_container_width=True)
+
+def get_player(player_id):
+    """Get player by ID"""
+    try:
+        # Convert numpy int64 or any other numeric type to Python int
+        try:
+            player_id = int(player_id)
+        except (TypeError, ValueError):
+            if hasattr(player_id, 'item'):
+                player_id = int(player_id.item())
+            else:
+                raise ValueError("Invalid player ID type")
+
+        player = Player.query.get(player_id)
+        if player:
+            return player
+        return None
+    except Exception as e:
+        print(f"Error getting player: {e}")
+        return None
