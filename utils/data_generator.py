@@ -72,9 +72,9 @@ def get_players_df():
             return pd.DataFrame()  # Return empty DataFrame if no players
 
         data = [{
-            'player_id': p.id,
+            'player_id': int(p.id),  # Ensure integer type
             'name': p.name,
-            'age': p.age,
+            'age': int(p.age) if p.age is not None else None,
             'age_group': p.age_group,
             'position': p.position,
             'skating_speed': float(p.skating_speed) if p.skating_speed is not None else None,
@@ -82,7 +82,7 @@ def get_players_df():
             'save_percentage': float(p.save_percentage) if p.save_percentage is not None else None,
             'reaction_time': float(p.reaction_time) if p.reaction_time is not None else None,
             'positioning': float(p.positioning) if p.positioning is not None else None,
-            'games_played': int(p.games_played),
+            'games_played': int(p.games_played) if p.games_played is not None else 0,
             'goals': int(p.goals) if p.goals is not None else 0,
             'assists': int(p.assists) if p.assists is not None else 0,
             'goals_against': int(p.goals_against) if p.goals_against is not None else 0,
@@ -97,8 +97,11 @@ def get_players_df():
 def get_player_history(player_id):
     """Get historical data for a specific player"""
     try:
+        # Convert player_id to Python int to avoid numpy type issues
+        player_id = int(player_id)
+
         # Get player position first
-        player = Player.query.get(int(player_id))
+        player = Player.query.get(player_id)
         if not player:
             return pd.DataFrame()
 
@@ -113,7 +116,7 @@ def get_player_history(player_id):
             'save_percentage': float(h.save_percentage) if h.save_percentage is not None else None,
             'reaction_time': float(h.reaction_time) if h.reaction_time is not None else None,
             'positioning': float(h.positioning) if h.positioning is not None else None,
-            'games_played': int(h.games_played),
+            'games_played': int(h.games_played) if h.games_played is not None else 0,
             'goals': int(h.goals) if h.goals is not None else 0,
             'assists': int(h.assists) if h.assists is not None else 0,
             'goals_against': int(h.goals_against) if h.goals_against is not None else 0,
