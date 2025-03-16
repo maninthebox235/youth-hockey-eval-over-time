@@ -24,6 +24,7 @@ from components.training_plans import display_training_plan_interface
 from components.video_analysis import display_video_analysis_interface
 from components.onboarding import display_onboarding
 from components.admin_dashboard import display_admin_dashboard
+from components.drill_recommendations import display_contextual_drill_recommendations
 
 # Function to load and inject custom CSS
 def load_css(css_file):
@@ -207,7 +208,7 @@ if not show_landing:
                             player_submenu = st.radio(
                                 "Player Development Tools",
                                 ["Development Charts", "Peer Comparison", "Off-Ice Training", 
-                                 "Training Plans", "Video Analysis"],
+                                 "Training Plans", "Drill Recommendations", "Video Analysis"],
                                 horizontal=True
                             )
 
@@ -219,6 +220,8 @@ if not show_landing:
                                 display_off_ice_interface(player_data['player_id'], player_data)
                             elif player_submenu == "Training Plans":
                                 display_training_plan_interface(player_data['player_id'], player_data)
+                            elif player_submenu == "Drill Recommendations":
+                                display_contextual_drill_recommendations(player_data['player_id'], player_data)
                             elif player_submenu == "Video Analysis":
                                 display_video_analysis_interface(player_data['player_id'], player_data)
 
