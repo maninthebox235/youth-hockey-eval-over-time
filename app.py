@@ -1,4 +1,3 @@
-
 from flask import Flask, jsonify
 from database import init_app, db
 from flask_migrate import Migrate
@@ -20,7 +19,7 @@ def create_app():
     app = Flask(__name__)
 
     # Set a stable secret key
-    app.config['SECRET_KEY'] = 'your-secret-key-goes-here'
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-for-testing') #Updated SECRET_KEY setting
 
     # Configure database
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')

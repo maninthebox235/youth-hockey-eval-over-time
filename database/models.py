@@ -34,12 +34,19 @@ class User(UserMixin, db.Model):
 
     def get_auth_token(self, expiration=86400):  # 24 hours
         try:
-            secret_key = current_app.config.get('SECRET_KEY', 'default-secret-key')
+            # First try to get from current_app
+            try:
+                secret_key = current_app.config.get('SECRET_KEY')
+            except:
+                # Fallback to a hardcoded key for development
+                secret_key = 'development-fallback-key'
+                
+            if not secret_key:
+                secret_key = 'development-fallback-key'
+                
             s = Serializer(secret_key)
-            return s.dumps({
-                'id': self.id,
-                'exp': time.time() + expiration
-            }).decode('utf-8')
+            token_data = {'id': self.id, 'exp': time.time() + expiration}
+            return s.dumps(token_data).decode('utf-8')
         except Exception as e:
             import logging
             logging.error(f"Error generating auth token: {str(e)}")
