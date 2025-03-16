@@ -118,8 +118,9 @@ def display_feature_preview():
     
     # Video Analysis Card
     with premium_cols[0]:
-        video_card = st.container()
-        with video_card:
+        # Using a transparent button that covers the card
+        col1, col2, col3 = st.columns([1,15,1])
+        with col2:
             st.markdown("""
             <div class="feature-card">
                 <div class="feature-icon">🎬</div>
@@ -129,14 +130,31 @@ def display_feature_preview():
             </div>
             """, unsafe_allow_html=True)
             
-            if st.button("Video Analysis", key="video-analysis-card", label_visibility="collapsed"):
+            if st.button("Video Analysis", key="video-analysis-card"):
                 st.session_state.show_premium_preview = "video_analysis"
                 st.rerun()
+                
+            # Adding custom CSS to make button invisible but clickable
+            st.markdown("""
+            <style>
+            [data-testid="stButton"] button {
+                background-color: transparent;
+                color: transparent;
+                border: none;
+                position: relative;
+                top: -220px;
+                height: 220px;
+                width: 100%;
+                z-index: 1;
+            }
+            </style>
+            """, unsafe_allow_html=True)
     
     # Training Plans Card
     with premium_cols[1]:
-        training_card = st.container()
-        with training_card:
+        # Using a transparent button that covers the card
+        col1, col2, col3 = st.columns([1,15,1])
+        with col2:
             st.markdown("""
             <div class="feature-card">
                 <div class="feature-icon">🏋️</div>
@@ -146,14 +164,15 @@ def display_feature_preview():
             </div>
             """, unsafe_allow_html=True)
             
-            if st.button("Training Plans", key="training-plans-card", label_visibility="collapsed"):
+            if st.button("Training Plans", key="training-plans-card"):
                 st.session_state.show_premium_preview = "training_plans"
                 st.rerun()
     
     # Peer Comparison Card
     with premium_cols[2]:
-        peer_card = st.container()
-        with peer_card:
+        # Using a transparent button that covers the card
+        col1, col2, col3 = st.columns([1,15,1])
+        with col2:
             st.markdown("""
             <div class="feature-card">
                 <div class="feature-icon">🔍</div>
@@ -163,7 +182,7 @@ def display_feature_preview():
             </div>
             """, unsafe_allow_html=True)
             
-            if st.button("Peer Comparison", key="peer-comparison-card", label_visibility="collapsed"):
+            if st.button("Peer Comparison", key="peer-comparison-card"):
                 st.session_state.show_premium_preview = "peer_comparison"
                 st.rerun()
     
@@ -358,8 +377,9 @@ def display_feature_preview():
     
     # Team Dashboard Card
     with team_cols[0]:
-        team_dashboard_card = st.container()
-        with team_dashboard_card:
+        # Using a transparent button that covers the card
+        col1, col2, col3 = st.columns([1,15,1])
+        with col2:
             st.markdown("""
             <div class="feature-card">
                 <div class="feature-icon">📋</div>
@@ -369,14 +389,15 @@ def display_feature_preview():
             </div>
             """, unsafe_allow_html=True)
             
-            if st.button("Team Dashboard", key="team-dashboard-card", label_visibility="collapsed"):
+            if st.button("Team Dashboard", key="team-dashboard-card"):
                 st.session_state.show_team_preview = "team_dashboard"
                 st.rerun()
     
     # Tryout Evaluation Card
     with team_cols[1]:
-        tryout_card = st.container()
-        with tryout_card:
+        # Using a transparent button that covers the card
+        col1, col2, col3 = st.columns([1,15,1])
+        with col2:
             st.markdown("""
             <div class="feature-card">
                 <div class="feature-icon">🏁</div>
@@ -386,14 +407,15 @@ def display_feature_preview():
             </div>
             """, unsafe_allow_html=True)
             
-            if st.button("Tryout Evaluation", key="tryout-evaluation-card", label_visibility="collapsed"):
+            if st.button("Tryout Evaluation", key="tryout-evaluation-card"):
                 st.session_state.show_team_preview = "tryout_evaluation"
                 st.rerun()
     
     # Custom Reports Card
     with team_cols[2]:
-        reports_card = st.container()
-        with reports_card:
+        # Using a transparent button that covers the card
+        col1, col2, col3 = st.columns([1,15,1])
+        with col2:
             st.markdown("""
             <div class="feature-card">
                 <div class="feature-icon">📝</div>
@@ -403,7 +425,7 @@ def display_feature_preview():
             </div>
             """, unsafe_allow_html=True)
             
-            if st.button("Custom Reports", key="custom-reports-card", label_visibility="collapsed"):
+            if st.button("Custom Reports", key="custom-reports-card"):
                 st.session_state.show_team_preview = "custom_reports"
                 st.rerun()
     
