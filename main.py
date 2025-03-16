@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from database import db, init_app
 from database.models import Player
-from utils.data_generator import get_players_df, get_player_history, seed_database, clear_database
+from utils.data_generator import get_players_df, get_player_history, seed_database
 from components.player_profile import display_player_profile
 from components.development_charts import display_development_charts
 from components.team_management import display_team_management
@@ -37,18 +37,9 @@ if not show_landing:
     st.sidebar.image("https://images.unsplash.com/photo-1547223431-cc59f141f389",
                      caption="Player Development Platform")
 
-    # Initialize or clear database if requested
+    # Initialize database if needed
     if 'db_initialized' not in st.session_state:
         try:
-            # Add a clear database button
-            if st.sidebar.button("Clear Database"):
-                if clear_database():
-                    st.success("Database cleared successfully!")
-                    st.session_state.db_initialized = False
-                    st.rerun()
-                else:
-                    st.error("Error clearing database")
-
             # Check if database needs seeding
             if not Player.query.first():
                 st.info("Initializing database with sample data...")
