@@ -1,12 +1,4 @@
 import streamlit as st
-
-# Page configuration must be the first Streamlit command
-st.set_page_config(
-    page_title="Youth Hockey Development Tracker",
-    page_icon="🏒",
-    layout="wide"
-)
-
 import pandas as pd
 from database import db, init_app
 from database.models import Player, User
@@ -19,6 +11,13 @@ from components.auth_interface import display_auth_interface
 from components.landing_page import display_landing_page
 import time
 
+# Page configuration must be the first Streamlit command
+st.set_page_config(
+    page_title="Youth Hockey Development Tracker",
+    page_icon="🏒",
+    layout="wide"
+)
+
 # Initialize Flask app
 app = init_app()
 
@@ -29,7 +28,7 @@ app_ctx.push()
 # Initialize session state and verify authentication token
 if 'initialized' not in st.session_state:
     st.session_state.initialized = True
-    
+
 # Initialize essential session state variables every time
 if 'user' not in st.session_state:
     st.session_state.user = None
@@ -48,7 +47,7 @@ url_token = query_params.get("auth_token", None)
 
 # Use URL token if available, otherwise use session token
 token_to_verify = url_token or st.session_state.authentication_token
-    
+
 if not st.session_state.user and token_to_verify:
     print(f"Attempting to restore session with token...")
     try:
@@ -58,7 +57,7 @@ if not st.session_state.user and token_to_verify:
                 # If the token came from URL and not session, store it in session
                 if url_token and not st.session_state.authentication_token:
                     st.session_state.authentication_token = url_token
-                
+
                 st.session_state.user = {
                     'id': user.id,
                     'username': user.username,

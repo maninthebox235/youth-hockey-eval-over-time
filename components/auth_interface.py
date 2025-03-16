@@ -404,6 +404,7 @@ def display_auth_interface():
                 st.session_state.is_admin = False
                 st.session_state.authentication_token = None
                 st.session_state.current_page = None
+                st.query_params.clear()  # Clear URL parameters as well
                 st.rerun()
 
         # Display current page content
