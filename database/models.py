@@ -46,22 +46,32 @@ class User(UserMixin, db.Model):
     def verify_auth_token(token):
         """Verify the authentication token"""
         if not token:
+            print("No token provided for verification")
             return None
 
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
+            print(f"Attempting to verify token: {token[:10]}...") # Print first part of token for debugging
             data = s.loads(token)
+            print(f"Token data loaded successfully: {str(data.keys())}")
 
             # Get user ID from token
             user_id = data.get('user_id')
-
             if not user_id:
+                print("No user_id found in token data")
                 return None
 
             # Return user if found
-            return User.query.get(user_id)
+            user = User.query.get(user_id)
+            if user:
+                print(f"User found with ID {user_id}: {user.username}")
+            else:
+                print(f"No user found with ID {user_id}")
+            return user
         except Exception as e:
             print(f"Token verification exception: {str(e)}")
+            import traceback
+            traceback.print_exc()
             return None
 
 class CoachFeedback(db.Model):

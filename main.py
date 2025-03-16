@@ -176,5 +176,8 @@ if not show_landing:
             st.error(f"Application error: {str(e)}")
             st.info("Please ensure the database is properly initialized and connected.")
 
+# Handle any uncaught errors
+st.set_option('client.showErrorDetails', True)
+
 # Clean up context when the app exits
 app_ctx.pop()
