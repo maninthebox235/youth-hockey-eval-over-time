@@ -2,6 +2,7 @@ import streamlit as st
 from database.models import User, db
 from datetime import datetime
 from werkzeug.security import generate_password_hash
+import time
 
 def init_session_state():
     """Initialize session state variables"""
@@ -19,7 +20,7 @@ def init_session_state():
 def login_user():
     """Handle user login"""
     st.header("Login")
-    
+
     # Check for existing auth token first
     if 'authentication_token' in st.session_state and st.session_state.authentication_token:
         try:
@@ -36,7 +37,7 @@ def login_user():
                 return
         except Exception:
             st.session_state.authentication_token = None
-    
+
     with st.form("login_form"):
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")
@@ -51,7 +52,7 @@ def login_user():
             try:
                 # Get user from database
                 user = User.query.filter_by(username=username).first()
-                
+
                 if not user:
                     st.error("Invalid username")
                     return
@@ -72,17 +73,16 @@ def login_user():
                     'is_admin': user.is_admin
                 }
                 st.session_state.is_admin = user.is_admin
-                
+
                 # Generate and store authentication token
                 token = user.get_auth_token()
-                st.session_state.authentication_token = token
-                st.success(f"Welcome back, {user.name}!")
-                time.sleep(0.5)
-                return True
-
-                except Exception as e:
-                    print(f"Session error: {str(e)}")
-                    st.error("Session initialization failed. Please try again.")
+                if token:
+                    st.session_state.authentication_token = token
+                    st.success(f"Welcome back, {user.name}!")
+                    time.sleep(0.5)
+                    st.rerun()
+                else:
+                    st.error("Failed to generate auth token")
                     db.session.rollback()
 
             except Exception as e:
@@ -137,10 +137,10 @@ def display_admin_controls():
         return
 
     st.header("Admin Control Panel")
-    
+
     # Create tabs for different admin functions
     tab1, tab2 = st.tabs(["User Management", "Email Settings"])
-    
+
     with tab1:
         # User Management tab
         st.subheader("User Management")
@@ -195,7 +195,7 @@ def display_admin_controls():
                     st.rerun()
                 except Exception as e:
                     st.error(f"Error adding user: {str(e)}")
-    
+
     with tab2:
         # Email Settings tab
         from components.email_settings import display_email_settings
@@ -204,43 +204,43 @@ def display_admin_controls():
 def request_password_reset():
     """Display password reset form to reset password directly on the website"""
     import logging
-    
+
     st.header("Reset Your Password")
     st.write("Enter your username and verify your identity to reset your password.")
-    
+
     with st.form("reset_request_form"):
         username = st.text_input("Username")
         name = st.text_input("Your Full Name (for verification)")
         new_password = st.text_input("New Password", type="password")
         confirm_password = st.text_input("Confirm New Password", type="password")
         submitted = st.form_submit_button("Reset Password")
-        
+
         if submitted:
             if not username or not name or not new_password or not confirm_password:
                 st.error("Please fill in all fields")
                 return
-            
+
             if new_password != confirm_password:
                 st.error("Passwords do not match")
                 return
-            
+
             # Find user and verify name matches
             user = User.query.filter_by(username=username).first()
             if not user:
                 st.error("No account found with that username")
                 return
-            
+
             # Verify name as a simple identity check
             if user.name.lower() != name.lower():
                 st.error("Name verification failed. Please try again with the correct information.")
                 return
-            
+
             try:
                 # Update password
                 user.set_password(new_password)
                 db.session.commit()
                 st.success("Password has been reset successfully!")
-                
+
                 # Show login button
                 if st.button("Login with New Password"):
                     st.session_state.show_forgot_password = False
@@ -250,7 +250,7 @@ def request_password_reset():
                 st.error(f"Error resetting password: {str(e)}")
                 db.session.rollback()
                 logging.error(f"Error in password reset: {str(e)}")
-    
+
     # Back to login link
     if st.button("Back to Login"):
         st.session_state.show_forgot_password = False
@@ -260,12 +260,12 @@ def request_password_reset():
 def confirm_password_reset():
     """Handle password reset confirmation"""
     from utils.token_manager import verify_reset_token
-    
+
     # Get token and username from query parameters
     query_params = st.query_params
     token = query_params.get("reset_token", "")
     username = query_params.get("username", "")
-    
+
     if not token or not username:
         st.error("Invalid or missing reset token.")
         if st.button("Return to Login"):
@@ -274,44 +274,44 @@ def confirm_password_reset():
             st.query_params.clear()
             st.rerun()
         return
-    
+
     st.header("Set New Password")
-    
+
     with st.form("reset_confirmation_form"):
         new_password = st.text_input("New Password", type="password")
         confirm_password = st.text_input("Confirm New Password", type="password")
         submitted = st.form_submit_button("Reset Password")
-        
+
         if submitted:
             if not new_password or not confirm_password:
                 st.error("Please fill in all fields")
                 return
-            
+
             if new_password != confirm_password:
                 st.error("Passwords do not match")
                 return
-            
+
             # Verify token and get user
             user = verify_reset_token(token, username)
-            
+
             if not user:
                 st.error("Invalid or expired reset token.")
                 return
-            
+
             try:
                 # Update password
                 user.set_password(new_password)
-                
+
                 # Clear reset token
                 user.reset_token = None
                 user.reset_token_expiry = None
-                
+
                 db.session.commit()
                 st.success("Password has been reset successfully!")
-                
+
                 # Clear query parameters
                 st.query_params.clear()
-                
+
                 # Show login button
                 if st.button("Login with New Password"):
                     st.session_state.show_reset_confirmation = False
