@@ -19,6 +19,24 @@ def init_session_state():
 def login_user():
     """Handle user login"""
     st.header("Login")
+    
+    # Check for existing auth token first
+    if 'authentication_token' in st.session_state and st.session_state.authentication_token:
+        try:
+            user = User.verify_auth_token(st.session_state.authentication_token)
+            if user:
+                st.session_state.user = {
+                    'id': user.id,
+                    'username': user.username,
+                    'name': user.name,
+                    'is_admin': user.is_admin
+                }
+                st.session_state.is_admin = user.is_admin
+                st.success(f"Welcome back, {user.name}!")
+                return
+        except Exception:
+            st.session_state.authentication_token = None
+    
     with st.form("login_form"):
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")
@@ -33,29 +51,35 @@ def login_user():
             try:
                 # Get user from database
                 user = User.query.filter_by(username=username).first()
+                
+                if not user:
+                    st.error("Invalid username")
+                    return
 
-                if user and user.check_password(password):
-                    # Update last login time
-                    user.last_login = datetime.utcnow()
-                    db.session.commit()
+                if not user.check_password(password):
+                    st.error("Invalid password")
+                    return
 
-                    # Store user info in session state as dictionary
-                    st.session_state.user = {
-                        'id': user.id,
-                        'username': user.username,
-                        'name': user.name,
-                        'is_admin': user.is_admin
-                    }
-                    st.session_state.is_admin = user.is_admin
+                # Update last login time
+                user.last_login = datetime.utcnow()
+                db.session.commit()
 
-                    # Generate and store authentication token if remember me is checked
-                    if remember:
-                        st.session_state.authentication_token = user.get_auth_token()
+                # Store user info in session state
+                st.session_state.user = {
+                    'id': user.id,
+                    'username': user.username,
+                    'name': user.name,
+                    'is_admin': user.is_admin
+                }
+                st.session_state.is_admin = user.is_admin
 
-                    st.success(f"Welcome back, {user.name}!")
-                    st.rerun()
-                else:
-                    st.error("Invalid username or password")
+                # Always generate authentication token for persistence
+                st.session_state.authentication_token = user.get_auth_token()
+
+                st.success(f"Welcome back, {user.name}!")
+                time.sleep(1)  # Brief pause to show success message
+                st.rerun()
+
             except Exception as e:
                 print(f"Login error: {str(e)}")  # Log the error
                 st.error("Login failed. Please try again.")
