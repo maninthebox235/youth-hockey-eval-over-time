@@ -635,9 +635,6 @@ def display_tryout_evaluation_mode(team_id):
                             st.write(f"**Date:** {fb.date.strftime('%Y-%m-%d %H:%M')}")
                             st.write(fb.feedback_text)
 
-                            # Show ratings in columns
-                            cols = st.columns(3)
-
                             # Collect all ratings
                             ratings = {}
                             for col in CoachFeedback.__table__.columns:
@@ -649,11 +646,87 @@ def display_tryout_evaluation_mode(team_id):
                                         except:
                                             pass
 
-                            # Display ratings
-                            for i, (metric, value) in enumerate(ratings.items()):
-                                with cols[i % 3]:
+                            # Show all evaluated skills in a more organized way
+                            if ratings:
+                                st.markdown("### Evaluated Skills")
+                                
+                                # Group skills by category
+                                goalie_skills = {}
+                                skating_skills = {}
+                                technical_skills = {}
+                                hockey_iq_skills = {}
+                                other_skills = {}
+                                
+                                for metric, value in ratings.items():
                                     metric_name = metric.replace('_rating', '').replace('_', ' ').title()
-                                    st.metric(metric_name, value)
+                                    
+                                    # Categorize skills
+                                    if metric in ['save_technique_rating', 'positioning_rating', 'rebound_control_rating', 
+                                                 'recovery_rating', 'puck_handling_rating']:
+                                        goalie_skills[metric_name] = value
+                                    elif metric in ['skating_speed_rating', 'backward_skating_rating', 'agility_rating', 
+                                                   'edge_control_rating']:
+                                        skating_skills[metric_name] = value
+                                    elif metric in ['puck_control_rating', 'passing_accuracy_rating', 'shooting_accuracy_rating',
+                                                   'receiving_rating', 'stick_protection_rating']:
+                                        technical_skills[metric_name] = value
+                                    elif metric in ['hockey_sense_rating', 'decision_making_rating', 'game_awareness_rating']:
+                                        hockey_iq_skills[metric_name] = value
+                                    else:
+                                        other_skills[metric_name] = value
+                                
+                                # Function to display skill category
+                                def display_skill_section(title, skills_dict):
+                                    if skills_dict:
+                                        st.markdown(f"#### {title}")
+                                        cols = st.columns(3)
+                                        for i, (name, val) in enumerate(skills_dict.items()):
+                                            with cols[i % 3]:
+                                                st.metric(name, val, help="Rating scale: 1-5")
+                                
+                                # Display skill sections
+                                if goalie_skills:
+                                    display_skill_section("Goaltending Skills", goalie_skills)
+                                if skating_skills:
+                                    display_skill_section("Skating Skills", skating_skills)
+                                if technical_skills:
+                                    display_skill_section("Technical Skills", technical_skills) 
+                                if hockey_iq_skills:
+                                    display_skill_section("Hockey IQ Skills", hockey_iq_skills)
+                                if other_skills:
+                                    display_skill_section("Other Skills", other_skills)
+                                
+                                # Alternative view: show all skills in a unified visualization
+                                if len(ratings) > 3:  # Only show chart if we have multiple ratings
+                                    st.markdown("#### Skills Radar Chart")
+                                    
+                                    # Prepare data for radar chart
+                                    categories = [k.replace('_rating', '').replace('_', ' ').title() for k in ratings.keys()]
+                                    values = list(ratings.values())
+                                    
+                                    # Create radar chart
+                                    fig = go.Figure()
+                                    
+                                    fig.add_trace(go.Scatterpolar(
+                                        r=values,
+                                        theta=categories,
+                                        fill='toself',
+                                        name='Skills Rating'
+                                    ))
+                                    
+                                    fig.update_layout(
+                                        polar=dict(
+                                            radialaxis=dict(
+                                                visible=True,
+                                                range=[0, 5]
+                                            )
+                                        ),
+                                        showlegend=False
+                                    )
+                                    
+                                    st.plotly_chart(fig, use_container_width=True)
+                            else:
+                                st.info("No skill ratings were recorded for this evaluation.")
                 else:
                     st.info("No recent evaluations found for this team age group")
             else:
