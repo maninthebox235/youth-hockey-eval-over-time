@@ -18,6 +18,19 @@ app = init_app()
 app_ctx = app.app_context()
 app_ctx.push()
 
+# Initialize session state for persistence
+if 'initialized' not in st.session_state:
+    st.session_state.initialized = True
+    # Initialize other session state variables if needed
+    if 'user' not in st.session_state:
+        st.session_state.user = None
+    if 'is_admin' not in st.session_state:
+        st.session_state.is_admin = False
+    if 'show_signup' not in st.session_state:
+        st.session_state.show_signup = False
+    if 'show_login' not in st.session_state:
+        st.session_state.show_login = False
+
 # Page configuration
 st.set_page_config(
     page_title="Youth Hockey Development Tracker",
