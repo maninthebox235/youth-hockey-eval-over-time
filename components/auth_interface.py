@@ -19,7 +19,11 @@ def login_user():
     with st.form("login_form"):
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")
-        submitted = st.form_submit_button("Login")
+        col1, col2 = st.columns([1, 2])
+        with col1:
+            remember_me = st.checkbox("Remember Me", value=True)
+        with col2:
+            submitted = st.form_submit_button("Login", use_container_width=True)
         
         if submitted:
             if not username or not password:
@@ -45,13 +49,16 @@ def login_user():
                 
                 # Generate auth token
                 try:
-                    token = user.get_auth_token()
+                    # Set token expiration based on "Remember Me"
+                    expiration = 30 * 24 * 3600 if remember_me else 24 * 3600  # 30 days or 1 day
+                    token = user.get_auth_token(expiration=expiration)
                     if not token:
                         st.error("Failed to generate authentication token")
                         return
                     
                     # Set session state
                     st.session_state.authentication_token = token
+                    st.session_state.remember_me = remember_me
                     st.query_params["auth_token"] = token
                 except Exception as e:
                     logging.error(f"Token generation error: {str(e)}")
@@ -113,8 +120,28 @@ def display_auth_interface():
         with st.sidebar:
             # Check if user is a dictionary (expected) or use safe access
             user_name = st.session_state.user.get('name', 'User') if isinstance(st.session_state.user, dict) else 'User'
-            st.write(f"Welcome, {user_name}")
-            if st.button("Logout"):
-                st.session_state.clear()
-                st.query_params.clear()
-                st.rerun()
+            is_admin = st.session_state.user.get('is_admin', False) if isinstance(st.session_state.user, dict) else False
+            
+            # User profile container
+            with st.container():
+                col1, col2 = st.columns([3, 1])
+                with col1:
+                    st.write(f"👤 Welcome, **{user_name}**")
+                    if is_admin:
+                        st.write("🔑 **Admin Access**")
+                    # Show when the session will expire if remember me was used
+                    if 'remember_me' in st.session_state and st.session_state.remember_me:
+                        st.write("📌 Extended session active")
+                
+                with col2:
+                    if st.button("Logout", use_container_width=True):
+                        # Clear session state
+                        st.session_state.clear()
+                        # Clear URL parameters
+                        st.query_params.clear()
+                        # Redirect to login page
+                        st.info("Logging out...")
+                        st.rerun()
+            
+            # Add a horizontal rule for visual separation
+            st.markdown("---")
