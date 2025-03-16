@@ -56,16 +56,27 @@ def check_columns_exist():
 
 if __name__ == "__main__":
     with app.app_context():
-        print("Rolling back any failed transactions...")
-        db.session.rollback()
-        
-        print("\nRunning database migrations...")
-        upgrade()
-        print("Migrations completed.")
-        
-        print("\nChecking database schema...")
-        check_columns_exist()
-        
-        print("\nCommitting session...")
-        db.session.commit()
-        print("Done!")
+        try:
+            print("Rolling back any failed transactions...")
+            db.session.rollback()
+            
+            print("\nRunning database migrations...")
+            upgrade()
+            print("Migrations completed.")
+            
+            print("\nChecking database schema...")
+            columns_exist = check_columns_exist()
+            
+            print("\nCommitting session...")
+            db.session.commit()
+            
+            if columns_exist:
+                print("Migration successful! All required columns exist.")
+            else:
+                print("WARNING: Some required columns are missing. Check migration files.")
+                
+        except Exception as e:
+            print(f"\nERROR: Migration failed: {str(e)}")
+            db.session.rollback()
+            import traceback
+            print(traceback.format_exc())
