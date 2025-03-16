@@ -66,10 +66,20 @@ def get_players_df(user_id=None):
         DataFrame containing player data
     """
     try:
-        # Convert user_id if provided
+        # Convert user_id if provided to native Python int
         if user_id is not None:
             user_id = to_int(user_id)
-            players = Player.query.filter_by(user_id=user_id).all()
+            if user_id is None:
+                print("Invalid user_id: None after conversion")
+                return pd.DataFrame()
+                
+            # Explicitly convert to native Python int for database compatibility
+            try:
+                user_id = int(user_id)  # Explicitly cast to native Python int
+                players = Player.query.filter_by(user_id=user_id).all()
+            except (TypeError, ValueError):
+                print(f"Error converting user_id {user_id} to integer")
+                return pd.DataFrame()
         else:
             players = Player.query.all()
             
