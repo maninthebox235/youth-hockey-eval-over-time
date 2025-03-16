@@ -295,6 +295,167 @@ def display_user_management():
             else:
                 st.error(f"Failed to update user {user_id}")
 
+def get_analytics_data():
+    """Get website analytics data including user signups and traffic metrics"""
+    from datetime import datetime, timedelta
+    import pandas as pd
+    import numpy as np
+    import random  # For demo purposes only
+    
+    # Get current date and calculate time ranges
+    now = datetime.now()
+    week_ago = now - timedelta(days=7)
+    month_ago = now - timedelta(days=30)
+    
+    # Get user signup statistics from database
+    users = User.query.all()
+    
+    # Calculate signup metrics
+    total_users = len(users)
+    users_last_month = sum(1 for user in users if user.created_at and user.created_at >= month_ago)
+    users_last_week = sum(1 for user in users if user.created_at and user.created_at >= week_ago)
+    
+    # For demonstration purposes, generate traffic data
+    # In a production environment, this would be replaced with actual analytics data
+    days = [(now - timedelta(days=i)).strftime('%Y-%m-%d') for i in range(30, 0, -1)]
+    
+    # Create a dataframe with traffic data (demo data)
+    daily_visits = [int(np.clip(random.gauss(100, 30), 20, 200)) for _ in range(30)]
+    daily_users = [int(daily * random.uniform(0.4, 0.7)) for daily in daily_visits]
+    daily_signups = [int(daily * random.uniform(0.05, 0.15)) for daily in daily_users]
+    
+    traffic_df = pd.DataFrame({
+        'Date': days,
+        'Page Views': daily_visits,
+        'Unique Visitors': daily_users,
+        'New Signups': daily_signups
+    })
+    
+    # Calculate totals for different time periods
+    total_views = sum(daily_visits)
+    month_views = sum(daily_visits[-30:])
+    week_views = sum(daily_visits[-7:])
+    
+    return {
+        'user_stats': {
+            'total': total_users,
+            'month': users_last_month,
+            'week': users_last_week
+        },
+        'traffic_stats': {
+            'total_views': total_views,
+            'month_views': month_views,
+            'week_views': week_views
+        },
+        'traffic_df': traffic_df
+    }
+
+def display_analytics_dashboard():
+    """Display analytics dashboard with traffic and user statistics"""
+    st.write("### Analytics Dashboard")
+    
+    # Get analytics data
+    analytics = get_analytics_data()
+    
+    # Display key metrics in neat cards
+    st.markdown("""
+    <style>
+    .metric-card {
+        background-color: #f7f7f7;
+        border-radius: 5px;
+        padding: 15px;
+        text-align: center;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .metric-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #2C3E50;
+    }
+    .metric-label {
+        font-size: 14px;
+        color: #7F8C8D;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # User Statistics Section
+    st.write("#### User Statistics")
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-value">{analytics['user_stats']['total']}</div>
+            <div class="metric-label">Total Users</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-value">{analytics['user_stats']['month']}</div>
+            <div class="metric-label">New Users (Last 30 Days)</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+    with col3:
+        st.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-value">{analytics['user_stats']['week']}</div>
+            <div class="metric-label">New Users (Last 7 Days)</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Traffic Statistics Section
+    st.write("#### Website Traffic")
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-value">{analytics['traffic_stats']['total_views']}</div>
+            <div class="metric-label">Total Page Views</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-value">{analytics['traffic_stats']['month_views']}</div>
+            <div class="metric-label">Page Views (Last 30 Days)</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+    with col3:
+        st.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-value">{analytics['traffic_stats']['week_views']}</div>
+            <div class="metric-label">Page Views (Last 7 Days)</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Traffic Chart
+    st.write("#### Traffic Trends (Last 30 Days)")
+    traffic_df = analytics['traffic_df']
+    
+    # Line chart for page views and unique visitors
+    chart_data = traffic_df[['Date', 'Page Views', 'Unique Visitors']]
+    chart_data = chart_data.melt('Date', var_name='Metric', value_name='Count')
+    
+    st.line_chart(traffic_df.set_index('Date')[['Page Views', 'Unique Visitors']])
+    
+    # Signups chart
+    st.write("#### Signup Trends (Last 30 Days)")
+    st.bar_chart(traffic_df.set_index('Date')['New Signups'])
+    
+    # Add note about demo data
+    st.info("""
+    Note: Currently showing simulated traffic data for demonstration purposes.
+    In a production environment, this would be replaced with actual analytics data
+    from services like Google Analytics or your server logs.
+    """)
+
 def display_admin_dashboard():
     """Main admin dashboard interface"""
     if 'user' not in st.session_state or not st.session_state.user.get('is_admin', False):
@@ -305,7 +466,7 @@ def display_admin_dashboard():
     st.write("Access and manage all players, teams, and users in the system.")
     
     # Create tabs for different sections
-    tab1, tab2, tab3 = st.tabs(["Players", "Teams", "Users"])
+    tab1, tab2, tab3, tab4 = st.tabs(["Players", "Teams", "Users", "Analytics"])
     
     with tab1:
         st.write("### All Players")
@@ -333,3 +494,6 @@ def display_admin_dashboard():
     
     with tab3:
         display_user_management()
+        
+    with tab4:
+        display_analytics_dashboard()
