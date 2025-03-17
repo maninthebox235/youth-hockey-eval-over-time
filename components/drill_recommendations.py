@@ -244,8 +244,20 @@ class DrillRecommendationEngine:
             'Goalie': ['positioning', 'save_technique', 'rebound_control', 'recovery']
         }
         
+        # Get the position and normalize it for the position_skills dictionary
         position = player_dict.get('position', 'Forward')
-        if position in position_skills:
+        
+        # Convert the position to a standard form (Forward, Defense, Goalie)
+        if "goalie" in position.lower():
+            normalized_position = "Goalie"
+        elif "defense" in position.lower():
+            normalized_position = "Defense"
+        else:
+            normalized_position = "Forward"
+            
+        st.debug(f"Position from DB: '{position}', normalized to '{normalized_position}'")
+        
+        if normalized_position in position_skills:
             for skill in position_skills[position]:
                 if skill in self.skill_drills:
                     # Check if not already added
