@@ -258,7 +258,7 @@ class DrillRecommendationEngine:
         st.debug(f"Position from DB: '{position}', normalized to '{normalized_position}'")
         
         if normalized_position in position_skills:
-            for skill in position_skills[position]:
+            for skill in position_skills[normalized_position]:
                 if skill in self.skill_drills:
                     # Check if not already added
                     if not any(rc['skill'] == skill for rc in recommendation_contexts):
@@ -288,9 +288,9 @@ class DrillRecommendationEngine:
             if age_group and age_group in age_skills:
                 skills_to_add = age_skills[age_group]
                 # For position-specific, use the appropriate position skills
-                if 'position-specific' in skills_to_add and position in position_skills:
+                if 'position-specific' in skills_to_add and normalized_position in position_skills:
                     skills_to_add.remove('position-specific')
-                    skills_to_add.extend(position_skills[position])
+                    skills_to_add.extend(position_skills[normalized_position])
                     
                 for skill in skills_to_add:
                     if skill in self.skill_drills:
