@@ -514,6 +514,14 @@ def display_tryout_evaluation_mode(team_id):
                         st.session_state[f"{form_key}_player_name"] = player_name
                         st.session_state[f"{form_key}_player_age"] = player_age
                         st.session_state[f"{form_key}_player_position"] = player_position
+                        
+                        # Clear any previous values in the form's session state that might be causing conflicts
+                        if "current_player_name" in st.session_state:
+                            st.session_state.current_player_name = player_name
+                        if "current_player_age" in st.session_state:
+                            st.session_state.current_player_age = player_age
+                        if "current_player_position" in st.session_state:
+                            st.session_state.current_player_position = player_position
                     else:
                         st.error("Player not found in database")
                         player_name = ""
@@ -628,10 +636,12 @@ def display_tryout_evaluation_mode(team_id):
             submitted = st.form_submit_button("Save Evaluation")
 
             if submitted:
-                # Use session state values if available (for selected player), otherwise use form values
-                eval_player_name = st.session_state.get('current_player_name', player_name)
-                eval_player_age = st.session_state.get('current_player_age', player_age)
-                eval_player_position = st.session_state.get('current_player_position', player_position)
+                # Prioritize the form key-specific session state, which is set during player selection
+                # This ensures we're using the currently selected player's info 
+                form_key = f"tryout_form_{team.id}"
+                eval_player_name = st.session_state.get(f"{form_key}_player_name", player_name)
+                eval_player_age = st.session_state.get(f"{form_key}_player_age", player_age)
+                eval_player_position = st.session_state.get(f"{form_key}_player_position", player_position)
                 
                 if not eval_player_name or not evaluator_name:
                     st.error("Player name and evaluator name are required")
