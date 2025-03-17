@@ -556,12 +556,19 @@ def display_tryout_evaluation_mode(team_id):
 
             # Force display_position to match the actual position of the player
             if selected_player_id > 0:
-                # Extract position from player selection if it contains it
+                # Get the selected player directly from database
+                selected_player = Player.query.get(selected_player_id)
                 if selected_player:
-                    player_display_name = f"{selected_player.name} - {selected_player.position}" 
-                    if "goalie" in player_display_name.lower():
+                    # Set position directly from database
+                    display_position = selected_player.position
+
+                    # Store for later use in session state
+                    st.session_state[f"{form_key}_player_position"] = display_position
+
+                    # Make sure we're using the correct position values
+                    if display_position.lower() == "goalie":
                         display_position = "Goalie"
-                    elif "defense" in player_display_name.lower():
+                    elif display_position.lower() == "defense":
                         display_position = "Defense"
                     else:
                         display_position = "Forward"
@@ -785,7 +792,7 @@ def display_tryout_evaluation_mode(team_id):
                                     metric_name = metric.replace('_rating', '').replace('_', ' ').title()
 
                                     # Categorize skills
-                                    if metric in ['save_technique_rating', 'positioning_rating', 'rebound_control_rating', 
+                                    if metric in ['save_technique_rating', 'positioning_rating', ''rebound_control_rating', 
                                                  'recovery_rating', 'puck_handling_rating']:
                                         goalie_skills[metric_name] = value
                                     elif metric in ['skating_speed_rating', 'backward_skating_rating', 'agility_rating', 
