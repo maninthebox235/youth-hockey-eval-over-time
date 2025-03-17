@@ -100,7 +100,7 @@ def display_team_overview(team, players_df):
         fig = px.pie(position_counts, values='Count', names='Position', 
                      title='Team Composition by Position')
         st.plotly_chart(fig, use_container_width=True, key="team_composition_pie")
-        
+
         # Add Team Skills Distribution Heatmap
         st.subheader("Team Skills Distribution")
         heatmap = create_team_skill_heatmap(players_df)
@@ -130,7 +130,7 @@ def create_team_skill_heatmap(players_df):
         'games_played', 'goals', 'assists', 'goals_against', 'saves',
         'join_date', 'created_at', 'last_login'
     ]
-    
+
     # Get all skill columns (only numeric columns that aren't in excluded list)
     skill_cols = []
     for col in players_df.columns:
@@ -154,7 +154,7 @@ def create_team_skill_heatmap(players_df):
                     val = to_float(player[skill])
                     if val is None:
                         continue
-                        
+
                     if val > 5:  # Percentage values
                         val = val / 20  # Convert percentage to rough 0-5 scale
                     player_skills[skill.replace('_', ' ').title()] = val
@@ -209,7 +209,7 @@ def identify_team_strengths_weaknesses(players_df):
         'games_played', 'goals', 'assists', 'goals_against', 'saves',
         'join_date', 'created_at', 'last_login'
     ]
-    
+
     # Get all skill columns (only numeric columns that aren't in excluded list)
     skill_cols = []
     for col in players_df.columns:
@@ -373,7 +373,7 @@ def display_player_comparison_tool(players_df):
                     if val is None:
                         player_skills.append(0)
                         continue
-                        
+
                     if val > 5:  # Percentage values
                         val = val / 20  # Convert to 0-5 scale
                     player_skills.append(val)
@@ -420,7 +420,7 @@ def display_player_comparison_tool(players_df):
                     # Handle numpy numeric types
                     if hasattr(value, 'item'):
                         value = value.item()
-                    
+
                     # Format the value
                     if isinstance(value, float):
                         row[player_name] = f"{value:.1f}" 
@@ -460,7 +460,7 @@ def display_tryout_evaluation_mode(team_id):
         with st.form("tryout_evaluation_form"):
             # Player information
             st.subheader("Player Information")
-            
+
             # Get players on this team for the dropdown
             team_players = []
             try:
@@ -470,13 +470,13 @@ def display_tryout_evaluation_mode(team_id):
                     player_ids = [m.player_id for m in memberships]
                     players = Player.query.filter(Player.id.in_(player_ids)).all()
                     team_players = [(p.id, f"{p.name} - {p.position}") for p in players]
-                
+
                 # Add option to add a new player
                 team_players.append((-1, "-- Add New Player --"))
-                
+
                 # Create a unique key for this form
                 form_key = f"tryout_form_{team.id}"
-                
+
                 # Simpler, direct player selection approach
                 player_option = st.selectbox(
                     "Select Player", 
@@ -484,14 +484,14 @@ def display_tryout_evaluation_mode(team_id):
                     format_func=lambda i: team_players[i][1],
                     key=f"{form_key}_player_select"
                 )
-                
+
                 # Get the selected player ID
                 selected_player_id = team_players[player_option][0]
-                
+
                 # Ensure the session state is updated with the current selection
                 # This helps prevent UI mismatches between selected player and displayed info
                 st.session_state[f"{form_key}_selected_player_id"] = selected_player_id
-                
+
                 # For existing player, fetch fresh data directly from database
                 if selected_player_id > 0:
                     # This is an existing player - get fresh data from database
@@ -500,20 +500,20 @@ def display_tryout_evaluation_mode(team_id):
                         # Only display age and position info (name is already in dropdown)
                         st.write(f"**Age:** {selected_player.age}")
                         st.write(f"**Position:** {selected_player.position}")
-                        
+
                         # Store player info for form submission
                         player_name = selected_player.name
                         player_age = selected_player.age
                         player_position = selected_player.position
-                        
+
                         # Set the display position directly based on database info
                         display_position = selected_player.position
-                        
+
                         # Store in session state to maintain consistency across reruns
                         st.session_state[f"{form_key}_player_name"] = player_name
                         st.session_state[f"{form_key}_player_age"] = player_age
                         st.session_state[f"{form_key}_player_position"] = player_position
-                        
+
                         # Clear any previous values in the form's session state that might be causing conflicts
                         if "current_player_name" in st.session_state:
                             st.session_state.current_player_name = player_name
@@ -553,17 +553,27 @@ def display_tryout_evaluation_mode(team_id):
 
             # Create skill evaluation sliders based on position
             st.subheader("Skills Assessment")
-            
+
             # Force display_position to match the actual position of the player
             if selected_player_id > 0:
-                # Check if the position contains "Goalie" (case insensitive)
-                if "goalie" in player_position.lower():
-                    display_position = "Goalie"
-                elif "defense" in player_position.lower():
-                    display_position = "Defense"
+                # Extract position from player selection if it contains it
+                if selected_player:
+                    player_display_name = f"{selected_player.name} - {selected_player.position}" 
+                    if "goalie" in player_display_name.lower():
+                        display_position = "Goalie"
+                    elif "defense" in player_display_name.lower():
+                        display_position = "Defense"
+                    else:
+                        display_position = "Forward"
                 else:
-                    display_position = "Forward"
-            
+                    # Fallback to the original logic
+                    if "goalie" in player_position.lower():
+                        display_position = "Goalie"
+                    elif "defense" in player_position.lower():
+                        display_position = "Defense"
+                    else:
+                        display_position = "Forward"
+
             if display_position == "Goalie":
                 # Goalie skills
                 col1, col2 = st.columns(2)
@@ -648,7 +658,7 @@ def display_tryout_evaluation_mode(team_id):
                 eval_player_name = st.session_state.get(f"{form_key}_player_name", player_name)
                 eval_player_age = st.session_state.get(f"{form_key}_player_age", player_age)
                 eval_player_position = st.session_state.get(f"{form_key}_player_position", player_position)
-                
+
                 if not eval_player_name or not evaluator_name:
                     st.error("Player name and evaluator name are required")
                 else:
@@ -714,7 +724,7 @@ def display_tryout_evaluation_mode(team_id):
                         db.session.commit()
 
                         st.success(f"Evaluation for {eval_player_name} saved successfully!")
-                        
+
                         # Add redirect to team overview
                         st.session_state.show_tryout_mode = False  # Turn off tryout mode
                         st.session_state.redirect_to_overview = True  # Signal to redirect
@@ -763,22 +773,22 @@ def display_tryout_evaluation_mode(team_id):
                             # Show all evaluated skills in a more organized way
                             if ratings:
                                 st.markdown("### Evaluated Skills")
-                                
+
                                 # Group skills by category
                                 goalie_skills = {}
                                 skating_skills = {}
                                 technical_skills = {}
                                 hockey_iq_skills = {}
                                 other_skills = {}
-                                
+
                                 for metric, value in ratings.items():
                                     metric_name = metric.replace('_rating', '').replace('_', ' ').title()
-                                    
+
                                     # Categorize skills
                                     if metric in ['save_technique_rating', 'positioning_rating', 'rebound_control_rating', 
                                                  'recovery_rating', 'puck_handling_rating']:
                                         goalie_skills[metric_name] = value
-                                    elif metric in ['skating_speed_rating', 'backward_skating_rating', 'agility_rating', 
+     elif metric in ['skating_speed_rating', 'backward_skating_rating', 'agility_rating', 
                                                    'edge_control_rating']:
                                         skating_skills[metric_name] = value
                                     elif metric in ['puck_control_rating', 'passing_accuracy_rating', 'shooting_accuracy_rating',
@@ -788,7 +798,7 @@ def display_tryout_evaluation_mode(team_id):
                                         hockey_iq_skills[metric_name] = value
                                     else:
                                         other_skills[metric_name] = value
-                                
+
                                 # Function to display skill category
                                 def display_skill_section(title, skills_dict):
                                     if skills_dict:
@@ -797,7 +807,7 @@ def display_tryout_evaluation_mode(team_id):
                                         for i, (name, val) in enumerate(skills_dict.items()):
                                             with cols[i % 3]:
                                                 st.metric(name, val, help="Rating scale: 1-5")
-                                
+
                                 # Display skill sections
                                 if goalie_skills:
                                     display_skill_section("Goaltending Skills", goalie_skills)
@@ -809,25 +819,25 @@ def display_tryout_evaluation_mode(team_id):
                                     display_skill_section("Hockey IQ Skills", hockey_iq_skills)
                                 if other_skills:
                                     display_skill_section("Other Skills", other_skills)
-                                
+
                                 # Alternative view: show all skills in a unified visualization
                                 if len(ratings) > 3:  # Only show chart if we have multiple ratings
                                     st.markdown("#### Skills Radar Chart")
-                                    
+
                                     # Prepare data for radar chart
                                     categories = [k.replace('_rating', '').replace('_', ' ').title() for k in ratings.keys()]
                                     values = list(ratings.values())
-                                    
+
                                     # Create radar chart
                                     fig = go.Figure()
-                                    
+
                                     fig.add_trace(go.Scatterpolar(
                                         r=values,
                                         theta=categories,
                                         fill='toself',
                                         name='Skills Rating'
                                     ))
-                                    
+
                                     fig.update_layout(
                                         polar=dict(
                                             radialaxis=dict(
@@ -837,7 +847,7 @@ def display_tryout_evaluation_mode(team_id):
                                         ),
                                         showlegend=False
                                     )
-                                    
+
                                     st.plotly_chart(fig, use_container_width=True)
                             else:
                                 st.info("No skill ratings were recorded for this evaluation.")
@@ -1056,19 +1066,19 @@ def display_team_dashboard(team_id=None):
         "Tryout Evaluation", 
         "Custom Reports"
     ])
-    
+
     # Initialize tab index in session state if not already set
     if 'active_tab' not in st.session_state:
         st.session_state.active_tab = 0
-    
+
     # Check if we should redirect from tryout mode to overview
     if 'redirect_to_overview' in st.session_state and st.session_state.redirect_to_overview:
         st.session_state.active_tab = 0  # Set to team overview tab
         st.session_state.redirect_to_overview = False  # Reset the flag
-        
+
     # Set the active tab index (Streamlit will show this tab first)
     st.session_state.active_tab_index = st.session_state.active_tab
-    
+
     with dashboard_tabs[0]:
         display_team_overview(team, players_df)
 
