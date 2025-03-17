@@ -589,6 +589,12 @@ def display_tryout_evaluation_mode(team_id):
                         display_position = "Forward"
             
             st.write(f"**Final position used for metrics:** {display_position}")
+            
+            # Force position type for goalie metrics
+            # This is the key fix - override display_position if position contains 'goalie'
+            if "goalie" in player_position.lower():
+                display_position = "Goalie"
+                st.success("Forcing to Goalie metrics based on position string")
 
             if display_position == "Goalie":
                 # Goalie skills
