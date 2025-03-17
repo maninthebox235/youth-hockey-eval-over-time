@@ -22,6 +22,7 @@ args = "Streamlit Server"
 [[workflows.workflow]]
 name = "Streamlit Server"
 author = "agent"
+mode = "sequential"
 
 [workflows.workflow.metadata]
 agentRequireRestartOnSave = false
