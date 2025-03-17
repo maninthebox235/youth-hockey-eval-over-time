@@ -104,14 +104,16 @@ def display_feature_preview():
     # Display authentication buttons at the top
     display_auth_buttons()
     
-    # Banner image - reduced size to make header visible without scrolling
-    # Add custom CSS to limit image height
+    # Banner image - sized for optimal viewing without scrolling
+    # Add custom CSS to limit image height and enhance appearance
     st.markdown("""
     <style>
         /* Control the height of the banner image */
         .banner-image img {
-            max-height: 200px !important;
+            max-height: 180px !important;
             object-fit: cover !important;
+            border-radius: 8px !important;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
         }
     </style>
     """, unsafe_allow_html=True)
@@ -119,7 +121,7 @@ def display_feature_preview():
     col1, col2, col3 = st.columns([2, 3, 2])
     with col2:
         st.markdown('<div class="banner-image">', unsafe_allow_html=True)
-        st.image("static/images/hockey/players/smiling.jpg", use_container_width=True, output_format="JPEG")
+        st.image("static/images/hockey/players/hockey_player_close_up.jpg", use_container_width=True, output_format="JPEG")
         st.markdown('</div>', unsafe_allow_html=True)
     
     st.title("🏒 IceTracker: Youth Hockey Player Development Platform")
