@@ -488,12 +488,16 @@ def display_tryout_evaluation_mode(team_id):
                 # Get the selected player ID
                 selected_player_id = team_players[player_option][0]
                 
+                # Ensure the session state is updated with the current selection
+                # This helps prevent UI mismatches between selected player and displayed info
+                st.session_state[f"{form_key}_selected_player_id"] = selected_player_id
+                
                 # For existing player, fetch fresh data directly from database
                 if selected_player_id > 0:
                     # This is an existing player - get fresh data from database
                     selected_player = Player.query.get(selected_player_id)
                     if selected_player:
-                        # Display player info from database
+                        # Ensure we're displaying info for the currently selected player
                         st.write(f"**Name:** {selected_player.name}")
                         st.write(f"**Age:** {selected_player.age}")
                         st.write(f"**Position:** {selected_player.position}")
@@ -505,6 +509,11 @@ def display_tryout_evaluation_mode(team_id):
                         
                         # Set the display position directly based on database info
                         display_position = selected_player.position
+                        
+                        # Store in session state to maintain consistency across reruns
+                        st.session_state[f"{form_key}_player_name"] = player_name
+                        st.session_state[f"{form_key}_player_age"] = player_age
+                        st.session_state[f"{form_key}_player_position"] = player_position
                     else:
                         st.error("Player not found in database")
                         player_name = ""
