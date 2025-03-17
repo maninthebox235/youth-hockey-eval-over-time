@@ -501,9 +501,6 @@ def display_tryout_evaluation_mode(team_id):
                         st.write(f"**Age:** {selected_player.age}")
                         st.write(f"**Position:** {selected_player.position}")
                         
-                        # Debug info to check position
-                        st.write(f"_Debug - Selected position: {selected_player.position}_")
-                        
                         # Store player info for form submission
                         player_name = selected_player.name
                         player_age = selected_player.age
@@ -557,13 +554,15 @@ def display_tryout_evaluation_mode(team_id):
             # Create skill evaluation sliders based on position
             st.subheader("Skills Assessment")
             
-            # Ensure position is properly set for display
-            st.write(f"**Using position for metrics:** {display_position}")
-            
             # Force display_position to match the actual position of the player
-            if selected_player_id > 0 and display_position != "Goalie" and "Goalie" in player_position:
-                display_position = "Goalie"
-                st.info(f"Adjusted position to {display_position} based on player data")
+            if selected_player_id > 0:
+                # Check if the position contains "Goalie" (case insensitive)
+                if "goalie" in player_position.lower():
+                    display_position = "Goalie"
+                elif "defense" in player_position.lower():
+                    display_position = "Defense"
+                else:
+                    display_position = "Forward"
             
             if display_position == "Goalie":
                 # Goalie skills
