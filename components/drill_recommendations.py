@@ -255,7 +255,8 @@ class DrillRecommendationEngine:
         else:
             normalized_position = "Forward"
             
-        st.debug(f"Position from DB: '{position}', normalized to '{normalized_position}'")
+        # For debugging purposes - can be commented out in production
+        # st.write(f"Position from DB: '{position}', normalized to '{normalized_position}'")
         
         if normalized_position in position_skills:
             for skill in position_skills[normalized_position]:
