@@ -104,6 +104,9 @@ def display_feature_preview():
     # Display authentication buttons at the top
     display_auth_buttons()
     
+    # Display the title first, above the image
+    st.title("🏒 IceTracker: Youth Hockey Player Development Platform")
+    
     # Banner image - sized for optimal viewing without scrolling
     # Add custom CSS to limit image height and enhance appearance
     st.markdown("""
@@ -123,8 +126,6 @@ def display_feature_preview():
         st.markdown('<div class="banner-image">', unsafe_allow_html=True)
         st.image("static/images/hockey/players/hockey_player_close_up.jpg", use_container_width=True, output_format="JPEG")
         st.markdown('</div>', unsafe_allow_html=True)
-    
-    st.title("🏒 IceTracker: Youth Hockey Player Development Platform")
     st.markdown("##### Comprehensive skill tracking, personalized training, and advanced analytics for young players")
     
     # Use a custom CSS style
