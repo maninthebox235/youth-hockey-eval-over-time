@@ -321,9 +321,35 @@ class DrillRecommendationEngine:
                 selected_drill = random.choice(available_drills)
                 
                 # Add context information
-                selected_drill['skill'] = skill
+                # For goalies, we need to track both the original skill and the substituted skill
+                original_skill = skill
+                
+                # If this is a goalie, the drill might be for a different skill than requested
+                # We need to identify which goalie skill was actually used
+                if normalized_position == "Goalie":
+                    goalie_skills = ['positioning', 'save_technique', 'rebound_control', 'recovery',
+                                    'puck_handling', 'glove_saves', 'blocker_saves', 'post_integration']
+                    
+                    goalie_substitutes = {
+                        'decision_making': 'positioning',
+                        'hockey_sense': 'positioning',
+                        'skating_speed': 'recovery',
+                        'agility': 'recovery',
+                        'shooting_accuracy': 'save_technique',
+                        'passing_accuracy': 'save_technique'
+                    }
+                    
+                    # If original skill is not a goalie skill, get the substituted skill for display
+                    if original_skill not in goalie_skills and original_skill in goalie_substitutes:
+                        display_skill = goalie_substitutes[original_skill]
+                    else:
+                        display_skill = original_skill
+                else:
+                    display_skill = original_skill
+                
+                selected_drill['skill'] = original_skill
                 selected_drill['recommendation_reason'] = reason
-                selected_drill['formatted_skill'] = skill.replace('_', ' ').title()
+                selected_drill['formatted_skill'] = display_skill.replace('_', ' ').title()
                 
                 recommendations.append(selected_drill)
         
