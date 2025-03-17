@@ -497,8 +497,7 @@ def display_tryout_evaluation_mode(team_id):
                     # This is an existing player - get fresh data from database
                     selected_player = Player.query.get(selected_player_id)
                     if selected_player:
-                        # Ensure we're displaying info for the currently selected player
-                        st.write(f"**Name:** {selected_player.name}")
+                        # Only display age and position info (name is already in dropdown)
                         st.write(f"**Age:** {selected_player.age}")
                         st.write(f"**Position:** {selected_player.position}")
                         
