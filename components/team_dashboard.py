@@ -553,33 +553,42 @@ def display_tryout_evaluation_mode(team_id):
 
             # Create skill evaluation sliders based on position
             st.subheader("Skills Assessment")
-
+            
+            # Add debug information to troubleshoot position issues
+            st.write(f"**Debug - Selected ID:** {selected_player_id}")
+            st.write(f"**Debug - Current position:** {player_position}")
+            
             # Force display_position to match the actual position of the player
             if selected_player_id > 0:
                 # Get the selected player directly from database
                 selected_player = Player.query.get(selected_player_id)
                 if selected_player:
                     # Set position directly from database
-                    display_position = selected_player.position
-
-                    # Store for later use in session state
-                    st.session_state[f"{form_key}_player_position"] = display_position
-
-                    # Make sure we're using the correct position values
-                    if display_position.lower() == "goalie":
+                    original_position = selected_player.position
+                    st.write(f"**Debug - Position from database:** {original_position}")
+                    
+                    # Handle position values consistently
+                    if "goalie" in original_position.lower():
                         display_position = "Goalie"
-                    elif display_position.lower() == "defense":
+                        st.success(f"Setting position to Goalie based on database value: {original_position}")
+                    elif "defense" in original_position.lower():
                         display_position = "Defense"
                     else:
                         display_position = "Forward"
+                        
+                    # Store for later use in session state
+                    st.session_state[f"{form_key}_player_position"] = display_position
                 else:
                     # Fallback to the original logic
+                    st.warning("Player not found in database - falling back to default logic")
                     if "goalie" in player_position.lower():
                         display_position = "Goalie"
                     elif "defense" in player_position.lower():
                         display_position = "Defense"
                     else:
                         display_position = "Forward"
+            
+            st.write(f"**Final position used for metrics:** {display_position}")
 
             if display_position == "Goalie":
                 # Goalie skills
