@@ -314,8 +314,8 @@ class DrillRecommendationEngine:
             skill = context['skill']
             reason = context['reason']
             
-            # Get drills for this skill and select one
-            available_drills = self.training_plans.get_drills_for_skill(skill, count=3)
+            # Get drills for this skill and select one, using the player's position
+            available_drills = self.training_plans.get_drills_for_skill(skill, count=3, position=normalized_position)
             if available_drills:
                 # Select a drill (randomly for variety)
                 selected_drill = random.choice(available_drills)

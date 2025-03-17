@@ -395,12 +395,68 @@ class TrainingPlans:
         # Default to oldest age group if no match found
         return self.age_plans[(15, 18)]
     
-    def get_drills_for_skill(self, skill, count=2):
-        """Get recommended drills for a specific skill"""
+    def get_drills_for_skill(self, skill, count=2, position=None):
+        """
+        Get recommended drills for a specific skill based on player position
+        
+        Args:
+            skill: The skill to get drills for
+            count: Number of drills to return
+            position: Player position (Forward, Defense, Goalie)
+            
+        Returns:
+            List of drills appropriate for the skill and position
+        """
+        # If skill isn't in the drills collection, return empty list
         if skill not in self.skill_drills:
             return []
+        
+        # If no position specified, use the generic drills
+        if not position:
+            drills = self.skill_drills[skill]
+            return drills[:min(count, len(drills))]
             
-        drills = self.skill_drills[skill]
+        # Get position-specific drills
+        # Normalize position name to match our categories
+        if position and "goalie" in position.lower():
+            normalized_position = "Goalie"
+        elif position and "defense" in position.lower():
+            normalized_position = "Defense"
+        else:
+            normalized_position = "Forward"
+        
+        # For goalie-specific skills, return goalie-specific drills
+        goalie_skills = ['positioning', 'save_technique', 'rebound_control', 'recovery', 
+                       'puck_handling', 'glove_saves', 'blocker_saves', 'post_integration']
+        
+        # For defense-specific skills
+        defense_skills = ['gap_control', 'shot_blocking', 'breakout_passes', 'backward_skating']
+        
+        # Check if we need position-specific filtering
+        if normalized_position == "Goalie" and skill in goalie_skills:
+            # For goalie skills, return goalie drills
+            drills = self.skill_drills[skill]
+        elif normalized_position == "Goalie":
+            # For non-goalie skills when player is a goalie, adapt to goalie-relevant drills
+            # Substitute with goalie-specific drills instead
+            goalie_substitutes = {
+                'decision_making': 'positioning',
+                'hockey_sense': 'positioning',
+                'skating_speed': 'recovery',
+                'agility': 'recovery',
+                'shooting_accuracy': 'puck_handling',
+                'passing_accuracy': 'puck_handling'
+            }
+            
+            substitute_skill = goalie_substitutes.get(skill, 'positioning')
+            drills = self.skill_drills[substitute_skill]
+        elif normalized_position == "Defense" and skill in defense_skills:
+            # For defense-specific skills
+            drills = self.skill_drills[skill]
+        else:
+            # For regular skater skills
+            drills = self.skill_drills[skill]
+            
         # Return requested number of drills or all available if fewer
         return drills[:min(count, len(drills))]
     
@@ -478,7 +534,8 @@ class TrainingPlans:
         
         # Add specific drills for each focus area
         for skill, value in needs:
-            skill_drills = self.get_drills_for_skill(skill, count=2)
+            # Get position-specific drills
+            skill_drills = self.get_drills_for_skill(skill, count=2, position=position)
             for drill in skill_drills:
                 plan['drills'].append({
                     'skill': skill,
@@ -818,7 +875,9 @@ def display_training_plan_interface(player_id, player_data):
         # Group drills by skill
         skill_groups = {}
         for skill in plan['focus_areas']:
-            drills = trainer.get_drills_for_skill(skill, count=5)
+            # Get position-specific drills for this skill
+            position = player_dict.get('position', 'Forward')
+            drills = trainer.get_drills_for_skill(skill, count=5, position=position)
             if drills:
                 skill_groups[skill] = drills
         
