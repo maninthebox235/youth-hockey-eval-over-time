@@ -788,7 +788,7 @@ def display_tryout_evaluation_mode(team_id):
                                     if metric in ['save_technique_rating', 'positioning_rating', 'rebound_control_rating', 
                                                  'recovery_rating', 'puck_handling_rating']:
                                         goalie_skills[metric_name] = value
-     elif metric in ['skating_speed_rating', 'backward_skating_rating', 'agility_rating', 
+                                    elif metric in ['skating_speed_rating', 'backward_skating_rating', 'agility_rating', 
                                                    'edge_control_rating']:
                                         skating_skills[metric_name] = value
                                     elif metric in ['puck_control_rating', 'passing_accuracy_rating', 'shooting_accuracy_rating',
