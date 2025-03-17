@@ -477,100 +477,57 @@ def display_tryout_evaluation_mode(team_id):
                 # Create a unique key for this form
                 form_key = f"tryout_form_{team.id}"
                 
-                # Check if we have a player_id in the URL query params
-                query_params = st.query_params
-                url_player_id = query_params.get("player_id", None)
+                # Simpler, direct player selection approach
+                player_option = st.selectbox(
+                    "Select Player", 
+                    options=range(len(team_players)),
+                    format_func=lambda i: team_players[i][1],
+                    key=f"{form_key}_player_select"
+                )
                 
-                if url_player_id and url_player_id.isdigit():
-                    # We have a player_id in the URL, let's use it
-                    selected_player_id = int(url_player_id)
-                    # Find player in the dropdown options
-                    selected_index = 0
-                    for i, (pid, _) in enumerate(team_players):
-                        if pid == selected_player_id:
-                            selected_index = i
-                            break
-                            
-                    # Get player directly from database for reliable data
+                # Get the selected player ID
+                selected_player_id = team_players[player_option][0]
+                
+                # For existing player, fetch fresh data directly from database
+                if selected_player_id > 0:
+                    # This is an existing player - get fresh data from database
                     selected_player = Player.query.get(selected_player_id)
                     if selected_player:
-                        # Debug info
-                        st.sidebar.write(f"Debug: Loading player ID {selected_player_id} ({selected_player.name})")
-                        
-                        # Player selection dropdown with pre-selected value
-                        player_option = st.selectbox(
-                            "Select Player", 
-                            options=range(len(team_players)),
-                            format_func=lambda i: team_players[i][1],
-                            index=selected_index,
-                            key=f"{form_key}_player_select"
-                        )
-                        
-                        # Display player info directly from database
+                        # Display player info from database
                         st.write(f"**Name:** {selected_player.name}")
                         st.write(f"**Age:** {selected_player.age}")
                         st.write(f"**Position:** {selected_player.position}")
                         
                         # Store player info for form submission
                         player_name = selected_player.name
-                        player_age = selected_player.age  
+                        player_age = selected_player.age
                         player_position = selected_player.position
-                    else:
-                        # If player not found, clear the URL param
-                        st.query_params.clear()
-                        st.rerun()
-                else:
-                    # No player_id in URL, show normal dropdown
-                    player_option = st.selectbox(
-                        "Select Player", 
-                        options=range(len(team_players)),
-                        format_func=lambda i: team_players[i][1],
-                        key=f"{form_key}_player_select"
-                    )
-                    
-                    # Handle selection change
-                    if player_option is not None:
-                        selected_player_id = team_players[player_option][0]
                         
-                        # If an existing player is selected and it's different from URL
-                        if selected_player_id > 0 and str(selected_player_id) != url_player_id:
-                            # Update URL and trigger rerun
-                            st.query_params["player_id"] = str(selected_player_id)
-                            st.rerun()
-                        
-                        # Handle new player selection
-                        if selected_player_id <= 0:
-                            # Display new player form
-                            st.write("**Adding a new player**")
-                            player_name = st.text_input("Player Name", key="tryout_player_name")
-                            player_age = st.number_input("Age", min_value=6, max_value=18, 
-                                                        value=int(team.age_group.replace('U', '')), 
-                                                        key="tryout_player_age")
-                            player_position = st.selectbox("Position", ["Forward", "Defense", "Goalie"], 
-                                                          key="tryout_player_position")
+                        # Set the display position directly based on database info
+                        display_position = selected_player.position
                     else:
-                        # Handle empty dropdown case
-                        st.warning("No players available. Add a new player.")
+                        st.error("Player not found in database")
                         player_name = ""
                         player_age = int(team.age_group.replace('U', ''))
                         player_position = "Forward"
-                        selected_player_id = None
-                
-                # Clear session state after player selection handling
-                if 'current_player_id' in st.session_state:
-                    del st.session_state.current_player_id
-                if 'current_player_name' in st.session_state:
-                    del st.session_state.current_player_name
-                if 'current_player_age' in st.session_state:
-                    del st.session_state.current_player_age
-                if 'current_player_position' in st.session_state:
-                    del st.session_state.current_player_position
+                        display_position = "Forward"
+                else:
+                    # This is a new player
+                    st.write("**Adding a new player**")
+                    player_name = st.text_input("Player Name", key="tryout_player_name")
+                    player_age = st.number_input("Age", min_value=6, max_value=18, 
+                                                value=int(team.age_group.replace('U', '')), 
+                                                key="tryout_player_age")
+                    player_position = st.selectbox("Position", ["Forward", "Defense", "Goalie"], 
+                                                  key="tryout_player_position")
+                    display_position = player_position
             except Exception as e:
                 st.error(f"Error loading team players: {str(e)}")
                 player_name = st.text_input("Player Name", key="tryout_player_name")
                 player_age = st.number_input("Age", min_value=6, max_value=18, value=int(team.age_group.replace('U', '')), key="tryout_player_age")
                 player_position = st.selectbox("Position", ["Forward", "Defense", "Goalie"], key="tryout_player_position")
                 selected_player_id = None
+                display_position = player_position  # Set display position directly based on selected position
 
             # Evaluation scale explanation
             st.write("### Evaluation Scale")
@@ -581,17 +538,8 @@ def display_tryout_evaluation_mode(team_id):
             # Create skill evaluation sliders based on position
             st.subheader("Skills Assessment")
             
-            # Get position directly based on what was displayed or selected
-            if url_player_id and url_player_id.isdigit() and int(url_player_id) > 0:
-                # If we're using a player ID from URL, use that player's position
-                player_obj = Player.query.get(int(url_player_id))
-                if player_obj:
-                    display_position = player_obj.position
-                else:
-                    display_position = player_position  # Fall back to form value
-            else:
-                # Otherwise use position from form
-                display_position = player_position
+            # display_position is already set when we fetch player data above
+            # No additional position handling needed here
             
             if display_position == "Goalie":
                 # Goalie skills
