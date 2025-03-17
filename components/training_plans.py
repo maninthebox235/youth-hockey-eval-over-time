@@ -444,12 +444,20 @@ class TrainingPlans:
                 'hockey_sense': 'positioning',
                 'skating_speed': 'recovery',
                 'agility': 'recovery',
-                'shooting_accuracy': 'puck_handling',
-                'passing_accuracy': 'puck_handling'
+                'shooting_accuracy': 'save_technique',  # Changed from puck_handling to save_technique
+                'passing_accuracy': 'save_technique'    # Changed from puck_handling to save_technique
             }
             
+            # Get a substitute skill but make sure it exists in our dictionary
+            # Default to 'positioning' which we know exists
             substitute_skill = goalie_substitutes.get(skill, 'positioning')
-            drills = self.skill_drills[substitute_skill]
+            
+            # Double-check the substitute skill exists in our drills dictionary
+            if substitute_skill in self.skill_drills:
+                drills = self.skill_drills[substitute_skill]
+            else:
+                # Fallback to positioning if the substitute skill doesn't exist
+                drills = self.skill_drills['positioning']
         elif normalized_position == "Defense" and skill in defense_skills:
             # For defense-specific skills
             drills = self.skill_drills[skill]
