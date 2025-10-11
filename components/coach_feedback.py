@@ -22,6 +22,7 @@ def submit_coach_feedback(
     try:
         # Use type converter utility for consistent handling
         from utils.type_converter import to_int
+        from database.models import Player, User
 
         # Convert player_id to Python int
         player_id = to_int(player_id)
@@ -65,6 +66,26 @@ def submit_coach_feedback(
                 print(f"Error updating template usage: {e}")
 
         db.session.commit()
+
+        try:
+            from app import mail, app
+            from utils.notification_service import NotificationService
+
+            player = Player.query.get(player_id)
+            if player and player.user_id:
+                user = User.query.get(player.user_id)
+                if user and user.email:
+                    with app.app_context():
+                        notification_service = NotificationService(mail)
+                        notification_service.send_feedback_notification(
+                            player_id, feedback.id, user.email
+                        )
+                        print(
+                            f"Feedback notification sent to {user.email} for player {player.name}"
+                        )
+        except Exception as e:
+            print(f"Error sending email notification: {e}")
+
         return True
     except Exception as e:
         print(f"Error submitting feedback: {e}")
