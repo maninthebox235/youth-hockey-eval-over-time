@@ -1,12 +1,9 @@
 from flask import Flask, jsonify
 from database import init_app, db
-from flask_migrate import Migrate
 from flask_mail import Mail
 from flask_login import LoginManager
-from utils.data_generator import seed_database
 import os
 import logging
-from datetime import timedelta
 
 # Configure logging
 logging.basicConfig(

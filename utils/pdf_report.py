@@ -1,12 +1,8 @@
 import io
 import base64
-import os
 import streamlit as st
 from datetime import datetime
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import (
@@ -15,14 +11,10 @@ from reportlab.platypus import (
     Spacer,
     Table,
     TableStyle,
-    Image,
 )
 from reportlab.lib.units import inch
-from reportlab.graphics.shapes import Drawing
-from utils.data_generator import get_player_history
-from database.models import Player, PlayerHistory, FeedbackTemplate, CoachFeedback
-import plotly.graph_objects as go
-from utils.type_converter import to_int, to_float, to_datetime, to_date
+from database.models import Player, PlayerHistory, CoachFeedback
+from utils.type_converter import to_int
 
 
 class PDFReportGenerator:

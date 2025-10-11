@@ -9,8 +9,6 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import streamlit as st
-import base64
-from io import BytesIO
 
 
 def get_sample_player_data():

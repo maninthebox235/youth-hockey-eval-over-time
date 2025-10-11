@@ -1,6 +1,5 @@
 """Tests for database models."""
 
-import pytest
 from datetime import datetime
 from database.models import User, Player, Team, TeamMembership, CoachFeedback
 

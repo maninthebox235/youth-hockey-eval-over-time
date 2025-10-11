@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 from database.models import db, Team, TeamMembership, Player
 from datetime import datetime
 from sqlalchemy.exc import SQLAlchemyError

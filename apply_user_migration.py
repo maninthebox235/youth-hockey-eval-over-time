@@ -1,7 +1,5 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 from database import db
-from database.models import Player
 import psycopg2
 import os
 import sys

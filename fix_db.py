@@ -1,5 +1,4 @@
 from app import app, db
-from database.models import User
 from sqlalchemy import text
 
 

@@ -10,18 +10,13 @@ This module provides intelligent drill recommendations based on a player's:
 """
 
 import streamlit as st
-import pandas as pd
 import numpy as np
-from database.models import db, Player, PlayerHistory, Team, TeamMembership
-import plotly.express as px
-import plotly.graph_objects as go
+from database.models import Player, PlayerHistory, Team, TeamMembership
 from datetime import datetime, timedelta
 import random
-from utils.type_converter import to_int, to_float, to_str
+from utils.type_converter import to_int, to_float
 from components.training_plans import (
     TrainingPlans,
-    fix_youtube_url,
-    display_drill_details,
 )
 
 

@@ -2,13 +2,9 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
-import os
 from datetime import datetime
 import time
 import plotly.graph_objects as go
-from PIL import Image
-import io
-import base64
 
 
 class VideoAnalysis:

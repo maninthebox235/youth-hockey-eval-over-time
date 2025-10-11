@@ -1,6 +1,4 @@
 from app import app, db
-from database.models import User, Player, Team, TeamMembership, CoachFeedback
-from sqlalchemy import text
 
 
 def reset_database():

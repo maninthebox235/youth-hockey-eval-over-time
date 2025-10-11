@@ -1,7 +1,5 @@
 import streamlit as st
 from database.models import User, db
-from werkzeug.security import generate_password_hash
-from datetime import datetime
 
 
 def display_user_profile():

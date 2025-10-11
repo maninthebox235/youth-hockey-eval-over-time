@@ -1,10 +1,9 @@
 import streamlit as st
 import pandas as pd
 from database.models import db, Player, PlayerHistory
-from datetime import datetime, timedelta
+from datetime import datetime
 import plotly.express as px
-import plotly.graph_objects as go
-from utils.type_converter import to_int, to_float, to_date
+from utils.type_converter import to_int, to_date
 
 
 class OffIceTraining:
