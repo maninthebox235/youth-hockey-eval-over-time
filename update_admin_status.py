@@ -1,6 +1,7 @@
 """
 Quick script to update admin status for user lboehrig
 """
+
 from app import create_app
 from database.models import db, User
 
@@ -11,7 +12,7 @@ with app.app_context():
     # Find the user
     username = "lboehrig"
     user = User.query.filter_by(username=username).first()
-    
+
     if user:
         # Update admin status
         user.is_admin = True

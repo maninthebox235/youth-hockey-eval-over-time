@@ -5,6 +5,7 @@ from database.models import db, Team, TeamMembership, Player
 from datetime import datetime
 from sqlalchemy.exc import SQLAlchemyError
 
+
 def create_player_form():
     """Display form for creating a new player"""
     st.subheader("Create New Player")
@@ -29,15 +30,17 @@ def create_player_form():
         if submitted and name:
             try:
                 # Get current user ID from session state
-                user_id = st.session_state.user['id'] if 'user' in st.session_state else None
-                
+                user_id = (
+                    st.session_state.user["id"] if "user" in st.session_state else None
+                )
+
                 player = Player(
                     name=name,
                     age=age,
                     age_group=age_group,
                     position=position,
                     join_date=datetime.utcnow(),
-                    user_id=user_id
+                    user_id=user_id,
                 )
 
                 if position == "Goalie":
@@ -62,6 +65,7 @@ def create_player_form():
                 return False
     return False
 
+
 def create_team_form():
     """Display form for creating a new team"""
     st.subheader("Create New Team")
@@ -69,18 +73,14 @@ def create_team_form():
     with st.form("create_team_form"):
         team_name = st.text_input("Team Name")
         age_group = st.selectbox(
-            "Age Group",
-            options=['U8', 'U10', 'U12', 'U14', 'U16', 'U18']
+            "Age Group", options=["U8", "U10", "U12", "U14", "U16", "U18"]
         )
 
         submitted = st.form_submit_button("Create Team")
 
         if submitted and team_name:
             try:
-                team = Team(
-                    name=team_name,
-                    age_group=age_group
-                )
+                team = Team(name=team_name, age_group=age_group)
                 db.session.add(team)
                 db.session.commit()
                 st.success(f"Team '{team_name}' created successfully!")
@@ -91,6 +91,7 @@ def create_team_form():
                 return False
     return False
 
+
 def assign_players_to_team(team_id):
     """Form for assigning players to a team"""
     try:
@@ -100,18 +101,24 @@ def assign_players_to_team(team_id):
             return
 
         # Get user ID from session
-        user_id = st.session_state.user['id'] if 'user' in st.session_state else None
-        
+        user_id = st.session_state.user["id"] if "user" in st.session_state else None
+
         # Get available players in the same age group that belong to the current user
         if user_id:
-            available_players = Player.query.filter_by(age_group=team.age_group, user_id=user_id).all()
+            available_players = Player.query.filter_by(
+                age_group=team.age_group, user_id=user_id
+            ).all()
         else:
             available_players = Player.query.filter_by(age_group=team.age_group).all()
-            
-        current_members = [m.player_id for m in team.memberships.filter_by(is_active=True).all()]
+
+        current_members = [
+            m.player_id for m in team.memberships.filter_by(is_active=True).all()
+        ]
 
         # Filter out players already in the team
-        available_players = [p for p in available_players if p.id not in current_members]
+        available_players = [
+            p for p in available_players if p.id not in current_members
+        ]
 
         if available_players:
             with st.form(key=f"add_players_form_{team_id}"):
@@ -121,7 +128,7 @@ def assign_players_to_team(team_id):
                 selected_players = st.multiselect(
                     "Select Players",
                     options=[(p.id, p.name) for p in available_players],
-                    format_func=lambda x: x[1]
+                    format_func=lambda x: x[1],
                 )
 
                 # Position selection
@@ -131,8 +138,8 @@ def assign_players_to_team(team_id):
                     for player_id, player_name in selected_players:
                         positions[player_id] = st.selectbox(
                             f"Position for {player_name}",
-                            options=['Forward', 'Defense', 'Goalie'],
-                            key=f"pos_{player_id}"
+                            options=["Forward", "Defense", "Goalie"],
+                            key=f"pos_{player_id}",
                         )
 
                 submitted = st.form_submit_button("Add Selected Players")
@@ -146,7 +153,7 @@ def assign_players_to_team(team_id):
                                 team_id=team.id,
                                 position_in_team=positions[player_id],
                                 is_active=True,
-                                join_date=datetime.utcnow()
+                                join_date=datetime.utcnow(),
                             )
                             db.session.add(membership)
 
@@ -166,24 +173,27 @@ def assign_players_to_team(team_id):
         st.error(f"Error managing team players: {str(e)}")
         return False
 
+
 def display_team_list():
     """Display list of teams and their details"""
     try:
         # Get user ID from session
-        user_id = st.session_state.user['id'] if 'user' in st.session_state else None
-        
+        user_id = st.session_state.user["id"] if "user" in st.session_state else None
+
         if user_id:
             # Find teams containing players that belong to this user
             # Get the player IDs for this user
             user_players = Player.query.filter_by(user_id=user_id).all()
             player_ids = [p.id for p in user_players]
-            
+
             # Get team memberships for these players
             team_ids = []
             if player_ids:
-                memberships = TeamMembership.query.filter(TeamMembership.player_id.in_(player_ids)).all()
+                memberships = TeamMembership.query.filter(
+                    TeamMembership.player_id.in_(player_ids)
+                ).all()
                 team_ids = [m.team_id for m in memberships]
-            
+
             # Get teams that contain these players
             if team_ids:
                 teams = Team.query.filter(Team.id.in_(team_ids)).all()
@@ -212,9 +222,11 @@ def display_team_list():
 
                 # Get active memberships
                 memberships = team.memberships.filter_by(is_active=True).all()
-                
+
                 # Get user ID from session
-                user_id = st.session_state.user['id'] if 'user' in st.session_state else None
+                user_id = (
+                    st.session_state.user["id"] if "user" in st.session_state else None
+                )
 
                 if memberships:
                     roster_data = []
@@ -222,13 +234,15 @@ def display_team_list():
                         player = membership.player
                         # Only show players belonging to the current user
                         if player and (not user_id or player.user_id == user_id):
-                            roster_data.append({
-                                'Name': player.name,
-                                'Position': membership.position_in_team,
-                                'Age Group': player.age_group,
-                                'Goals': player.goals,
-                                'Assists': player.assists
-                            })
+                            roster_data.append(
+                                {
+                                    "Name": player.name,
+                                    "Position": membership.position_in_team,
+                                    "Age Group": player.age_group,
+                                    "Goals": player.goals,
+                                    "Assists": player.assists,
+                                }
+                            )
 
                     if roster_data:
                         st.dataframe(pd.DataFrame(roster_data))
@@ -244,6 +258,7 @@ def display_team_list():
 
     except SQLAlchemyError as e:
         st.error(f"Error displaying teams: {str(e)}")
+
 
 def display_team_management():
     """Main team management interface"""

@@ -9,18 +9,21 @@ from datetime import datetime, timedelta
 from components.age_benchmarks import get_age_appropriate_benchmark
 from utils.type_converter import to_int, to_float, to_str
 
+
 def get_team_data(team_id):
     """Get comprehensive team data including player metrics"""
     try:
         # Get user ID from session
-        user_id = st.session_state.user['id'] if 'user' in st.session_state else None
+        user_id = st.session_state.user["id"] if "user" in st.session_state else None
 
         team = Team.query.get(team_id)
         if not team:
             return None, pd.DataFrame()
 
         # Get active team members
-        memberships = TeamMembership.query.filter_by(team_id=team_id, is_active=True).all()
+        memberships = TeamMembership.query.filter_by(
+            team_id=team_id, is_active=True
+        ).all()
 
         if not memberships:
             return team, pd.DataFrame()
@@ -31,35 +34,41 @@ def get_team_data(team_id):
 
         # Filter players by user_id if available
         if user_id:
-            players = Player.query.filter(Player.id.in_(player_ids), Player.user_id == user_id).all()
+            players = Player.query.filter(
+                Player.id.in_(player_ids), Player.user_id == user_id
+            ).all()
         else:
             players = Player.query.filter(Player.id.in_(player_ids)).all()
 
         for player in players:
             # Find matching membership
-            membership = next((m for m in memberships if m.player_id == player.id), None)
+            membership = next(
+                (m for m in memberships if m.player_id == player.id), None
+            )
             if not membership:
                 continue
 
             # Collect all metrics that we can find for this player
             player_data = {
-                'player_id': to_int(player.id),
-                'name': player.name,
-                'age': to_int(player.age),
-                'position': player.position,
-                'team_position': membership.position_in_team,
-                'games_played': to_int(player.games_played) or 0
+                "player_id": to_int(player.id),
+                "name": player.name,
+                "age": to_int(player.age),
+                "position": player.position,
+                "team_position": membership.position_in_team,
+                "games_played": to_int(player.games_played) or 0,
             }
 
             # Add all numeric attributes
             for attr in dir(player):
-                if attr.startswith('_') or callable(getattr(player, attr)):
+                if attr.startswith("_") or callable(getattr(player, attr)):
                     continue
 
                 value = getattr(player, attr)
-                if isinstance(value, (int, float, np.integer, np.floating)) and not isinstance(value, bool):
+                if isinstance(
+                    value, (int, float, np.integer, np.floating)
+                ) and not isinstance(value, bool):
                     # Convert numpy types to Python native types
-                    if hasattr(value, 'item'):
+                    if hasattr(value, "item"):
                         player_data[attr] = value.item()
                     else:
                         player_data[attr] = value
@@ -71,6 +80,7 @@ def get_team_data(team_id):
     except Exception as e:
         st.error(f"Error getting team data: {str(e)}")
         return None, pd.DataFrame()
+
 
 def display_team_overview(team, players_df):
     """Display team overview with key metrics"""
@@ -89,35 +99,48 @@ def display_team_overview(team, players_df):
     with col3:
         st.metric("Wins", team.wins or 0)
     with col4:
-        win_pct = round((team.wins / team.games_played) * 100, 1) if team.games_played else 0
+        win_pct = (
+            round((team.wins / team.games_played) * 100, 1) if team.games_played else 0
+        )
         st.metric("Win %", f"{win_pct}%")
 
     # Player distribution by position
     if not players_df.empty:
-        position_counts = players_df['team_position'].value_counts().reset_index()
-        position_counts.columns = ['Position', 'Count']
+        position_counts = players_df["team_position"].value_counts().reset_index()
+        position_counts.columns = ["Position", "Count"]
 
-        fig = px.pie(position_counts, values='Count', names='Position', 
-                     title='Team Composition by Position')
+        fig = px.pie(
+            position_counts,
+            values="Count",
+            names="Position",
+            title="Team Composition by Position",
+        )
         st.plotly_chart(fig, use_container_width=True, key="team_composition_pie")
 
         # Add Team Skills Distribution Heatmap
         st.subheader("Team Skills Distribution")
         heatmap = create_team_skill_heatmap(players_df)
         if heatmap:
-            st.plotly_chart(heatmap, use_container_width=True, key="team_skills_heatmap_overview")
+            st.plotly_chart(
+                heatmap, use_container_width=True, key="team_skills_heatmap_overview"
+            )
         else:
             st.info("Not enough skill data available to generate team skills heatmap.")
 
         # Add age distribution
-        age_counts = players_df['age'].value_counts().reset_index()
-        age_counts.columns = ['Age', 'Count']
-        age_counts = age_counts.sort_values('Age')
+        age_counts = players_df["age"].value_counts().reset_index()
+        age_counts.columns = ["Age", "Count"]
+        age_counts = age_counts.sort_values("Age")
 
-        fig2 = px.bar(age_counts, x='Age', y='Count', 
-                      title='Age Distribution',
-                      labels={'Count': 'Number of Players', 'Age': 'Age (years)'})
+        fig2 = px.bar(
+            age_counts,
+            x="Age",
+            y="Count",
+            title="Age Distribution",
+            labels={"Count": "Number of Players", "Age": "Age (years)"},
+        )
         st.plotly_chart(fig2, use_container_width=True, key="age_distribution_bar")
+
 
 def create_team_skill_heatmap(players_df):
     """Create a team skills heatmap to identify strengths and weaknesses"""
@@ -126,16 +149,31 @@ def create_team_skill_heatmap(players_df):
 
     # Define columns to exclude from skill metrics (including ID columns)
     excluded_columns = [
-        'player_id', 'user_id', 'id', 'name', 'age', 'position', 'team_position', 
-        'games_played', 'goals', 'assists', 'goals_against', 'saves',
-        'join_date', 'created_at', 'last_login'
+        "player_id",
+        "user_id",
+        "id",
+        "name",
+        "age",
+        "position",
+        "team_position",
+        "games_played",
+        "goals",
+        "assists",
+        "goals_against",
+        "saves",
+        "join_date",
+        "created_at",
+        "last_login",
     ]
 
     # Get all skill columns (only numeric columns that aren't in excluded list)
     skill_cols = []
     for col in players_df.columns:
         if col not in excluded_columns:
-            if players_df[col].dtype in [np.float64, np.int64, float, int] and not players_df[col].isnull().all():
+            if (
+                players_df[col].dtype in [np.float64, np.int64, float, int]
+                and not players_df[col].isnull().all()
+            ):
                 skill_cols.append(col)
 
     if not skill_cols:
@@ -145,7 +183,10 @@ def create_team_skill_heatmap(players_df):
     skill_data = []
 
     for _, player in players_df.iterrows():
-        player_skills = {'Player': to_str(player['name']), 'Position': to_str(player['team_position'])}
+        player_skills = {
+            "Player": to_str(player["name"]),
+            "Position": to_str(player["team_position"]),
+        }
 
         for skill in skill_cols:
             if pd.notna(player[skill]):
@@ -157,7 +198,7 @@ def create_team_skill_heatmap(players_df):
 
                     if val > 5:  # Percentage values
                         val = val / 20  # Convert percentage to rough 0-5 scale
-                    player_skills[skill.replace('_', ' ').title()] = val
+                    player_skills[skill.replace("_", " ").title()] = val
                 except (TypeError, ValueError):
                     # Skip skills with invalid values
                     continue
@@ -170,33 +211,34 @@ def create_team_skill_heatmap(players_df):
     if not skill_df.empty and len(skill_df.columns) > 2:
         # Melt the dataframe for heatmap format
         skill_df_melted = pd.melt(
-            skill_df, 
-            id_vars=['Player', 'Position'], 
-            var_name='Skill', 
-            value_name='Rating'
+            skill_df,
+            id_vars=["Player", "Position"],
+            var_name="Skill",
+            value_name="Rating",
         )
 
         # Create heatmap
         fig = px.density_heatmap(
             skill_df_melted,
-            x='Skill',
-            y='Player',
-            z='Rating',
-            color_continuous_scale='YlGnBu',
-            title='Team Skills Distribution',
-            labels={'Rating': 'Skill Rating (1-5)'}
+            x="Skill",
+            y="Player",
+            z="Rating",
+            color_continuous_scale="YlGnBu",
+            title="Team Skills Distribution",
+            labels={"Rating": "Skill Rating (1-5)"},
         )
 
         # Customize layout
         fig.update_layout(
             height=400 + (len(skill_df) * 20),  # Adjust height based on player count
-            xaxis={'categoryorder': 'total descending'},
-            yaxis={'categoryorder': 'category ascending'}
+            xaxis={"categoryorder": "total descending"},
+            yaxis={"categoryorder": "category ascending"},
         )
 
         return fig
 
     return None
+
 
 def identify_team_strengths_weaknesses(players_df):
     """Identify team strengths and weaknesses based on player metrics"""
@@ -205,16 +247,31 @@ def identify_team_strengths_weaknesses(players_df):
 
     # Define columns to exclude from skill metrics
     excluded_columns = [
-        'player_id', 'user_id', 'id', 'name', 'age', 'position', 'team_position', 
-        'games_played', 'goals', 'assists', 'goals_against', 'saves',
-        'join_date', 'created_at', 'last_login'
+        "player_id",
+        "user_id",
+        "id",
+        "name",
+        "age",
+        "position",
+        "team_position",
+        "games_played",
+        "goals",
+        "assists",
+        "goals_against",
+        "saves",
+        "join_date",
+        "created_at",
+        "last_login",
     ]
 
     # Get all skill columns (only numeric columns that aren't in excluded list)
     skill_cols = []
     for col in players_df.columns:
         if col not in excluded_columns:
-            if players_df[col].dtype in [np.float64, np.int64, float, int] and not players_df[col].isnull().all():
+            if (
+                players_df[col].dtype in [np.float64, np.int64, float, int]
+                and not players_df[col].isnull().all()
+            ):
                 skill_cols.append(col)
 
     if not skill_cols:
@@ -234,10 +291,11 @@ def identify_team_strengths_weaknesses(players_df):
 
     # Identify top 3 strengths and weaknesses if we have enough skills
     top_count = min(3, len(sorted_skills))
-    strengths = sorted_skills[:top_count] 
+    strengths = sorted_skills[:top_count]
     weaknesses = sorted_skills[-top_count:] if len(sorted_skills) >= top_count else []
 
     return strengths, weaknesses
+
 
 def display_team_analysis(team, players_df):
     """Display detailed team analysis with visualizations"""
@@ -255,73 +313,84 @@ def display_team_analysis(team, players_df):
     with col1:
         st.markdown("### Team Strengths")
         for skill, avg in strengths:
-            formatted_skill = skill.replace('_', ' ').title()
+            formatted_skill = skill.replace("_", " ").title()
             st.metric(formatted_skill, f"{avg:.1f}")
 
     with col2:
         st.markdown("### Areas for Improvement")
         for skill, avg in weaknesses:
-            formatted_skill = skill.replace('_', ' ').title()
+            formatted_skill = skill.replace("_", " ").title()
             st.metric(formatted_skill, f"{avg:.1f}")
 
     # Add a note about skills distribution now being in the Overview tab
-    st.info("Team Skills Distribution visualization is now available in the Team Overview tab.")
+    st.info(
+        "Team Skills Distribution visualization is now available in the Team Overview tab."
+    )
 
     # Performance by position
-    if 'goals' in players_df.columns and not players_df['goals'].isnull().all():
+    if "goals" in players_df.columns and not players_df["goals"].isnull().all():
         # Filter for forwards and defense
-        skaters_df = players_df[players_df['position'].isin(['Forward', 'Defense'])].copy()
+        skaters_df = players_df[
+            players_df["position"].isin(["Forward", "Defense"])
+        ].copy()
 
         if not skaters_df.empty:
             # Offensive productivity
-            skaters_df.loc[:, 'points'] = skaters_df['goals'].fillna(0) + skaters_df['assists'].fillna(0)
-            skaters_df.loc[:, 'games_played'] = skaters_df['games_played'].fillna(0)
-            skaters_df.loc[:, 'points_per_game'] = skaters_df.apply(
-                lambda x: x['points'] / x['games_played'] if x['games_played'] > 0 else 0, 
-                axis=1
+            skaters_df.loc[:, "points"] = skaters_df["goals"].fillna(0) + skaters_df[
+                "assists"
+            ].fillna(0)
+            skaters_df.loc[:, "games_played"] = skaters_df["games_played"].fillna(0)
+            skaters_df.loc[:, "points_per_game"] = skaters_df.apply(
+                lambda x: (
+                    x["points"] / x["games_played"] if x["games_played"] > 0 else 0
+                ),
+                axis=1,
             )
 
             # Create performance comparison
             fig = px.scatter(
                 skaters_df,
-                x='points',
-                y='points_per_game',
-                color='position',
-                size='games_played',
-                hover_name='name',
-                title='Player Offensive Production',
+                x="points",
+                y="points_per_game",
+                color="position",
+                size="games_played",
+                hover_name="name",
+                title="Player Offensive Production",
                 labels={
-                    'points': 'Total Points (Goals + Assists)',
-                    'points_per_game': 'Points per Game',
-                    'position': 'Position'
-                }
+                    "points": "Total Points (Goals + Assists)",
+                    "points_per_game": "Points per Game",
+                    "position": "Position",
+                },
             )
-            st.plotly_chart(fig, use_container_width=True, key="offensive_production_scatter")
+            st.plotly_chart(
+                fig, use_container_width=True, key="offensive_production_scatter"
+            )
 
     # Goalie performance if we have goalies
-    goalies_df = players_df[players_df['position'] == 'Goalie']
-    if not goalies_df.empty and 'save_percentage' in goalies_df.columns:
+    goalies_df = players_df[players_df["position"] == "Goalie"]
+    if not goalies_df.empty and "save_percentage" in goalies_df.columns:
         st.subheader("Goaltending")
 
         for _, goalie in goalies_df.iterrows():
-            save_pct = goalie.get('save_percentage', 0)
+            save_pct = goalie.get("save_percentage", 0)
             if isinstance(save_pct, str):
                 try:
-                    save_pct = float(save_pct.strip('%'))
+                    save_pct = float(save_pct.strip("%"))
                 except:
                     save_pct = 0
 
             col1, col2, col3 = st.columns(3)
             with col1:
-                st.metric("Goalie", goalie['name'])
+                st.metric("Goalie", goalie["name"])
             with col2:
                 st.metric("Save %", f"{save_pct:.1f}%")
             with col3:
-                saves = goalie.get('saves', 0) or 0
-                goals_against = goalie.get('goals_against', 0) or 0
-                games = goalie.get('games_played', 0) or 0
+                saves = goalie.get("saves", 0) or 0
+                goals_against = goalie.get("goals_against", 0) or 0
+                games = goalie.get("games_played", 0) or 0
                 gaa = goals_against / games if games > 0 else 0
                 st.metric("GAA", f"{gaa:.2f}")
+
 
 def display_player_comparison_tool(players_df):
     """Tool to compare selected players side by side"""
@@ -334,8 +403,8 @@ def display_player_comparison_tool(players_df):
     # Select 2-3 players to compare
     selected_players = st.multiselect(
         "Select Players to Compare (2-3 players recommended)",
-        options=players_df['name'].tolist(),
-        default=players_df['name'].tolist()[:2] if len(players_df) >= 2 else None
+        options=players_df["name"].tolist(),
+        default=players_df["name"].tolist()[:2] if len(players_df) >= 2 else None,
     )
 
     if not selected_players or len(selected_players) < 2:
@@ -343,18 +412,33 @@ def display_player_comparison_tool(players_df):
         return
 
     # Filter dataframe to selected players
-    compare_df = players_df[players_df['name'].isin(selected_players)]
+    compare_df = players_df[players_df["name"].isin(selected_players)]
 
     # Get common skill metrics
     excluded_columns = [
-        'player_id', 'user_id', 'id', 'name', 'age', 'position', 'team_position', 
-        'games_played', 'goals', 'assists', 'goals_against', 'saves',
-        'join_date', 'created_at', 'last_login'
+        "player_id",
+        "user_id",
+        "id",
+        "name",
+        "age",
+        "position",
+        "team_position",
+        "games_played",
+        "goals",
+        "assists",
+        "goals_against",
+        "saves",
+        "join_date",
+        "created_at",
+        "last_login",
     ]
-    skill_metrics = [col for col in compare_df.columns 
-                    if col not in excluded_columns
-                    and compare_df[col].dtype in [np.float64, np.int64, float, int]
-                    and not compare_df[col].isnull().all()]
+    skill_metrics = [
+        col
+        for col in compare_df.columns
+        if col not in excluded_columns
+        and compare_df[col].dtype in [np.float64, np.int64, float, int]
+        and not compare_df[col].isnull().all()
+    ]
 
     if not skill_metrics:
         st.warning("No comparable metrics found for these players")
@@ -382,22 +466,19 @@ def display_player_comparison_tool(players_df):
             else:
                 player_skills.append(0)
 
-        fig.add_trace(go.Scatterpolar(
-            r=player_skills,
-            theta=[m.replace('_', ' ').title() for m in skill_metrics],
-            fill='toself',
-            name=to_str(player['name'])
-        ))
+        fig.add_trace(
+            go.Scatterpolar(
+                r=player_skills,
+                theta=[m.replace("_", " ").title() for m in skill_metrics],
+                fill="toself",
+                name=to_str(player["name"]),
+            )
+        )
 
     fig.update_layout(
-        polar=dict(
-            radialaxis=dict(
-                visible=True,
-                range=[0, 5]
-            )
-        ),
+        polar=dict(radialaxis=dict(visible=True, range=[0, 5])),
         title="Player Skills Comparison",
-        showlegend=True
+        showlegend=True,
     )
 
     st.plotly_chart(fig, use_container_width=True, key="player_skills_radar")
@@ -408,34 +489,35 @@ def display_player_comparison_tool(players_df):
     # Create a comparison table
     comparison_data = []
 
-    for metric in ['age', 'position', 'games_played'] + skill_metrics:
-        row = {'Metric': metric.replace('_', ' ').title()}
+    for metric in ["age", "position", "games_played"] + skill_metrics:
+        row = {"Metric": metric.replace("_", " ").title()}
 
         for _, player in compare_df.iterrows():
-            player_name = to_str(player['name'])
-            value = player.get(metric, 'N/A')
+            player_name = to_str(player["name"])
+            value = player.get(metric, "N/A")
 
             if pd.notna(value):
                 if isinstance(value, (int, float, np.integer, np.floating)):
                     # Handle numpy numeric types
-                    if hasattr(value, 'item'):
+                    if hasattr(value, "item"):
                         value = value.item()
 
                     # Format the value
                     if isinstance(value, float):
-                        row[player_name] = f"{value:.1f}" 
+                        row[player_name] = f"{value:.1f}"
                     else:
                         row[player_name] = str(value)
                 else:
                     row[player_name] = to_str(value)
             else:
-                row[player_name] = 'N/A'
+                row[player_name] = "N/A"
 
         comparison_data.append(row)
 
     # Display the comparison table
     comparison_df = pd.DataFrame(comparison_data)
     st.dataframe(comparison_df, use_container_width=True)
+
 
 def display_tryout_evaluation_mode(team_id):
     """Streamlined assessment mode for player tryouts"""
@@ -448,8 +530,10 @@ def display_tryout_evaluation_mode(team_id):
         return
 
     # Get current user info from session
-    user_id = st.session_state.user['id'] if 'user' in st.session_state else 1  # Default to 1 if not logged in
-    user_name = st.session_state.user['name'] if 'user' in st.session_state else "Coach"
+    user_id = (
+        st.session_state.user["id"] if "user" in st.session_state else 1
+    )  # Default to 1 if not logged in
+    user_name = st.session_state.user["name"] if "user" in st.session_state else "Coach"
 
     st.write(f"Evaluating players for: **{team.name} ({team.age_group})**")
 
@@ -479,10 +563,10 @@ def display_tryout_evaluation_mode(team_id):
 
                 # Simpler, direct player selection approach
                 player_option = st.selectbox(
-                    "Select Player", 
+                    "Select Player",
                     options=range(len(team_players)),
                     format_func=lambda i: team_players[i][1],
-                    key=f"{form_key}_player_select"
+                    key=f"{form_key}_player_select",
                 )
 
                 # Get the selected player ID
@@ -512,7 +596,9 @@ def display_tryout_evaluation_mode(team_id):
                         # Store in session state to maintain consistency across reruns
                         st.session_state[f"{form_key}_player_name"] = player_name
                         st.session_state[f"{form_key}_player_age"] = player_age
-                        st.session_state[f"{form_key}_player_position"] = player_position
+                        st.session_state[f"{form_key}_player_position"] = (
+                            player_position
+                        )
 
                         # Clear any previous values in the form's session state that might be causing conflicts
                         if "current_player_name" in st.session_state:
@@ -524,24 +610,41 @@ def display_tryout_evaluation_mode(team_id):
                     else:
                         st.error("Player not found in database")
                         player_name = ""
-                        player_age = int(team.age_group.replace('U', ''))
+                        player_age = int(team.age_group.replace("U", ""))
                         player_position = "Forward"
                         display_position = "Forward"
                 else:
                     # This is a new player
                     st.write("**Adding a new player**")
                     player_name = st.text_input("Player Name", key="tryout_player_name")
-                    player_age = st.number_input("Age", min_value=6, max_value=18, 
-                                                value=int(team.age_group.replace('U', '')), 
-                                                key="tryout_player_age")
-                    player_position = st.selectbox("Position", ["Forward", "Defense", "Goalie"], 
-                                                  key="tryout_player_position")
+                    player_age = st.number_input(
+                        "Age",
+                        min_value=6,
+                        max_value=18,
+                        value=int(team.age_group.replace("U", "")),
+                        key="tryout_player_age",
+                    )
+                    player_position = st.selectbox(
+                        "Position",
+                        ["Forward", "Defense", "Goalie"],
+                        key="tryout_player_position",
+                    )
                     display_position = player_position
             except Exception as e:
                 st.error(f"Error loading team players: {str(e)}")
                 player_name = st.text_input("Player Name", key="tryout_player_name")
-                player_age = st.number_input("Age", min_value=6, max_value=18, value=int(team.age_group.replace('U', '')), key="tryout_player_age")
-                player_position = st.selectbox("Position", ["Forward", "Defense", "Goalie"], key="tryout_player_position")
+                player_age = st.number_input(
+                    "Age",
+                    min_value=6,
+                    max_value=18,
+                    value=int(team.age_group.replace("U", "")),
+                    key="tryout_player_age",
+                )
+                player_position = st.selectbox(
+                    "Position",
+                    ["Forward", "Defense", "Goalie"],
+                    key="tryout_player_position",
+                )
                 selected_player_id = None
                 display_position = player_position  # Set display position directly based on selected position
 
@@ -553,11 +656,11 @@ def display_tryout_evaluation_mode(team_id):
 
             # Create skill evaluation sliders based on position
             st.subheader("Skills Assessment")
-            
+
             # Add debug information to troubleshoot position issues
             st.write(f"**Debug - Selected ID:** {selected_player_id}")
             st.write(f"**Debug - Current position:** {player_position}")
-            
+
             # Force display_position to match the actual position of the player
             if selected_player_id > 0:
                 # Get the selected player directly from database
@@ -566,30 +669,34 @@ def display_tryout_evaluation_mode(team_id):
                     # Set position directly from database
                     original_position = selected_player.position
                     st.write(f"**Debug - Position from database:** {original_position}")
-                    
+
                     # Handle position values consistently
                     if "goalie" in original_position.lower():
                         display_position = "Goalie"
-                        st.success(f"Setting position to Goalie based on database value: {original_position}")
+                        st.success(
+                            f"Setting position to Goalie based on database value: {original_position}"
+                        )
                     elif "defense" in original_position.lower():
                         display_position = "Defense"
                     else:
                         display_position = "Forward"
-                        
+
                     # Store for later use in session state
                     st.session_state[f"{form_key}_player_position"] = display_position
                 else:
                     # Fallback to the original logic
-                    st.warning("Player not found in database - falling back to default logic")
+                    st.warning(
+                        "Player not found in database - falling back to default logic"
+                    )
                     if "goalie" in player_position.lower():
                         display_position = "Goalie"
                     elif "defense" in player_position.lower():
                         display_position = "Defense"
                     else:
                         display_position = "Forward"
-            
+
             st.write(f"**Final position used for metrics:** {display_position}")
-            
+
             # Force position type for goalie metrics
             # This is the key fix - override display_position if position contains 'goalie'
             if "goalie" in player_position.lower():
@@ -609,12 +716,12 @@ def display_tryout_evaluation_mode(team_id):
                     communication = st.slider("Communication", 1, 5, 3)
 
                 skill_ratings = {
-                    'positioning': positioning,
-                    'rebound_control': rebound_control,
-                    'recovery': recovery,
-                    'save_technique': save_technique,
-                    'puck_handling': puck_handling,
-                    'communication_rating': communication
+                    "positioning": positioning,
+                    "rebound_control": rebound_control,
+                    "recovery": recovery,
+                    "save_technique": save_technique,
+                    "puck_handling": puck_handling,
+                    "communication_rating": communication,
                 }
             else:
                 # Skater skills (common for Forward and Defense)
@@ -634,28 +741,28 @@ def display_tryout_evaluation_mode(team_id):
                     gap_control = st.slider("Gap Control", 1, 5, 3)
 
                     skill_ratings = {
-                        'skating_speed': skating,
-                        'puck_control': puck_control,
-                        'passing_accuracy': passing,
-                        'shooting_accuracy': shooting,
-                        'hockey_sense': hockey_sense,
-                        'compete_level_rating': compete_level,
-                        'defensive_ability_rating': defensive_ability,
-                        'gap_control': gap_control
+                        "skating_speed": skating,
+                        "puck_control": puck_control,
+                        "passing_accuracy": passing,
+                        "shooting_accuracy": shooting,
+                        "hockey_sense": hockey_sense,
+                        "compete_level_rating": compete_level,
+                        "defensive_ability_rating": defensive_ability,
+                        "gap_control": gap_control,
                     }
                 else:  # Forward
                     offensive_ability = st.slider("Offensive Ability", 1, 5, 3)
                     net_front = st.slider("Net Front Presence", 1, 5, 3)
 
                     skill_ratings = {
-                        'skating_speed': skating,
-                        'puck_control': puck_control,
-                        'passing_accuracy': passing,
-                        'shooting_accuracy': shooting,
-                        'hockey_sense': hockey_sense,
-                        'compete_level_rating': compete_level,
-                        'offensive_ability_rating': offensive_ability,
-                        'net_front_rating': net_front
+                        "skating_speed": skating,
+                        "puck_control": puck_control,
+                        "passing_accuracy": passing,
+                        "shooting_accuracy": shooting,
+                        "hockey_sense": hockey_sense,
+                        "compete_level_rating": compete_level,
+                        "offensive_ability_rating": offensive_ability,
+                        "net_front_rating": net_front,
                     }
 
             # Comments and recommendation
@@ -665,7 +772,7 @@ def display_tryout_evaluation_mode(team_id):
 
             recommendation = st.radio(
                 "Recommendation",
-                ["Highly Recommend", "Recommend", "Neutral", "Do Not Recommend"]
+                ["Highly Recommend", "Recommend", "Neutral", "Do Not Recommend"],
             )
 
             # Pre-fill with current user's name if available
@@ -675,11 +782,17 @@ def display_tryout_evaluation_mode(team_id):
 
             if submitted:
                 # Prioritize the form key-specific session state, which is set during player selection
-                # This ensures we're using the currently selected player's info 
+                # This ensures we're using the currently selected player's info
                 form_key = f"tryout_form_{team.id}"
-                eval_player_name = st.session_state.get(f"{form_key}_player_name", player_name)
-                eval_player_age = st.session_state.get(f"{form_key}_player_age", player_age)
-                eval_player_position = st.session_state.get(f"{form_key}_player_position", player_position)
+                eval_player_name = st.session_state.get(
+                    f"{form_key}_player_name", player_name
+                )
+                eval_player_age = st.session_state.get(
+                    f"{form_key}_player_age", player_age
+                )
+                eval_player_position = st.session_state.get(
+                    f"{form_key}_player_position", player_position
+                )
 
                 if not eval_player_name or not evaluator_name:
                     st.error("Player name and evaluator name are required")
@@ -701,7 +814,9 @@ def display_tryout_evaluation_mode(team_id):
                         player = Player.query.get(selected_player_id)
                     else:
                         # Check if player exists, otherwise create new player
-                        player = Player.query.filter_by(name=eval_player_name, age_group=team.age_group).first()
+                        player = Player.query.filter_by(
+                            name=eval_player_name, age_group=team.age_group
+                        ).first()
 
                     if not player:
                         # Create new player
@@ -711,7 +826,7 @@ def display_tryout_evaluation_mode(team_id):
                                 age=eval_player_age,
                                 age_group=team.age_group,
                                 position=eval_player_position,
-                                join_date=datetime.utcnow()
+                                join_date=datetime.utcnow(),
                             )
 
                             # Add skill ratings to player
@@ -732,24 +847,35 @@ def display_tryout_evaluation_mode(team_id):
                         feedback = CoachFeedback(
                             player_id=player.id,
                             coach_id=user_id,  # Use the user_id from session
-                            coach_name=evaluator_name or user_name,  # Use name provided or session username
-                            feedback_text=comments
+                            coach_name=evaluator_name
+                            or user_name,  # Use name provided or session username
+                            feedback_text=comments,
                         )
 
                         # Add ratings to feedback
                         for skill, rating in skill_ratings.items():
-                            rating_field = f"{skill}_rating" if not skill.endswith('_rating') else skill
+                            rating_field = (
+                                f"{skill}_rating"
+                                if not skill.endswith("_rating")
+                                else skill
+                            )
                             if hasattr(feedback, rating_field):
                                 setattr(feedback, rating_field, rating)
 
                         db.session.add(feedback)
                         db.session.commit()
 
-                        st.success(f"Evaluation for {eval_player_name} saved successfully!")
+                        st.success(
+                            f"Evaluation for {eval_player_name} saved successfully!"
+                        )
 
                         # Add redirect to team overview
-                        st.session_state.show_tryout_mode = False  # Turn off tryout mode
-                        st.session_state.redirect_to_overview = True  # Signal to redirect
+                        st.session_state.show_tryout_mode = (
+                            False  # Turn off tryout mode
+                        )
+                        st.session_state.redirect_to_overview = (
+                            True  # Signal to redirect
+                        )
                         st.rerun()  # Rerun to apply the state change
                     except Exception as e:
                         db.session.rollback()
@@ -766,10 +892,14 @@ def display_tryout_evaluation_mode(team_id):
 
             if player_ids:
                 # Get recent feedback for these players
-                feedback = CoachFeedback.query.filter(
-                    CoachFeedback.player_id.in_(player_ids),
-                    CoachFeedback.date >= (datetime.utcnow() - timedelta(days=14))
-                ).order_by(CoachFeedback.date.desc()).all()
+                feedback = (
+                    CoachFeedback.query.filter(
+                        CoachFeedback.player_id.in_(player_ids),
+                        CoachFeedback.date >= (datetime.utcnow() - timedelta(days=14)),
+                    )
+                    .order_by(CoachFeedback.date.desc())
+                    .all()
+                )
 
                 if feedback:
                     for fb in feedback:
@@ -777,14 +907,16 @@ def display_tryout_evaluation_mode(team_id):
                         if not player:
                             continue
 
-                        with st.expander(f"{player.name} - {player.position} (Evaluated by {fb.coach_name})"):
+                        with st.expander(
+                            f"{player.name} - {player.position} (Evaluated by {fb.coach_name})"
+                        ):
                             st.write(f"**Date:** {fb.date.strftime('%Y-%m-%d %H:%M')}")
                             st.write(fb.feedback_text)
 
                             # Collect all ratings
                             ratings = {}
                             for col in CoachFeedback.__table__.columns:
-                                if col.name.endswith('_rating'):
+                                if col.name.endswith("_rating"):
                                     val = getattr(fb, col.name)
                                     if val is not None:
                                         try:
@@ -804,19 +936,41 @@ def display_tryout_evaluation_mode(team_id):
                                 other_skills = {}
 
                                 for metric, value in ratings.items():
-                                    metric_name = metric.replace('_rating', '').replace('_', ' ').title()
+                                    metric_name = (
+                                        metric.replace("_rating", "")
+                                        .replace("_", " ")
+                                        .title()
+                                    )
 
                                     # Categorize skills
-                                    if metric in ['save_technique_rating', 'positioning_rating', 'rebound_control_rating', 
-                                                 'recovery_rating', 'puck_handling_rating']:
+                                    if metric in [
+                                        "save_technique_rating",
+                                        "positioning_rating",
+                                        "rebound_control_rating",
+                                        "recovery_rating",
+                                        "puck_handling_rating",
+                                    ]:
                                         goalie_skills[metric_name] = value
-                                    elif metric in ['skating_speed_rating', 'backward_skating_rating', 'agility_rating', 
-                                                   'edge_control_rating']:
+                                    elif metric in [
+                                        "skating_speed_rating",
+                                        "backward_skating_rating",
+                                        "agility_rating",
+                                        "edge_control_rating",
+                                    ]:
                                         skating_skills[metric_name] = value
-                                    elif metric in ['puck_control_rating', 'passing_accuracy_rating', 'shooting_accuracy_rating',
-                                                   'receiving_rating', 'stick_protection_rating']:
+                                    elif metric in [
+                                        "puck_control_rating",
+                                        "passing_accuracy_rating",
+                                        "shooting_accuracy_rating",
+                                        "receiving_rating",
+                                        "stick_protection_rating",
+                                    ]:
                                         technical_skills[metric_name] = value
-                                    elif metric in ['hockey_sense_rating', 'decision_making_rating', 'game_awareness_rating']:
+                                    elif metric in [
+                                        "hockey_sense_rating",
+                                        "decision_making_rating",
+                                        "game_awareness_rating",
+                                    ]:
                                         hockey_iq_skills[metric_name] = value
                                     else:
                                         other_skills[metric_name] = value
@@ -826,53 +980,73 @@ def display_tryout_evaluation_mode(team_id):
                                     if skills_dict:
                                         st.markdown(f"#### {title}")
                                         cols = st.columns(3)
-                                        for i, (name, val) in enumerate(skills_dict.items()):
+                                        for i, (name, val) in enumerate(
+                                            skills_dict.items()
+                                        ):
                                             with cols[i % 3]:
-                                                st.metric(name, val, help="Rating scale: 1-5")
+                                                st.metric(
+                                                    name, val, help="Rating scale: 1-5"
+                                                )
 
                                 # Display skill sections
                                 if goalie_skills:
-                                    display_skill_section("Goaltending Skills", goalie_skills)
+                                    display_skill_section(
+                                        "Goaltending Skills", goalie_skills
+                                    )
                                 if skating_skills:
-                                    display_skill_section("Skating Skills", skating_skills)
+                                    display_skill_section(
+                                        "Skating Skills", skating_skills
+                                    )
                                 if technical_skills:
-                                    display_skill_section("Technical Skills", technical_skills) 
+                                    display_skill_section(
+                                        "Technical Skills", technical_skills
+                                    )
                                 if hockey_iq_skills:
-                                    display_skill_section("Hockey IQ Skills", hockey_iq_skills)
+                                    display_skill_section(
+                                        "Hockey IQ Skills", hockey_iq_skills
+                                    )
                                 if other_skills:
                                     display_skill_section("Other Skills", other_skills)
 
                                 # Alternative view: show all skills in a unified visualization
-                                if len(ratings) > 3:  # Only show chart if we have multiple ratings
+                                if (
+                                    len(ratings) > 3
+                                ):  # Only show chart if we have multiple ratings
                                     st.markdown("#### Skills Radar Chart")
 
                                     # Prepare data for radar chart
-                                    categories = [k.replace('_rating', '').replace('_', ' ').title() for k in ratings.keys()]
+                                    categories = [
+                                        k.replace("_rating", "")
+                                        .replace("_", " ")
+                                        .title()
+                                        for k in ratings.keys()
+                                    ]
                                     values = list(ratings.values())
 
                                     # Create radar chart
                                     fig = go.Figure()
 
-                                    fig.add_trace(go.Scatterpolar(
-                                        r=values,
-                                        theta=categories,
-                                        fill='toself',
-                                        name='Skills Rating'
-                                    ))
+                                    fig.add_trace(
+                                        go.Scatterpolar(
+                                            r=values,
+                                            theta=categories,
+                                            fill="toself",
+                                            name="Skills Rating",
+                                        )
+                                    )
 
                                     fig.update_layout(
                                         polar=dict(
-                                            radialaxis=dict(
-                                                visible=True,
-                                                range=[0, 5]
-                                            )
+                                            radialaxis=dict(visible=True, range=[0, 5])
                                         ),
-                                        showlegend=False
+                                        showlegend=False,
                                     )
 
                                     st.plotly_chart(fig, use_container_width=True)
                             else:
-                                st.info("No skill ratings were recorded for this evaluation.")
+                                st.info(
+                                    "No skill ratings were recorded for this evaluation."
+                                )
                 else:
                     st.info("No recent evaluations found for this team age group")
             else:
@@ -880,6 +1054,7 @@ def display_tryout_evaluation_mode(team_id):
 
         except Exception as e:
             st.error(f"Error loading evaluations: {str(e)}")
+
 
 def create_custom_report(team, players_df):
     """Generate a detailed team performance report"""
@@ -892,8 +1067,14 @@ def create_custom_report(team, players_df):
     # Report customization options
     report_options = st.multiselect(
         "Select Report Sections",
-        options=["Team Overview", "Player Performance", "Skill Assessment", "Development Tracking", "Coach Feedback"],
-        default=["Team Overview", "Player Performance", "Skill Assessment"]
+        options=[
+            "Team Overview",
+            "Player Performance",
+            "Skill Assessment",
+            "Development Tracking",
+            "Coach Feedback",
+        ],
+        default=["Team Overview", "Player Performance", "Skill Assessment"],
     )
 
     if not report_options:
@@ -904,15 +1085,17 @@ def create_custom_report(team, players_df):
     period = st.radio(
         "Report Period",
         options=["Current Status", "Season to Date", "Monthly Progress"],
-        horizontal=True
+        horizontal=True,
     )
 
     # Report header
-    st.markdown(f"""
+    st.markdown(
+        f"""
     ## {team.name} - {team.age_group} Performance Report
     **Period:** {period}  
     **Generated:** {datetime.now().strftime('%Y-%m-%d')}
-    """)
+    """
+    )
 
     # Report sections
     if "Team Overview" in report_options:
@@ -925,23 +1108,33 @@ def create_custom_report(team, players_df):
         with col3:
             st.metric("Wins", team.wins or 0)
         with col4:
-            win_pct = round((team.wins / team.games_played) * 100, 1) if team.games_played else 0
+            win_pct = (
+                round((team.wins / team.games_played) * 100, 1)
+                if team.games_played
+                else 0
+            )
             st.metric("Win %", f"{win_pct}%")
 
         # Team composition
-        position_counts = players_df['team_position'].value_counts().reset_index()
-        position_counts.columns = ['Position', 'Count']
+        position_counts = players_df["team_position"].value_counts().reset_index()
+        position_counts.columns = ["Position", "Count"]
 
-        fig = px.pie(position_counts, values='Count', names='Position', 
-                    title='Team Composition by Position')
-        st.plotly_chart(fig, use_container_width=True, key="report_team_composition_pie")
+        fig = px.pie(
+            position_counts,
+            values="Count",
+            names="Position",
+            title="Team Composition by Position",
+        )
+        st.plotly_chart(
+            fig, use_container_width=True, key="report_team_composition_pie"
+        )
 
     if "Player Performance" in report_options:
         st.markdown("### Player Performance")
 
         # Filter skaters and goalies
-        skaters_df = players_df[players_df['position'].isin(['Forward', 'Defense'])]
-        goalies_df = players_df[players_df['position'] == 'Goalie']
+        skaters_df = players_df[players_df["position"].isin(["Forward", "Defense"])]
+        goalies_df = players_df[players_df["position"] == "Goalie"]
 
         # Skater performance table
         if not skaters_df.empty:
@@ -951,23 +1144,28 @@ def create_custom_report(team, players_df):
             skater_stats = []
             for _, player in skaters_df.iterrows():
                 stats = {
-                    'Name': player['name'],
-                    'Position': player['team_position'],
-                    'Games': player.get('games_played', 0) or 0,
-                    'Goals': player.get('goals', 0) or 0,
-                    'Assists': player.get('assists', 0) or 0,
-                    'Points': (player.get('goals', 0) or 0) + (player.get('assists', 0) or 0)
+                    "Name": player["name"],
+                    "Position": player["team_position"],
+                    "Games": player.get("games_played", 0) or 0,
+                    "Goals": player.get("goals", 0) or 0,
+                    "Assists": player.get("assists", 0) or 0,
+                    "Points": (player.get("goals", 0) or 0)
+                    + (player.get("assists", 0) or 0),
                 }
 
                 # Add key skill metrics
-                for skill in ['skating_speed', 'shooting_accuracy', 'puck_control']:
+                for skill in ["skating_speed", "shooting_accuracy", "puck_control"]:
                     if skill in player and pd.notna(player[skill]):
-                        stats[skill.replace('_', ' ').title()] = f"{float(player[skill]):.1f}"
+                        stats[skill.replace("_", " ").title()] = (
+                            f"{float(player[skill]):.1f}"
+                        )
 
                 skater_stats.append(stats)
 
             # Sort by points
-            skater_stats_df = pd.DataFrame(skater_stats).sort_values('Points', ascending=False)
+            skater_stats_df = pd.DataFrame(skater_stats).sort_values(
+                "Points", ascending=False
+            )
             st.dataframe(skater_stats_df, use_container_width=True)
 
         # Goalie performance table
@@ -976,20 +1174,24 @@ def create_custom_report(team, players_df):
 
             goalie_stats = []
             for _, goalie in goalies_df.iterrows():
-                games = goalie.get('games_played', 0) or 0
-                saves = goalie.get('saves', 0) or 0
-                goals_against = goalie.get('goals_against', 0) or 0
+                games = goalie.get("games_played", 0) or 0
+                saves = goalie.get("saves", 0) or 0
+                goals_against = goalie.get("goals_against", 0) or 0
 
-                save_pct = (saves / (saves + goals_against)) * 100 if (saves + goals_against) > 0 else 0
+                save_pct = (
+                    (saves / (saves + goals_against)) * 100
+                    if (saves + goals_against) > 0
+                    else 0
+                )
                 gaa = goals_against / games if games > 0 else 0
 
                 stats = {
-                    'Name': goalie['name'],
-                    'Games': games,
-                    'Save %': f"{save_pct:.1f}%",
-                    'GAA': f"{gaa:.2f}",
-                    'Saves': saves,
-                    'Goals Against': goals_against
+                    "Name": goalie["name"],
+                    "Games": games,
+                    "Save %": f"{save_pct:.1f}%",
+                    "GAA": f"{gaa:.2f}",
+                    "Saves": saves,
+                    "Goals Against": goals_against,
                 }
 
                 goalie_stats.append(stats)
@@ -1003,7 +1205,9 @@ def create_custom_report(team, players_df):
         # Team Skills Heatmap
         heatmap = create_team_skill_heatmap(players_df)
         if heatmap:
-            st.plotly_chart(heatmap, use_container_width=True, key="report_skills_heatmap")
+            st.plotly_chart(
+                heatmap, use_container_width=True, key="report_skills_heatmap"
+            )
 
         # Team strengths and weaknesses
         strengths, weaknesses = identify_team_strengths_weaknesses(players_df)
@@ -1013,13 +1217,13 @@ def create_custom_report(team, players_df):
         with col1:
             st.markdown("#### Team Strengths")
             for skill, avg in strengths:
-                formatted_skill = skill.replace('_', ' ').title()
+                formatted_skill = skill.replace("_", " ").title()
                 st.metric(formatted_skill, f"{avg:.1f}")
 
         with col2:
             st.markdown("#### Areas for Improvement")
             for skill, avg in weaknesses:
-                formatted_skill = skill.replace('_', ' ').title()
+                formatted_skill = skill.replace("_", " ").title()
                 st.metric(formatted_skill, f"{avg:.1f}")
 
     # Export options
@@ -1030,13 +1234,14 @@ def create_custom_report(team, players_df):
         st.success(f"Report generated in {export_format} format! (Mock functionality)")
         # In a real implementation, we would generate and provide download link
 
+
 def display_team_dashboard(team_id=None):
     """Main team dashboard interface"""
     st.title("Team Dashboard")
     st.write("Comprehensive team management and analysis tools")
 
     # Get user ID from session
-    user_id = st.session_state.user['id'] if 'user' in st.session_state else None
+    user_id = st.session_state.user["id"] if "user" in st.session_state else None
 
     # Get list of teams with players added by current user
     if user_id:
@@ -1047,7 +1252,9 @@ def display_team_dashboard(team_id=None):
         # Get team memberships for these players
         team_ids = []
         if player_ids:
-            memberships = TeamMembership.query.filter(TeamMembership.player_id.in_(player_ids)).all()
+            memberships = TeamMembership.query.filter(
+                TeamMembership.player_id.in_(player_ids)
+            ).all()
             team_ids = [m.team_id for m in memberships]
 
         # Get teams that these players are part of
@@ -1069,7 +1276,7 @@ def display_team_dashboard(team_id=None):
         selected = st.selectbox(
             "Select Team",
             options=range(len(team_options)),
-            format_func=lambda i: team_options[i][1]
+            format_func=lambda i: team_options[i][1],
         )
         team_id = team_options[selected][0]
 
@@ -1081,20 +1288,25 @@ def display_team_dashboard(team_id=None):
         return
 
     # Create tabs for different dashboard views
-    dashboard_tabs = st.tabs([
-        "Team Overview", 
-        "Team Analysis", 
-        "Player Comparison", 
-        "Tryout Evaluation", 
-        "Custom Reports"
-    ])
+    dashboard_tabs = st.tabs(
+        [
+            "Team Overview",
+            "Team Analysis",
+            "Player Comparison",
+            "Tryout Evaluation",
+            "Custom Reports",
+        ]
+    )
 
     # Initialize tab index in session state if not already set
-    if 'active_tab' not in st.session_state:
+    if "active_tab" not in st.session_state:
         st.session_state.active_tab = 0
 
     # Check if we should redirect from tryout mode to overview
-    if 'redirect_to_overview' in st.session_state and st.session_state.redirect_to_overview:
+    if (
+        "redirect_to_overview" in st.session_state
+        and st.session_state.redirect_to_overview
+    ):
         st.session_state.active_tab = 0  # Set to team overview tab
         st.session_state.redirect_to_overview = False  # Reset the flag
 

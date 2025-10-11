@@ -4,10 +4,11 @@ from app import mail
 from utils.email_service import test_email_configuration
 import logging
 
+
 def display_email_settings():
     """Display email configuration settings for admin users"""
     # Ensure user is admin
-    if not st.session_state.get('is_admin', False):
+    if not st.session_state.get("is_admin", False):
         st.error("Access denied. Admin privileges required.")
         return
 
@@ -26,13 +27,18 @@ def display_email_settings():
         with col2:
             st.write("**Authentication**")
             st.write(f"Username: {os.getenv('MAIL_USERNAME') or 'Not configured'}")
-            st.write(f"Password: {'Configured' if os.getenv('MAIL_PASSWORD') else 'Not configured'}")
-            st.write(f"Default Sender: {os.getenv('MAIL_DEFAULT_SENDER') or 'Not configured'}")
+            st.write(
+                f"Password: {'Configured' if os.getenv('MAIL_PASSWORD') else 'Not configured'}"
+            )
+            st.write(
+                f"Default Sender: {os.getenv('MAIL_DEFAULT_SENDER') or 'Not configured'}"
+            )
 
     # Test email functionality
     st.subheader("Test Email Configuration")
-    test_email = st.text_input("Test email address", 
-                              placeholder="Enter an email to receive the test message")
+    test_email = st.text_input(
+        "Test email address", placeholder="Enter an email to receive the test message"
+    )
 
     if st.button("Send Test Email"):
         with st.spinner("Sending test email..."):
@@ -53,13 +59,14 @@ def display_email_settings():
                     st.write(f"Mail default sender: {mail.default_sender}")
 
                 result = test_email_configuration(mail, test_email)
-                if result['success']:
-                    st.success(result['message'])
+                if result["success"]:
+                    st.success(result["message"])
                 else:
-                    st.error(result['message'])
+                    st.error(result["message"])
                     # Show troubleshooting information
                     with st.expander("Troubleshooting Information"):
-                        st.write("""
+                        st.write(
+                            """
                         ### Common Email Issues:
 
                         1. **Gmail Security Settings**: If using Gmail, you need to:
@@ -71,38 +78,54 @@ def display_email_settings():
                         3. **Network Restrictions**: Some cloud environments restrict outbound SMTP traffic
 
                         4. **Rate Limiting**: Email providers might limit the number of emails you can send
-                        """)
+                        """
+                        )
 
                         st.write("#### Gmail App Password Setup:")
-                        st.write("""
+                        st.write(
+                            """
                         1. Go to your Google Account
                         2. Select Security
                         3. Under "Signing in to Google," select App Passwords (you may need to enable 2-Step Verification first)
                         4. Select the app (Other) and device you want to generate the app password for
                         5. Follow the instructions to generate the App Password
                         6. Use this password in your MAIL_PASSWORD environment variable
-                        """)
+                        """
+                        )
 
     # Update email settings (redirects to Secrets)
     st.subheader("Update Email Settings")
-    st.write("To update your email configuration, you need to set the following environment variables:")
+    st.write(
+        "To update your email configuration, you need to set the following environment variables:"
+    )
 
-    st.code("""
+    st.code(
+        """
     MAIL_USERNAME=your-email@gmail.com
     MAIL_PASSWORD=your-app-password
     MAIL_DEFAULT_SENDER=your-email@gmail.com
-    """)
+    """
+    )
 
     if st.button("Update Email Settings"):
-        st.info("To update email settings, you need to configure environment variables in the Secrets tool.")
-        st.markdown("<a href='#' id='open-secrets' style='font-weight: bold;'>Click here to open Secrets Tool</a>", unsafe_allow_html=True)
-        st.markdown("""
+        st.info(
+            "To update email settings, you need to configure environment variables in the Secrets tool."
+        )
+        st.markdown(
+            "<a href='#' id='open-secrets' style='font-weight: bold;'>Click here to open Secrets Tool</a>",
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            """
         <script>
         document.getElementById('open-secrets').addEventListener('click', function() {
             parent.postMessage({ type: 'openTool', tool: 'envEditor' }, '*');
         });
         </script>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
+
 
 def send_email_interface():
     """Interface for sending emails manually"""
@@ -120,11 +143,7 @@ def send_email_interface():
         from flask_mail import Message
 
         try:
-            msg = Message(
-                subject=subject,
-                recipients=[recipient],
-                body=body
-            )
+            msg = Message(subject=subject, recipients=[recipient], body=body)
 
             mail.send(msg)
             st.success(f"Email sent successfully to {recipient}")

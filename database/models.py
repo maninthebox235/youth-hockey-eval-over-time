@@ -9,8 +9,9 @@ import os
 
 db = SQLAlchemy()
 
+
 class User(UserMixin, db.Model):
-    __tablename__ = 'users'
+    __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
@@ -23,8 +24,12 @@ class User(UserMixin, db.Model):
     reset_token_expiry = db.Column(db.DateTime, nullable=True)
 
     # Relationship with feedback
-    feedback_given = db.relationship('CoachFeedback', backref='coach', lazy=True,
-                                   foreign_keys='CoachFeedback.coach_id')
+    feedback_given = db.relationship(
+        "CoachFeedback",
+        backref="coach",
+        lazy=True,
+        foreign_keys="CoachFeedback.coach_id",
+    )
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -36,23 +41,24 @@ class User(UserMixin, db.Model):
         try:
             # First try to get from current_app
             try:
-                secret_key = current_app.config.get('SECRET_KEY')
+                secret_key = current_app.config.get("SECRET_KEY")
             except:
                 # Fallback to a hardcoded key for development
-                secret_key = 'development-fallback-key'
-                
+                secret_key = "development-fallback-key"
+
             if not secret_key:
-                secret_key = 'development-fallback-key'
-                
+                secret_key = "development-fallback-key"
+
             s = Serializer(secret_key)
-            token_data = {'id': self.id, 'exp': time.time() + expiration}
+            token_data = {"id": self.id, "exp": time.time() + expiration}
             token = s.dumps(token_data)
             # Handle both string and bytes return types from dumps()
             if isinstance(token, bytes):
-                return token.decode('utf-8')
+                return token.decode("utf-8")
             return token
         except Exception as e:
             import logging
+
             logging.error(f"Error generating auth token: {str(e)}")
             return None
 
@@ -62,13 +68,13 @@ class User(UserMixin, db.Model):
             return None
 
         try:
-            secret_key = current_app.config.get('SECRET_KEY', 'default-secret-key')
+            secret_key = current_app.config.get("SECRET_KEY", "default-secret-key")
             s = Serializer(secret_key)
 
             try:
                 data = s.loads(token)
-                user_id = data.get('id')
-                exp = data.get('exp')
+                user_id = data.get("id")
+                exp = data.get("exp")
 
                 if not user_id or time.time() > exp:
                     return None
@@ -76,19 +82,22 @@ class User(UserMixin, db.Model):
                 return User.query.get(user_id)
             except Exception as e:
                 import logging
+
                 logging.error(f"Error verifying auth token: {str(e)}")
                 return None
         except Exception as e:
             import logging
+
             logging.error(f"Error accessing app context: {str(e)}")
             return None
 
+
 class CoachFeedback(db.Model):
-    __tablename__ = 'coach_feedback'
+    __tablename__ = "coach_feedback"
 
     id = db.Column(db.Integer, primary_key=True)
-    player_id = db.Column(db.Integer, db.ForeignKey('players.id'), nullable=False)
-    coach_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    player_id = db.Column(db.Integer, db.ForeignKey("players.id"), nullable=False)
+    coach_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     coach_name = db.Column(db.String(100), nullable=False)
     feedback_text = db.Column(db.Text, nullable=False)
 
@@ -96,32 +105,32 @@ class CoachFeedback(db.Model):
     skating_rating = db.Column(db.Integer, nullable=True)
     shooting_rating = db.Column(db.Integer, nullable=True)
     teamwork_rating = db.Column(db.Integer, nullable=True)
-    
+
     # Skating skills
     skating_speed_rating = db.Column(db.Integer, nullable=True)
     backward_skating_rating = db.Column(db.Integer, nullable=True)
     agility_rating = db.Column(db.Integer, nullable=True)
     edge_control_rating = db.Column(db.Integer, nullable=True)
-    
+
     # Technical skills
     puck_control_rating = db.Column(db.Integer, nullable=True)
     passing_accuracy_rating = db.Column(db.Integer, nullable=True)
     shooting_accuracy_rating = db.Column(db.Integer, nullable=True)
     receiving_rating = db.Column(db.Integer, nullable=True)
     stick_protection_rating = db.Column(db.Integer, nullable=True)
-    
+
     # Hockey IQ skills
     hockey_sense_rating = db.Column(db.Integer, nullable=True)
     decision_making_rating = db.Column(db.Integer, nullable=True)
     game_awareness_rating = db.Column(db.Integer, nullable=True)
-    
+
     # Player-specific skills
     compete_level_rating = db.Column(db.Integer, nullable=True)
     offensive_ability_rating = db.Column(db.Integer, nullable=True)
     defensive_ability_rating = db.Column(db.Integer, nullable=True)
     net_front_rating = db.Column(db.Integer, nullable=True)
     gap_control_rating = db.Column(db.Integer, nullable=True)
-    
+
     # Goalie-specific ratings
     save_technique_rating = db.Column(db.Integer, nullable=True)
     positioning_rating = db.Column(db.Integer, nullable=True)
@@ -132,21 +141,23 @@ class CoachFeedback(db.Model):
 
     date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
+
 class TeamMembership(db.Model):
-    __tablename__ = 'team_membership'
+    __tablename__ = "team_membership"
 
     id = db.Column(db.Integer, primary_key=True)
-    player_id = db.Column(db.Integer, db.ForeignKey('players.id'), nullable=False)
-    team_id = db.Column(db.Integer, db.ForeignKey('teams.id'), nullable=False)
+    player_id = db.Column(db.Integer, db.ForeignKey("players.id"), nullable=False)
+    team_id = db.Column(db.Integer, db.ForeignKey("teams.id"), nullable=False)
     join_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     position_in_team = db.Column(db.String(20))
     is_active = db.Column(db.Boolean, default=True)
 
-    player = db.relationship('Player', back_populates='memberships')
-    team = db.relationship('Team', back_populates='memberships')
+    player = db.relationship("Player", back_populates="memberships")
+    team = db.relationship("Team", back_populates="memberships")
+
 
 class Team(db.Model):
-    __tablename__ = 'teams'
+    __tablename__ = "teams"
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -156,15 +167,20 @@ class Team(db.Model):
     wins = db.Column(db.Integer, default=0)
     losses = db.Column(db.Integer, default=0)
 
-    memberships = db.relationship('TeamMembership', back_populates='team', lazy='dynamic')
-    players = db.relationship('Player', 
-                            secondary='team_membership',
-                            back_populates='teams',
-                            lazy='dynamic',
-                            overlaps="memberships,team,player")
+    memberships = db.relationship(
+        "TeamMembership", back_populates="team", lazy="dynamic"
+    )
+    players = db.relationship(
+        "Player",
+        secondary="team_membership",
+        back_populates="teams",
+        lazy="dynamic",
+        overlaps="memberships,team,player",
+    )
+
 
 class Player(db.Model):
-    __tablename__ = 'players'
+    __tablename__ = "players"
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -172,35 +188,37 @@ class Player(db.Model):
     age_group = db.Column(db.String(10), nullable=False)
     position = db.Column(db.String(20), nullable=False)
     join_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)  # Allow nullable for existing data
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("users.id"), nullable=True
+    )  # Allow nullable for existing data
 
     # Player metrics based on position
     # Skater metrics
     skating_speed = db.Column(db.Float, nullable=True)
     shooting_accuracy = db.Column(db.Float, nullable=True)
-    
+
     # Additional skating metrics
     edge_control = db.Column(db.Float, nullable=True)
     agility = db.Column(db.Float, nullable=True)
     backward_skating = db.Column(db.Float, nullable=True)
-    
+
     # Stickhandling metrics
     puck_control = db.Column(db.Float, nullable=True)
     passing_accuracy = db.Column(db.Float, nullable=True)
     receiving = db.Column(db.Float, nullable=True)
     stick_protection = db.Column(db.Float, nullable=True)
-    
+
     # Game IQ metrics
     decision_making = db.Column(db.Float, nullable=True)
     game_awareness = db.Column(db.Float, nullable=True)
     hockey_sense = db.Column(db.Float, nullable=True)
-    
+
     # Forward specific metrics
     wrist_shot = db.Column(db.Float, nullable=True)
     slap_shot = db.Column(db.Float, nullable=True)
     one_timer = db.Column(db.Float, nullable=True)
     shot_accuracy = db.Column(db.Float, nullable=True)
-    
+
     # Defense specific metrics
     gap_control = db.Column(db.Float, nullable=True)
     physicality = db.Column(db.Float, nullable=True)
@@ -228,49 +246,54 @@ class Player(db.Model):
     goals_against = db.Column(db.Integer, default=0)
     saves = db.Column(db.Integer, default=0)
 
-    memberships = db.relationship('TeamMembership', back_populates='player', lazy='dynamic')
-    teams = db.relationship('Team', 
-                          secondary='team_membership',
-                          back_populates='players',
-                          lazy='dynamic',
-                          overlaps="memberships,player,team")
-    history = db.relationship('PlayerHistory', backref='player', lazy=True)
-    feedback = db.relationship('CoachFeedback', backref='player', lazy=True)
+    memberships = db.relationship(
+        "TeamMembership", back_populates="player", lazy="dynamic"
+    )
+    teams = db.relationship(
+        "Team",
+        secondary="team_membership",
+        back_populates="players",
+        lazy="dynamic",
+        overlaps="memberships,player,team",
+    )
+    history = db.relationship("PlayerHistory", backref="player", lazy=True)
+    feedback = db.relationship("CoachFeedback", backref="player", lazy=True)
+
 
 class PlayerHistory(db.Model):
-    __tablename__ = 'player_history'
+    __tablename__ = "player_history"
 
     id = db.Column(db.Integer, primary_key=True)
-    player_id = db.Column(db.Integer, db.ForeignKey('players.id'), nullable=False)
+    player_id = db.Column(db.Integer, db.ForeignKey("players.id"), nullable=False)
     date = db.Column(db.Date, nullable=False)
     notes = db.Column(db.Text, nullable=True)  # Added notes field
 
     # Skater metrics
     skating_speed = db.Column(db.Float, nullable=True)
     shooting_accuracy = db.Column(db.Float, nullable=True)
-    
+
     # Additional skating metrics
     edge_control = db.Column(db.Float, nullable=True)
     agility = db.Column(db.Float, nullable=True)
     backward_skating = db.Column(db.Float, nullable=True)
-    
+
     # Stickhandling metrics
     puck_control = db.Column(db.Float, nullable=True)
     passing_accuracy = db.Column(db.Float, nullable=True)
     receiving = db.Column(db.Float, nullable=True)
     stick_protection = db.Column(db.Float, nullable=True)
-    
+
     # Game IQ metrics
     decision_making = db.Column(db.Float, nullable=True)
     game_awareness = db.Column(db.Float, nullable=True)
     hockey_sense = db.Column(db.Float, nullable=True)
-    
+
     # Forward specific metrics
     wrist_shot = db.Column(db.Float, nullable=True)
     slap_shot = db.Column(db.Float, nullable=True)
     one_timer = db.Column(db.Float, nullable=True)
     shot_accuracy = db.Column(db.Float, nullable=True)
-    
+
     # Defense specific metrics
     gap_control = db.Column(db.Float, nullable=True)
     physicality = db.Column(db.Float, nullable=True)
@@ -298,11 +321,12 @@ class PlayerHistory(db.Model):
     goals_against = db.Column(db.Integer, nullable=True)
     saves = db.Column(db.Integer, nullable=True)
 
+
 class TeamCoachFeedback(db.Model):
-    __tablename__ = 'team_coach_feedback'
+    __tablename__ = "team_coach_feedback"
 
     id = db.Column(db.Integer, primary_key=True)
-    team_id = db.Column(db.Integer, db.ForeignKey('teams.id'), nullable=False)
+    team_id = db.Column(db.Integer, db.ForeignKey("teams.id"), nullable=False)
     coach_name = db.Column(db.String(100), nullable=False)
     feedback_text = db.Column(db.Text, nullable=False)
     teamwork_rating = db.Column(db.Integer)
@@ -310,10 +334,11 @@ class TeamCoachFeedback(db.Model):
     date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     def __repr__(self):
-        return f'<TeamCoachFeedback {self.id} for Team {self.team_id}>'
+        return f"<TeamCoachFeedback {self.id} for Team {self.team_id}>"
+
 
 class FeedbackTemplate(db.Model):
-    __tablename__ = 'feedback_templates'
+    __tablename__ = "feedback_templates"
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -329,4 +354,4 @@ class FeedbackTemplate(db.Model):
     last_used = db.Column(db.DateTime, nullable=True)
 
     def __repr__(self):
-        return f'<FeedbackTemplate {self.name} for {self.player_type}>'
+        return f"<FeedbackTemplate {self.name} for {self.player_type}>"
