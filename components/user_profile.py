@@ -3,6 +3,7 @@ from database.models import User, db
 from werkzeug.security import generate_password_hash
 from datetime import datetime
 
+
 def display_user_profile():
     """Display and manage user profile settings"""
     if not st.session_state.user:
@@ -12,7 +13,7 @@ def display_user_profile():
     st.header("My Profile")
 
     # Get current user data
-    user = User.query.get(st.session_state.user['id'])
+    user = User.query.get(st.session_state.user["id"])
     if not user:
         st.error("Error loading user profile")
         return
@@ -29,7 +30,9 @@ def display_user_profile():
             new_username = st.text_input("Username", value=user.username, disabled=True)
 
             # Role information
-            st.info(f"Account Type: {'Administrator' if user.is_admin else 'Standard User'}")
+            st.info(
+                f"Account Type: {'Administrator' if user.is_admin else 'Standard User'}"
+            )
 
             submit_profile = st.form_submit_button("Update Profile")
 
@@ -40,7 +43,7 @@ def display_user_profile():
                         db.session.commit()
 
                         # Update session state
-                        st.session_state.user['name'] = new_name
+                        st.session_state.user["name"] = new_name
 
                         st.success("Profile updated successfully!")
                         st.rerun()

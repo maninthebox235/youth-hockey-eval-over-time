@@ -2,36 +2,37 @@ import streamlit as st
 import plotly.express as px
 import plotly.graph_objects as go
 
+
 def plot_skill_radar(player_data):
-    categories = ['Skating Speed', 'Shooting Accuracy', 'Game Experience']
+    categories = ["Skating Speed", "Shooting Accuracy", "Game Experience"]
     values = [
-        player_data['skating_speed'],
-        player_data['shooting_accuracy'],
-        min(100, player_data['games_played'] * 2)
+        player_data["skating_speed"],
+        player_data["shooting_accuracy"],
+        min(100, player_data["games_played"] * 2),
     ]
 
-    fig = go.Figure(data=go.Scatterpolar(
-        r=values,
-        theta=categories,
-        fill='toself'
-    ))
+    fig = go.Figure(data=go.Scatterpolar(r=values, theta=categories, fill="toself"))
 
     fig.update_layout(
-        polar=dict(radialaxis=dict(visible=True, range=[0, 100])),
-        showlegend=False
+        polar=dict(radialaxis=dict(visible=True, range=[0, 100])), showlegend=False
     )
 
     return fig
+
 
 def plot_progress_timeline(player_history):
     if player_history.empty:
         return None
 
-    fig = px.line(player_history, x='date',
-                  y=['skating_speed', 'shooting_accuracy'],
-                  title="Skill Development Over Time",
-                  labels={'value': 'Score', 'variable': 'Metric'})
+    fig = px.line(
+        player_history,
+        x="date",
+        y=["skating_speed", "shooting_accuracy"],
+        title="Skill Development Over Time",
+        labels={"value": "Score", "variable": "Metric"},
+    )
     return fig
+
 
 def display_development_charts(player_data, player_history):
     st.subheader("Player Development Overview")

@@ -22,3 +22,30 @@ dependencies = [
     "weasyprint>=64.1",
     "matplotlib>=3.10.1",
 ]
+
+[dependency-groups]
+dev = [
+    "black>=25.9.0",
+    "pytest>=8.4.2",
+    "pytest-cov>=7.0.0",
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+extend-exclude = '''
+/(
+  # directories
+  \.git
+  | \.venv
+  | migrations
+  | __pycache__
+)/
+'''
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --cov=. --cov-report=term-missing --cov-report=html"
