@@ -3,7 +3,6 @@ import plotly.express as px
 from components.coach_feedback import display_feedback_form, display_feedback_history
 from components.feedback_templates import manage_feedback_templates
 from components.skill_assessment import display_skill_assessment
-import pandas as pd
 from utils.pdf_report import display_pdf_export_section
 from utils.type_converter import to_int, to_float, to_str
 

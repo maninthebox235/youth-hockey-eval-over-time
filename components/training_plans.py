@@ -1,11 +1,9 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
-from database.models import db, Player, PlayerHistory
+from database.models import db, PlayerHistory
 import plotly.express as px
 import plotly.graph_objects as go
-from datetime import datetime, timedelta
-import random
+from datetime import datetime
 
 
 def fix_youtube_url(url):

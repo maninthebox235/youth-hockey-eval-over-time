@@ -1,13 +1,8 @@
 import streamlit as st
-import pandas as pd
-from datetime import datetime, timedelta
-import os
 import time
 import logging
-import base64
-from pathlib import Path
 
-from database import db, init_app
+from database import init_app
 from database.models import Player, User
 from utils.data_generator import get_players_df, get_player_history, seed_database
 from components.player_profile import display_player_profile

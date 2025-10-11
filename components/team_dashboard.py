@@ -4,9 +4,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from database.models import db, Team, Player, TeamMembership, CoachFeedback
 import numpy as np
-from sqlalchemy import func, desc
 from datetime import datetime, timedelta
-from components.age_benchmarks import get_age_appropriate_benchmark
 from utils.type_converter import to_int, to_float, to_str
 
 
@@ -385,7 +383,7 @@ def display_team_analysis(team, players_df):
             with col2:
                 st.metric("Save %", f"{save_pct:.1f}%")
             with col3:
-                saves = goalie.get("saves", 0) or 0
+                goalie.get("saves", 0) or 0
                 goals_against = goalie.get("goals_against", 0) or 0
                 games = goalie.get("games_played", 0) or 0
                 gaa = goals_against / games if games > 0 else 0

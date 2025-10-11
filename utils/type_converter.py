@@ -3,11 +3,11 @@ Data type conversion utilities to handle common conversion issues.
 This module helps standardize data type conversions throughout the application.
 """
 
-import numpy as np
-import pandas as pd
+from typing import Any, Optional
+from datetime import datetime, date
 
 
-def to_int(value):
+def to_int(value: Any) -> Optional[int]:
     """
     Safely convert a value to Python int, handling None, numpy types, and strings.
 
@@ -40,7 +40,7 @@ def to_int(value):
     # which may not handle numpy numeric types directly
 
 
-def to_float(value):
+def to_float(value: Any) -> Optional[float]:
     """
     Safely convert a value to Python float, handling None, numpy types, and strings.
 
@@ -73,7 +73,7 @@ def to_float(value):
     # which may not handle numpy numeric types directly
 
 
-def to_datetime(value):
+def to_datetime(value: Any) -> Optional[datetime]:
     """
     Safely convert a value to Python datetime, handling None, pandas timestamps, and strings.
 
@@ -83,7 +83,6 @@ def to_datetime(value):
     Returns:
         Python datetime or None if conversion is not possible
     """
-    from datetime import datetime
 
     if value is None:
         return None
@@ -115,7 +114,7 @@ def to_datetime(value):
     return None
 
 
-def to_date(value):
+def to_date(value: Any) -> Optional[date]:
     """
     Safely convert a value to Python date, handling None, pandas timestamps, and strings.
 
@@ -125,7 +124,6 @@ def to_date(value):
     Returns:
         Python date or None if conversion is not possible
     """
-    from datetime import date, datetime
 
     if value is None:
         return None
@@ -160,7 +158,7 @@ def to_date(value):
     return None
 
 
-def to_str(value):
+def to_str(value: Any) -> Optional[str]:
     """
     Safely convert a value to Python string, handling None and all other types.
 

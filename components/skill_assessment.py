@@ -1,5 +1,4 @@
 import streamlit as st
-import pandas as pd
 from database.models import Player, PlayerHistory, db
 from datetime import datetime
 from utils.type_converter import to_int, to_float

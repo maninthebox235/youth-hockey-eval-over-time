@@ -19,7 +19,7 @@ def init_app():
     db.init_app(app)
 
     # Initialize migrations
-    migrate = Migrate(app, db)
+    Migrate(app, db)
 
     # Initialize database tables
     with app.app_context():

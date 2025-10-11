@@ -3,10 +3,8 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
-from database.models import db, Player, PlayerHistory
-from sqlalchemy import func
+from database.models import Player, PlayerHistory
 from utils.type_converter import to_int, to_float
-from datetime import datetime, timedelta
 from components.age_benchmarks import get_age_appropriate_benchmark
 
 

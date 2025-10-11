@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 from database.models import User, db
-from datetime import datetime
 
 
 def display_auth_buttons():
@@ -1011,14 +1010,14 @@ def display_feature_preview():
             st.markdown("#### Sample Tryout Evaluation Form")
 
             player_name = st.text_input("Player Name", value="Tryout Player #42")
-            position = st.selectbox("Position", ["Forward", "Defense", "Goalie"])
+            st.selectbox("Position", ["Forward", "Defense", "Goalie"])
 
             st.markdown("##### Skill Ratings")
 
             # Sample sliders
-            skating = st.slider("Skating", 1, 5, 3)
-            shooting = st.slider("Shooting", 1, 5, 4)
-            passing = st.slider("Passing", 1, 5, 3)
+            st.slider("Skating", 1, 5, 3)
+            st.slider("Shooting", 1, 5, 4)
+            st.slider("Passing", 1, 5, 3)
 
             st.text_area(
                 "Notes", "Good speed and first step. Needs work on backwards skating."
@@ -1062,7 +1061,7 @@ def display_feature_preview():
                 "Position Group Comparison",
             ]
 
-            selected_report = st.selectbox("Select Report Type", report_types)
+            st.selectbox("Select Report Type", report_types)
 
             st.markdown(
                 """
@@ -1191,7 +1190,7 @@ def display_signup_form():
 
         col1, col2 = st.columns(2)
         with col1:
-            role = st.selectbox("Role", ["Coach", "Team Manager", "Parent"])
+            st.selectbox("Role", ["Coach", "Team Manager", "Parent"])
         with col2:
             organization = st.text_input("Organization Name")
 

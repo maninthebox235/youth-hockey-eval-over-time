@@ -1,10 +1,8 @@
 import streamlit as st
 import pandas as pd
-import io
 import base64
 from database.models import Player, Team, TeamMembership, db
 from datetime import datetime
-import uuid
 
 
 def display_welcome_message(user_name):
@@ -379,13 +377,13 @@ def display_onboarding():
     tab1, tab2, tab3 = st.tabs(["Add Players", "Upload Roster", "Create Team"])
 
     with tab1:
-        player_added = display_manual_add_form()
+        display_manual_add_form()
 
     with tab2:
-        roster_uploaded = display_upload_roster_form()
+        display_upload_roster_form()
 
     with tab3:
-        team_created = display_create_team_form()
+        display_create_team_form()
 
     # Display current rosters if any
     # Get user ID from session

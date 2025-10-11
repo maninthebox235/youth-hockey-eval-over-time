@@ -2,7 +2,6 @@
 Script to make a user an administrator
 """
 
-import os
 import sys
 from sqlalchemy.exc import SQLAlchemyError
 

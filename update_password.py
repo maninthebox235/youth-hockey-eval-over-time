@@ -1,7 +1,6 @@
 from app import app
 from database.models import User, db
 from werkzeug.security import generate_password_hash
-import sys
 
 
 def update_password(username, new_password):

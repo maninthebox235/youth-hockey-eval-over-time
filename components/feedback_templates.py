@@ -1,7 +1,5 @@
 import streamlit as st
-import json
 from database.models import db, FeedbackTemplate
-from datetime import datetime
 
 
 def delete_template(template_id):

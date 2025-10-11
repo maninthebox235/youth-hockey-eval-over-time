@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from database.models import db, CoachFeedback, FeedbackTemplate, Player
+from database.models import db, CoachFeedback, FeedbackTemplate
 from datetime import datetime
 
 
