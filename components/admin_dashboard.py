@@ -531,7 +531,9 @@ def display_admin_dashboard():
     st.write("Access and manage all players, teams, and users in the system.")
 
     # Create tabs for different sections
-    tab1, tab2, tab3, tab4 = st.tabs(["Players", "Teams", "Users", "Analytics"])
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(
+        ["Players", "Teams", "Users", "Analytics", "Notifications"]
+    )
 
     with tab1:
         st.write("### All Players")
@@ -562,3 +564,8 @@ def display_admin_dashboard():
 
     with tab4:
         display_analytics_dashboard()
+
+    with tab5:
+        from components.notification_settings import display_notification_settings
+
+        display_notification_settings()
