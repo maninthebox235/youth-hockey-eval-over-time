@@ -376,6 +376,7 @@ if not show_landing:
                                 "Basic Team Management",
                                 "Enhanced Team Dashboard",
                                 "Tryout Evaluation",
+                                "Game Evaluation",
                             ],
                             horizontal=True,
                         )
@@ -407,6 +408,29 @@ if not show_landing:
                                 )
 
                                 display_tryout_evaluation_mode(team_id)
+                            else:
+                                st.info(
+                                    "No teams available. Please create a team first."
+                                )
+                        elif team_submenu == "Game Evaluation":
+                            from database.models import Team
+                            from components.game_evaluation import (
+                                display_game_evaluation_interface,
+                            )
+
+                            teams = Team.query.all()
+                            if teams:
+                                team_options = [
+                                    (t.id, f"{t.name} ({t.age_group})") for t in teams
+                                ]
+                                selected = st.selectbox(
+                                    "Select Team for Game Evaluation",
+                                    options=range(len(team_options)),
+                                    format_func=lambda i: team_options[i][1],
+                                )
+                                team_id = team_options[selected][0]
+
+                                display_game_evaluation_interface(team_id)
                             else:
                                 st.info(
                                     "No teams available. Please create a team first."

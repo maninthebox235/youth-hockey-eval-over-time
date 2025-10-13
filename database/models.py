@@ -354,3 +354,39 @@ class FeedbackTemplate(db.Model):
 
     def __repr__(self):
         return f"<FeedbackTemplate {self.name} for {self.player_type}>"
+
+
+class GameEvaluation(db.Model):
+    __tablename__ = "game_evaluations"
+
+    id = db.Column(db.Integer, primary_key=True)
+    team_id = db.Column(db.Integer, db.ForeignKey("teams.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    evaluator_name = db.Column(db.String(100), nullable=False)
+
+    game_date = db.Column(db.Date, nullable=False)
+    opponent_name = db.Column(db.String(100), nullable=False)
+    final_score = db.Column(db.String(20), nullable=True)
+    game_location = db.Column(db.String(100), nullable=True)
+
+    video_filename = db.Column(db.String(255), nullable=True)
+
+    spacing_support_rating = db.Column(db.Integer, nullable=True)
+    forechecking_rating = db.Column(db.Integer, nullable=True)
+    backchecking_rating = db.Column(db.Integer, nullable=True)
+    breakout_rating = db.Column(db.Integer, nullable=True)
+
+    overall_team_effort_rating = db.Column(db.Integer, nullable=True)
+    overall_execution_rating = db.Column(db.Integer, nullable=True)
+
+    strengths_notes = db.Column(db.Text, nullable=True)
+    areas_for_improvement = db.Column(db.Text, nullable=True)
+    coaching_observations = db.Column(db.Text, nullable=True)
+
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    team = db.relationship("Team", backref="game_evaluations")
+    evaluator = db.relationship("User", backref="game_evaluations")
+
+    def __repr__(self):
+        return f"<GameEvaluation {self.id} for Team {self.team_id} vs {self.opponent_name}>"
