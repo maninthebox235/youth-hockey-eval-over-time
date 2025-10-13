@@ -22,12 +22,12 @@ def init_app():
     Migrate(app, db)
 
     # Initialize database tables
-    with app.app_context():
-        try:
-            db.create_all()
-            print("Database tables created successfully")
-        except Exception as e:
-            print(f"Error creating database tables: {e}")
-            raise
+    # with app.app_context():
+    #     try:
+    #         db.create_all()
+    #         print("Database tables created successfully")
+    #     except Exception as e:
+    #         print(f"Error creating database tables: {e}")
+    #         raise
 
     return app
