@@ -17,8 +17,7 @@ export default function PlayerList({ players, addPlayer }: PlayerListProps) {
     name: '',
     jersey_number: '',
     position: '',
-    age_group: '',
-    team: ''
+    age_group: ''
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,11 +26,10 @@ export default function PlayerList({ players, addPlayer }: PlayerListProps) {
       name: newPlayer.name,
       jersey_number: newPlayer.jersey_number ? parseInt(newPlayer.jersey_number) : undefined,
       position: newPlayer.position || undefined,
-      age_group: newPlayer.age_group || undefined,
-      team: newPlayer.team || undefined
+      age_group: newPlayer.age_group || undefined
     })
     setOpen(false)
-    setNewPlayer({ name: '', jersey_number: '', position: '', age_group: '', team: '' })
+    setNewPlayer({ name: '', jersey_number: '', position: '', age_group: '' })
   }
 
   return (
@@ -80,24 +78,14 @@ export default function PlayerList({ players, addPlayer }: PlayerListProps) {
                 />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="age_group">Age Group</Label>
-                <Input
-                  id="age_group"
-                  value={newPlayer.age_group}
-                  onChange={(e) => setNewPlayer({ ...newPlayer, age_group: e.target.value })}
-                  placeholder="U10, U12, U14..."
-                />
-              </div>
-              <div>
-                <Label htmlFor="team">Team</Label>
-                <Input
-                  id="team"
-                  value={newPlayer.team}
-                  onChange={(e) => setNewPlayer({ ...newPlayer, team: e.target.value })}
-                />
-              </div>
+            <div>
+              <Label htmlFor="age_group">Age Group</Label>
+              <Input
+                id="age_group"
+                value={newPlayer.age_group}
+                onChange={(e) => setNewPlayer({ ...newPlayer, age_group: e.target.value })}
+                placeholder="U10, U12, U14..."
+              />
             </div>
             <Button type="submit" className="w-full">Add Player</Button>
           </form>

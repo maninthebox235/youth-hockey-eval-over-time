@@ -10,11 +10,11 @@ import { Player, Evaluation } from '../hooks/useOfflineStorage'
 
 interface EvaluationFormProps {
   players: Player[]
-  addEvaluation: (evaluation: Evaluation) => Promise<Evaluation>
+  addEvaluation: (evaluation: any) => Promise<Evaluation>
 }
 
 export default function EvaluationForm({ players, addEvaluation }: EvaluationFormProps) {
-  const [selectedPlayer, setSelectedPlayer] = useState('')
+  const [selectedPlayer, setSelectedPlayer] = useState<number | null>(null)
   const [evaluator, setEvaluator] = useState('')
   const [evaluationType, setEvaluationType] = useState('practice')
   const [skills, setSkills] = useState({
@@ -31,14 +31,11 @@ export default function EvaluationForm({ players, addEvaluation }: EvaluationFor
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const player = players.find(p => p.id === selectedPlayer)
-    if (!player) return
+    if (!selectedPlayer) return
     
     await addEvaluation({
       player_id: selectedPlayer,
-      player_name: player.name,
-      date: new Date().toISOString(),
-      evaluator,
+      evaluator_name: evaluator,
       evaluation_type: evaluationType,
       skills,
       notes: notes || undefined,
@@ -46,7 +43,7 @@ export default function EvaluationForm({ players, addEvaluation }: EvaluationFor
       areas_for_improvement: improvements || undefined
     })
     
-    setSelectedPlayer('')
+    setSelectedPlayer(null)
     setEvaluator('')
     setSkills({
       skating: 5,
@@ -75,13 +72,17 @@ export default function EvaluationForm({ players, addEvaluation }: EvaluationFor
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Label htmlFor="player">Player *</Label>
-          <Select value={selectedPlayer} onValueChange={setSelectedPlayer} required>
+          <Select 
+            value={selectedPlayer?.toString() || ''} 
+            onValueChange={(value) => setSelectedPlayer(parseInt(value))} 
+            required
+          >
             <SelectTrigger>
               <SelectValue placeholder="Select player" />
             </SelectTrigger>
             <SelectContent>
               {players.map((player) => (
-                <SelectItem key={player.id} value={player.id || ''}>
+                <SelectItem key={player.id} value={player.id.toString()}>
                   {player.name} {player.jersey_number && `(#${player.jersey_number})`}
                 </SelectItem>
               ))}
