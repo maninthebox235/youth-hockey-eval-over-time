@@ -12,15 +12,15 @@ export default function ComparisonCharts({ evaluations, playerName }: Comparison
     new Date(a.date).getTime() - new Date(b.date).getTime()
   )
 
-  const progressData = sortedEvaluations.map((eval, index) => ({
-    date: new Date(eval.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-    skating: eval.skating,
-    shooting: eval.shooting,
-    passing: eval.passing,
-    puck_handling: eval.puck_handling,
-    hockey_iq: eval.hockey_iq,
-    physicality: eval.physicality,
-    average: (eval.skating + eval.shooting + eval.passing + eval.puck_handling + eval.hockey_iq + eval.physicality) / 6
+  const progressData = sortedEvaluations.map((evaluation) => ({
+    date: new Date(evaluation.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    skating: evaluation.skating,
+    shooting: evaluation.shooting,
+    passing: evaluation.passing,
+    puck_handling: evaluation.puck_handling,
+    hockey_iq: evaluation.hockey_iq,
+    physicality: evaluation.physicality,
+    average: (evaluation.skating + evaluation.shooting + evaluation.passing + evaluation.puck_handling + evaluation.hockey_iq + evaluation.physicality) / 6
   }))
 
   const latestEval = sortedEvaluations[sortedEvaluations.length - 1]

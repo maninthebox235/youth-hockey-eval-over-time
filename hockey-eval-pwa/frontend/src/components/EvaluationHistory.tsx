@@ -21,8 +21,15 @@ export default function EvaluationHistory({ evaluations }: EvaluationHistoryProp
     })
   }
 
-  const getAverageRating = (skills: Evaluation['skills']) => {
-    const values = Object.values(skills)
+  const getAverageRating = (evaluation: Evaluation) => {
+    const values = [
+      evaluation.skating,
+      evaluation.shooting,
+      evaluation.passing,
+      evaluation.puck_handling,
+      evaluation.hockey_iq,
+      evaluation.physicality
+    ]
     return (values.reduce((a, b) => a + b, 0) / values.length).toFixed(1)
   }
 
@@ -38,15 +45,15 @@ export default function EvaluationHistory({ evaluations }: EvaluationHistoryProp
           <div key={evaluation.id} className="bg-white rounded-lg border p-4 space-y-3">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="font-semibold text-lg">{evaluation.player_name}</h3>
+                <h3 className="font-semibold text-lg">Player #{evaluation.player_id}</h3>
                 <p className="text-sm text-slate-500">
                   {formatDate(evaluation.date)} • {evaluation.evaluation_type}
                 </p>
-                <p className="text-sm text-slate-600">Evaluated by {evaluation.evaluator}</p>
+                <p className="text-sm text-slate-600">Evaluated by {evaluation.evaluator_name}</p>
               </div>
               <div className="text-right">
                 <div className="text-2xl font-bold text-blue-600">
-                  {getAverageRating(evaluation.skills)}
+                  {getAverageRating(evaluation)}
                 </div>
                 <div className="text-xs text-slate-500">avg rating</div>
               </div>
@@ -55,27 +62,27 @@ export default function EvaluationHistory({ evaluations }: EvaluationHistoryProp
             <div className="grid grid-cols-3 gap-2 text-sm">
               <div className="bg-slate-50 p-2 rounded">
                 <div className="text-slate-600">Skating</div>
-                <div className="font-semibold">{evaluation.skills.skating}/10</div>
+                <div className="font-semibold">{evaluation.skating}/10</div>
               </div>
               <div className="bg-slate-50 p-2 rounded">
                 <div className="text-slate-600">Shooting</div>
-                <div className="font-semibold">{evaluation.skills.shooting}/10</div>
+                <div className="font-semibold">{evaluation.shooting}/10</div>
               </div>
               <div className="bg-slate-50 p-2 rounded">
                 <div className="text-slate-600">Passing</div>
-                <div className="font-semibold">{evaluation.skills.passing}/10</div>
+                <div className="font-semibold">{evaluation.passing}/10</div>
               </div>
               <div className="bg-slate-50 p-2 rounded">
                 <div className="text-slate-600">Puck Handling</div>
-                <div className="font-semibold">{evaluation.skills.puck_handling}/10</div>
+                <div className="font-semibold">{evaluation.puck_handling}/10</div>
               </div>
               <div className="bg-slate-50 p-2 rounded">
                 <div className="text-slate-600">Hockey IQ</div>
-                <div className="font-semibold">{evaluation.skills.hockey_iq}/10</div>
+                <div className="font-semibold">{evaluation.hockey_iq}/10</div>
               </div>
               <div className="bg-slate-50 p-2 rounded">
                 <div className="text-slate-600">Physicality</div>
-                <div className="font-semibold">{evaluation.skills.physicality}/10</div>
+                <div className="font-semibold">{evaluation.physicality}/10</div>
               </div>
             </div>
 
