@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { api, Player, Evaluation, SkillRating } from '../services/api'
 
-export { Player, Evaluation, SkillRating }
+export type { Player, Evaluation, SkillRating }
 
 export function useOfflineStorage() {
   const [players, setPlayers] = useState<Player[]>([])
@@ -55,7 +55,13 @@ export function useOfflineStorage() {
   const addPlayer = useCallback(async (player: Omit<Player, 'id' | 'coach_id' | 'created_at'>) => {
     if (navigator.onLine) {
       try {
-        const newPlayer = await api.players.create(player)
+        const newPlayer = await api.players.create({
+          name: player.name,
+          jersey_number: player.jersey_number ?? undefined,
+          position: player.position ?? undefined,
+          age_group: player.age_group ?? undefined,
+          team_id: player.team_id ?? undefined
+        })
         const updatedPlayers = [...players, newPlayer]
         setPlayers(updatedPlayers)
         localStorage.setItem('players', JSON.stringify(updatedPlayers))
@@ -102,10 +108,21 @@ export function useOfflineStorage() {
       }
     } else {
       const tempEvaluation: Evaluation = {
-        ...evaluation,
         id: Date.now(),
+        player_id: evaluation.player_id,
         evaluator_id: 0,
-        date: new Date().toISOString()
+        evaluator_name: evaluation.evaluator_name,
+        date: new Date().toISOString(),
+        evaluation_type: evaluation.evaluation_type,
+        skating: evaluation.skills.skating,
+        shooting: evaluation.skills.shooting,
+        passing: evaluation.skills.passing,
+        puck_handling: evaluation.skills.puck_handling,
+        hockey_iq: evaluation.skills.hockey_iq,
+        physicality: evaluation.skills.physicality,
+        notes: evaluation.notes ?? null,
+        strengths: evaluation.strengths ?? null,
+        areas_for_improvement: evaluation.areas_for_improvement ?? null
       }
       const updatedEvaluations = [...evaluations, tempEvaluation]
       setEvaluations(updatedEvaluations)

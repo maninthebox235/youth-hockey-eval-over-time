@@ -8,7 +8,7 @@ import { Player } from '../hooks/useOfflineStorage'
 
 interface PlayerListProps {
   players: Player[]
-  addPlayer: (player: Player) => Promise<Player>
+  addPlayer: (player: any) => Promise<Player>
 }
 
 export default function PlayerList({ players, addPlayer }: PlayerListProps) {
@@ -24,9 +24,9 @@ export default function PlayerList({ players, addPlayer }: PlayerListProps) {
     e.preventDefault()
     await addPlayer({
       name: newPlayer.name,
-      jersey_number: newPlayer.jersey_number ? parseInt(newPlayer.jersey_number) : undefined,
-      position: newPlayer.position || undefined,
-      age_group: newPlayer.age_group || undefined
+      jersey_number: newPlayer.jersey_number ? parseInt(newPlayer.jersey_number) : null,
+      position: newPlayer.position || null,
+      age_group: newPlayer.age_group || null
     })
     setOpen(false)
     setNewPlayer({ name: '', jersey_number: '', position: '', age_group: '' })
