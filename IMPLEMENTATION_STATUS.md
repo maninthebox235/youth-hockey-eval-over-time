@@ -83,46 +83,78 @@
 - `POST /api/feedback-templates` - Create template
 - `DELETE /api/feedback-templates/{id}` - Delete template
 
-## Pending Frontend Updates
+## ✅ Completed Frontend Features
 
-The frontend needs to be updated to work with the new authenticated API:
+### Authentication System
+- ✅ Login/Register UI components (`Auth.tsx`)
+- ✅ JWT token management with localStorage
+- ✅ AuthContext for global auth state
+- ✅ Protected routes (redirects to login if not authenticated)
+- ✅ Logout functionality in header
+- ✅ Auto-login on page refresh if token is valid
 
-### Required Changes
+### API Integration
+- ✅ Complete API service layer (`services/api.ts`)
+- ✅ All endpoints include JWT authentication headers
+- ✅ Updated data models to use integer IDs
+- ✅ Error handling for authentication failures
+- ✅ Offline storage hook updated to use new API
 
-1. **Authentication UI**
-   - Login/Register forms
-   - Token storage (localStorage)
-   - Protected routes
-   - Logout functionality
-
-2. **API Integration**
-   - Update all API calls to include JWT token
-   - Handle authentication errors
-   - Update data models to match new schema (integer IDs instead of UUIDs)
-
-3. **New Features UI**
-   - Team management interface
-   - Player photo upload
-   - PDF download button
-   - Search/filter controls
-   - Feedback templates UI
-   - Bulk evaluation mode
-
-4. **Service Worker for PWA**
-   - Background sync with authentication
-   - Offline data storage
-   - Cache management
-   - "Add to Home Screen" support
+### Service Worker for PWA
+- ✅ Service worker implementation (`public/sw.js`)
+- ✅ Cache-first strategy for static assets
+- ✅ Network-first with cache fallback for API calls
+- ✅ Background sync support for offline evaluations
+- ✅ Automatic service worker registration
+- ✅ PWA manifest.json with app metadata
 
 ### Comparison Charts
+- ✅ ComparisonCharts component with Recharts
+- ✅ Progress over time line charts (all skills)
+- ✅ Overall average progress tracking
+- ✅ Current skill profile radar chart
+- ✅ Responsive chart layouts
 
-The backend stores all evaluation history, making it easy to create comparison charts showing:
-- Skill progression over time (line charts)
-- Before/after comparisons
-- Multi-player comparisons
-- Trend analysis
+### Updated Components
+- ✅ PlayerList - works with new API
+- ✅ EvaluationForm - uses integer player IDs and evaluator_name
+- ✅ EvaluationHistory - displays evaluation data
+- ✅ App.tsx - integrated with authentication
+- ✅ Offline/online status indicator
+- ✅ Pending sync counter
 
-Frontend implementation would use Chart.js or Recharts to visualize the data from `/api/players/{id}` endpoint which includes full evaluation history.
+## Pending Frontend Features
+
+These features are not yet implemented but the backend supports them:
+
+1. **Team Management UI**
+   - Create/edit teams interface
+   - Assign players to teams
+   - Team selection dropdown
+
+2. **Player Photo Upload**
+   - Photo upload button in player profile
+   - Image preview
+   - Camera capture on mobile
+
+3. **PDF Download**
+   - Download button for player evaluation reports
+   - Progress indicator during generation
+
+4. **Search & Filter UI**
+   - Search bar for player names
+   - Team filter dropdown
+   - Clear filters button
+
+5. **Feedback Templates UI**
+   - Template management interface
+   - Quick insert into evaluation forms
+   - Usage statistics display
+
+6. **Bulk Evaluation Mode**
+   - Multi-player selection
+   - Simplified evaluation form
+   - Batch submission
 
 ## Database Schema
 
@@ -177,23 +209,35 @@ poetry run alembic upgrade head
 poetry run fastapi dev app/main.py
 ```
 
-### Frontend Setup (Current State)
+### Frontend Setup
 
-The frontend still uses the old in-memory API. To use it with the new backend:
+1. Install dependencies:
+```bash
+cd hockey-eval-pwa/frontend
+npm install
+```
 
-1. Update API base URL in frontend code
-2. Add authentication flow
-3. Update data models
-4. Add new feature UIs
+2. Create `.env` file:
+```bash
+# Create .env file with:
+VITE_API_URL=http://localhost:8000
+```
+
+3. Start development server:
+```bash
+npm run dev
+```
+
+The frontend will be available at http://localhost:5173
 
 ## Next Steps
 
-1. **Frontend Authentication** - Add login/register UI and token management
-2. **Update API Calls** - Modify all API calls to use new endpoints with auth
-3. **Service Worker** - Implement proper PWA with background sync
-4. **Comparison Charts** - Add visualization components for progress tracking
-5. **Testing** - Add comprehensive tests for backend and frontend
-6. **Deployment** - Deploy to production with proper environment configuration
+1. **Additional Frontend Features** - Implement team management, photo upload, PDF download, search/filter, templates, bulk mode
+2. **Testing** - Add comprehensive tests for backend and frontend
+3. **Database Setup** - Install PostgreSQL and run migrations
+4. **Deployment** - Deploy to production with proper environment configuration
+5. **Mobile Optimization** - Test and optimize PWA on mobile devices
+6. **Performance** - Add caching, lazy loading, and optimization
 
 ## Technical Decisions
 
