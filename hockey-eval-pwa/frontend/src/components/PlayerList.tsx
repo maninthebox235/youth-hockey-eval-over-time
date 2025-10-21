@@ -22,9 +22,10 @@ export default function PlayerList({ players, addPlayer }: PlayerListProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    const jerseyNum = newPlayer.jersey_number ? parseInt(newPlayer.jersey_number, 10) : null
     await addPlayer({
       name: newPlayer.name,
-      jersey_number: newPlayer.jersey_number ? parseInt(newPlayer.jersey_number) : null,
+      jersey_number: jerseyNum && !isNaN(jerseyNum) ? jerseyNum : null,
       position: newPlayer.position || null,
       age_group: newPlayer.age_group || null
     })

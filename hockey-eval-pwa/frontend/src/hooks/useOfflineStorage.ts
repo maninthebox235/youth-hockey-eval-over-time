@@ -7,22 +7,9 @@ export function useOfflineStorage() {
   const [players, setPlayers] = useState<Player[]>([])
   const [evaluations, setEvaluations] = useState<Evaluation[]>([])
   const [pendingSync, setPendingSync] = useState(0)
+  const [isSyncing, setIsSyncing] = useState(false)
 
-  useEffect(() => {
-    const storedPlayers = localStorage.getItem('players')
-    const storedEvaluations = localStorage.getItem('evaluations')
-    
-    if (storedPlayers) {
-      setPlayers(JSON.parse(storedPlayers))
-    }
-    if (storedEvaluations) {
-      setEvaluations(JSON.parse(storedEvaluations))
-    }
-
-    fetchData()
-  }, [])
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!navigator.onLine) return
 
     try {
@@ -39,18 +26,35 @@ export function useOfflineStorage() {
     } catch (error) {
       console.error('Failed to fetch data:', error)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    const storedPlayers = localStorage.getItem('players')
+    const storedEvaluations = localStorage.getItem('evaluations')
+    
+    if (storedPlayers) {
+      setPlayers(JSON.parse(storedPlayers))
+    }
+    if (storedEvaluations) {
+      setEvaluations(JSON.parse(storedEvaluations))
+    }
+
+    fetchData()
+  }, [fetchData])
 
   const syncData = useCallback(async () => {
-    if (!navigator.onLine) return
+    if (!navigator.onLine || isSyncing) return
 
+    setIsSyncing(true)
     try {
       await fetchData()
       setPendingSync(0)
     } catch (error) {
       console.error('Sync failed:', error)
+    } finally {
+      setIsSyncing(false)
     }
-  }, [])
+  }, [fetchData, isSyncing])
 
   const addPlayer = useCallback(async (player: Omit<Player, 'id' | 'coach_id' | 'created_at'>) => {
     if (navigator.onLine) {
@@ -71,10 +75,11 @@ export function useOfflineStorage() {
         throw error
       }
     } else {
+      // Use negative timestamp for offline IDs to avoid collision with server IDs
       const tempPlayer: Player = {
         ...player,
-        id: Date.now(),
-        coach_id: 0,
+        id: -Date.now(),
+        coach_id: -1,
         photo_url: null,
         created_at: new Date().toISOString()
       }
@@ -107,10 +112,11 @@ export function useOfflineStorage() {
         throw error
       }
     } else {
+      // Use negative timestamp for offline IDs
       const tempEvaluation: Evaluation = {
-        id: Date.now(),
+        id: -Date.now(),
         player_id: evaluation.player_id,
-        evaluator_id: 0,
+        evaluator_id: -1,
         evaluator_name: evaluation.evaluator_name,
         date: new Date().toISOString(),
         evaluation_type: evaluation.evaluation_type,
@@ -138,6 +144,7 @@ export function useOfflineStorage() {
     addPlayer,
     addEvaluation,
     syncData,
-    pendingSync
+    pendingSync,
+    isSyncing
   }
 }

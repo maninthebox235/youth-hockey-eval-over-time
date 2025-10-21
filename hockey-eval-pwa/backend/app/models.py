@@ -63,10 +63,10 @@ class Player(Base):
 
 class Evaluation(Base):
     __tablename__ = "evaluations"
-    
+
     id = Column(Integer, primary_key=True, index=True)
-    player_id = Column(Integer, ForeignKey("players.id"), nullable=False)
-    evaluator_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    player_id = Column(Integer, ForeignKey("players.id"), nullable=False, index=True)
+    evaluator_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     evaluator_name = Column(String, nullable=False)
     date = Column(DateTime, default=datetime.utcnow, index=True)
     evaluation_type = Column(String, nullable=False)

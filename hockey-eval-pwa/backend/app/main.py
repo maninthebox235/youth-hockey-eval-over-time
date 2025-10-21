@@ -181,8 +181,15 @@ async def upload_player_photo(
     ).first()
     if not db_player:
         raise HTTPException(status_code=404, detail="Player not found")
-    
+
+    # Maximum file size: 5MB
+    MAX_FILE_SIZE = 5 * 1024 * 1024
+
     contents = await file.read()
+
+    if len(contents) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=413, detail="File too large. Maximum size is 5MB")
+
     photo_data = base64.b64encode(contents).decode('utf-8')
     photo_url = f"data:{file.content_type};base64,{photo_data}"
     

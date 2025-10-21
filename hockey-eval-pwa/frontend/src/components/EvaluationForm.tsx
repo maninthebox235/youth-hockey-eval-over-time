@@ -72,9 +72,12 @@ export default function EvaluationForm({ players, addEvaluation }: EvaluationFor
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Label htmlFor="player">Player *</Label>
-          <Select 
-            value={selectedPlayer?.toString() || ''} 
-            onValueChange={(value) => setSelectedPlayer(parseInt(value))} 
+          <Select
+            value={selectedPlayer?.toString() || ''}
+            onValueChange={(value) => {
+              const parsed = parseInt(value, 10)
+              if (!isNaN(parsed)) setSelectedPlayer(parsed)
+            }}
             required
           >
             <SelectTrigger>

@@ -29,7 +29,9 @@ export default function EvaluationHistory({ evaluations }: EvaluationHistoryProp
       evaluation.puck_handling,
       evaluation.hockey_iq,
       evaluation.physicality
-    ]
+    ].filter(v => v != null && !isNaN(v))
+
+    if (values.length === 0) return '0.0'
     return (values.reduce((a, b) => a + b, 0) / values.length).toFixed(1)
   }
 

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from typing import Optional, List
 from datetime import datetime
 
@@ -68,12 +68,12 @@ class Player(PlayerBase):
         from_attributes = True
 
 class SkillRating(BaseModel):
-    skating: int
-    shooting: int
-    passing: int
-    puck_handling: int
-    hockey_iq: int
-    physicality: int
+    skating: int = Field(..., ge=1, le=10, description="Skating skill rating (1-10)")
+    shooting: int = Field(..., ge=1, le=10, description="Shooting skill rating (1-10)")
+    passing: int = Field(..., ge=1, le=10, description="Passing skill rating (1-10)")
+    puck_handling: int = Field(..., ge=1, le=10, description="Puck handling skill rating (1-10)")
+    hockey_iq: int = Field(..., ge=1, le=10, description="Hockey IQ rating (1-10)")
+    physicality: int = Field(..., ge=1, le=10, description="Physicality rating (1-10)")
 
 class EvaluationBase(BaseModel):
     player_id: int
