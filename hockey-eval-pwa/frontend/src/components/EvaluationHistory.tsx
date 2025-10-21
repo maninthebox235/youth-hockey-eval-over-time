@@ -1,11 +1,12 @@
 import { ClipboardList, TrendingUp } from 'lucide-react'
-import { Evaluation } from '../hooks/useOfflineStorage'
+import { Evaluation, Player } from '../hooks/useOfflineStorage'
 
 interface EvaluationHistoryProps {
   evaluations: Evaluation[]
+  players: Player[]
 }
 
-export default function EvaluationHistory({ evaluations }: EvaluationHistoryProps) {
+export default function EvaluationHistory({ evaluations, players }: EvaluationHistoryProps) {
   const sortedEvaluations = [...evaluations].sort((a, b) => 
     new Date(b.date).getTime() - new Date(a.date).getTime()
   )
@@ -33,6 +34,11 @@ export default function EvaluationHistory({ evaluations }: EvaluationHistoryProp
     return (values.reduce((a, b) => a + b, 0) / values.length).toFixed(1)
   }
 
+  const getPlayerName = (playerId: number) => {
+    const player = players.find(p => p.id === playerId)
+    return player ? player.name : `Player #${playerId}`
+  }
+
   return (
     <div className="space-y-4">
       {sortedEvaluations.length === 0 ? (
@@ -45,7 +51,7 @@ export default function EvaluationHistory({ evaluations }: EvaluationHistoryProp
           <div key={evaluation.id} className="bg-white rounded-lg border p-4 space-y-3">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="font-semibold text-lg">Player #{evaluation.player_id}</h3>
+                <h3 className="font-semibold text-lg">{getPlayerName(evaluation.player_id)}</h3>
                 <p className="text-sm text-slate-500">
                   {formatDate(evaluation.date)} • {evaluation.evaluation_type}
                 </p>
