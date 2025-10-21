@@ -142,7 +142,7 @@ function App() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <EvaluationHistory evaluations={evaluations} />
+                <EvaluationHistory evaluations={evaluations} players={players} />
               </CardContent>
             </Card>
           </TabsContent>
