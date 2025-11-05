@@ -1,5 +1,8 @@
 """API routes for the trading system."""
 
+import os
+from pathlib import Path
+from dotenv import load_dotenv
 from fastapi import APIRouter, HTTPException, BackgroundTasks
 from typing import List
 from app.models.trading import (
@@ -11,6 +14,11 @@ from app.models.trading import (
 from app.services.llm_trader import LLMTrader
 from app.services.market_data import MarketDataService
 from app.services.trading_engine import TradingEngine
+
+# Load environment variables before instantiating services
+backend_dir = Path(__file__).parent.parent.parent
+env_path = backend_dir / '.env'
+load_dotenv(dotenv_path=env_path)
 
 router = APIRouter()
 

@@ -34,7 +34,7 @@ class TradingDecision(BaseModel):
     stop_loss: float = Field(gt=0)
     invalidation_condition: str
     confidence: float = Field(ge=0, le=1)
-    risk_usd: float = Field(gt=0)
+    risk_usd: float = Field(ge=0)  # 0 allowed for HOLD/CLOSE signals
     justification: str
 
 

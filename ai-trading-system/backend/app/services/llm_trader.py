@@ -14,7 +14,7 @@ from app.models.trading import (
 class LLMTrader:
     """Service for getting trading decisions from LLM."""
 
-    def __init__(self, model: str = "claude-3-5-sonnet-20241022"):
+    def __init__(self, model: str = "claude-3-opus-20240229"):
         """Initialize LLM trader with API key."""
         self.client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
         self.model = model
